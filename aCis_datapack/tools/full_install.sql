@@ -34,6 +34,7 @@ DROP TABLE IF EXISTS clan_wars;
 DROP TABLE IF EXISTS clanhall;
 DROP TABLE IF EXISTS clanhall_functions;
 DROP TABLE IF EXISTS cursed_weapons;
+DROP TABLE IF EXISTS events;
 DROP TABLE IF EXISTS fishing_championship;
 DROP TABLE IF EXISTS forums;
 DROP TABLE IF EXISTS games;

@@ -1,20 +1,8 @@
-/*
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package net.sf.l2j.gameserver.scripting.quests;
 
-import net.sf.l2j.gameserver.model.actor.L2Npc;
-import net.sf.l2j.gameserver.model.actor.instance.L2PcInstance;
-import net.sf.l2j.gameserver.model.base.Race;
+import net.sf.l2j.gameserver.model.actor.Npc;
+import net.sf.l2j.gameserver.model.actor.instance.Player;
+import net.sf.l2j.gameserver.model.base.ClassRace;
 import net.sf.l2j.gameserver.network.serverpackets.SocialAction;
 import net.sf.l2j.gameserver.scripting.Quest;
 import net.sf.l2j.gameserver.scripting.QuestState;
@@ -82,7 +70,7 @@ public class Q222_TestOfTheDuelist extends Quest
 	}
 	
 	@Override
-	public String onAdvEvent(String event, L2Npc npc, L2PcInstance player)
+	public String onAdvEvent(String event, Npc npc, Player player)
 	{
 		String htmltext = event;
 		QuestState st = player.getQuestState(qn);
@@ -91,7 +79,7 @@ public class Q222_TestOfTheDuelist extends Quest
 		
 		if (event.equalsIgnoreCase("30623-04.htm"))
 		{
-			if (player.getRace() == Race.Orc)
+			if (player.getRace() == ClassRace.ORC)
 				htmltext = "30623-05.htm";
 		}
 		else if (event.equalsIgnoreCase("30623-07.htm"))
@@ -105,7 +93,13 @@ public class Q222_TestOfTheDuelist extends Quest
 			st.giveItems(ORDER_GIRAN, 1);
 			st.giveItems(ORDER_OREN, 1);
 			st.giveItems(ORDER_ADEN, 1);
-			st.giveItems(DIMENSIONAL_DIAMOND, 72);
+			
+			if (!player.getMemos().getBool("secondClassChange39", false))
+			{
+				htmltext = "30623-07a.htm";
+				st.giveItems(DIMENSIONAL_DIAMOND, DF_REWARD_39.get(player.getClassId().getId()));
+				player.getMemos().set("secondClassChange39", true);
+			}
 		}
 		else if (event.equalsIgnoreCase("30623-16.htm"))
 		{
@@ -139,7 +133,7 @@ public class Q222_TestOfTheDuelist extends Quest
 	}
 	
 	@Override
-	public String onTalk(L2Npc npc, L2PcInstance player)
+	public String onTalk(Npc npc, Player player)
 	{
 		String htmltext = getNoQuestMsg();
 		QuestState st = player.getQuestState(qn);
@@ -192,7 +186,7 @@ public class Q222_TestOfTheDuelist extends Quest
 	}
 	
 	@Override
-	public String onKill(L2Npc npc, L2PcInstance player, boolean isPet)
+	public String onKill(Npc npc, Player player, boolean isPet)
 	{
 		QuestState st = checkPlayerState(player, npc, STATE_STARTED);
 		if (st == null)

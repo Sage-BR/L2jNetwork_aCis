@@ -1,17 +1,3 @@
-/*
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package net.sf.l2j.commons.lang;
 
 import java.text.NumberFormat;
@@ -145,7 +131,7 @@ public final class StringUtil
 	 */
 	public static boolean isValidPlayerName(String text)
 	{
-		return isValidName(text, "^[A-Za-z0-9]{1,16}$");
+		return isValidName(text, "^[A-Za-z0-9]{3,16}$");
 	}
 	
 	/**
@@ -161,5 +147,28 @@ public final class StringUtil
 		StringUtil.append(sb, "=[ ", text, " ]");
 		
 		LOG.info(sb.toString());
+	}
+	
+	/**
+	 * Format a time given in seconds into "h m s" String format.
+	 * @param time : a time given in seconds.
+	 * @return a "h m s" formated String.
+	 */
+	public static String getTimeStamp(int time)
+	{
+		final int hours = time / 3600;
+		time %= 3600;
+		final int minutes = time / 60;
+		time %= 60;
+		
+		String result = "";
+		if (hours > 0)
+			result += hours + "h";
+		if (minutes > 0)
+			result += " " + minutes + "m";
+		if (time > 0 || result.length() == 0)
+			result += " " + time + "s";
+		
+		return result;
 	}
 }

@@ -1,27 +1,14 @@
-/*
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package net.sf.l2j.gameserver.scripting.scripts.teleports;
 
-import net.sf.l2j.gameserver.model.Location;
-import net.sf.l2j.gameserver.model.actor.L2Npc;
-import net.sf.l2j.gameserver.model.actor.instance.L2PcInstance;
+import net.sf.l2j.commons.util.ArraysUtil;
+
+import net.sf.l2j.gameserver.model.actor.Npc;
+import net.sf.l2j.gameserver.model.actor.instance.Player;
 import net.sf.l2j.gameserver.model.itemcontainer.PcInventory;
+import net.sf.l2j.gameserver.model.location.Location;
 import net.sf.l2j.gameserver.network.SystemMessageId;
 import net.sf.l2j.gameserver.scripting.Quest;
 import net.sf.l2j.gameserver.scripting.QuestState;
-import net.sf.l2j.gameserver.util.Util;
 
 public class OracleTeleport extends Quest
 {
@@ -251,7 +238,7 @@ public class OracleTeleport extends Quest
 	}
 	
 	@Override
-	public String onAdvEvent(String event, L2Npc npc, L2PcInstance player)
+	public String onAdvEvent(String event, Npc npc, Player player)
 	{
 		String htmltext = "";
 		QuestState st = player.getQuestState(getName());
@@ -259,14 +246,14 @@ public class OracleTeleport extends Quest
 		int npcId = npc.getNpcId();
 		if (event.equalsIgnoreCase("Return"))
 		{
-			if (Util.contains(TEMPLE_PRIEST, npcId) && st.getState() == STATE_STARTED)
+			if (ArraysUtil.contains(TEMPLE_PRIEST, npcId) && st.getState() == STATE_STARTED)
 			{
 				Location loc = RETURN_LOCS[st.getInt("id")];
 				player.teleToLocation(loc.getX(), loc.getY(), loc.getZ(), 0);
 				player.setIsIn7sDungeon(false);
 				st.exitQuest(true);
 			}
-			else if (Util.contains(RIFT_POSTERS, npcId) && st.getState() == STATE_STARTED)
+			else if (ArraysUtil.contains(RIFT_POSTERS, npcId) && st.getState() == STATE_STARTED)
 			{
 				Location loc = RETURN_LOCS[st.getInt("id")];
 				player.teleToLocation(loc.getX(), loc.getY(), loc.getZ(), 0);
@@ -277,12 +264,12 @@ public class OracleTeleport extends Quest
 		else if (event.equalsIgnoreCase("Festival"))
 		{
 			int id = st.getInt("id");
-			if (Util.contains(TOWN_DAWN, id))
+			if (ArraysUtil.contains(TOWN_DAWN, id))
 			{
 				player.teleToLocation(-80157, 111344, -4901, 0);
 				player.setIsIn7sDungeon(true);
 			}
-			else if (Util.contains(TOWN_DUSK, id))
+			else if (ArraysUtil.contains(TOWN_DUSK, id))
 			{
 				player.teleToLocation(-81261, 86531, -5157, 0);
 				player.setIsIn7sDungeon(true);
@@ -353,14 +340,14 @@ public class OracleTeleport extends Quest
 	}
 	
 	@Override
-	public String onTalk(L2Npc npc, L2PcInstance player)
+	public String onTalk(Npc npc, Player player)
 	{
 		String htmltext = "";
 		QuestState st = player.getQuestState(getName());
 		
 		int npcId = npc.getNpcId();
 		
-		if (Util.contains(TOWN_DAWN, npcId))
+		if (ArraysUtil.contains(TOWN_DAWN, npcId))
 		{
 			st.setState(STATE_STARTED);
 			
@@ -378,7 +365,7 @@ public class OracleTeleport extends Quest
 			player.setIsIn7sDungeon(true);
 		}
 		
-		if (Util.contains(TOWN_DUSK, npcId))
+		if (ArraysUtil.contains(TOWN_DUSK, npcId))
 		{
 			st.setState(STATE_STARTED);
 			

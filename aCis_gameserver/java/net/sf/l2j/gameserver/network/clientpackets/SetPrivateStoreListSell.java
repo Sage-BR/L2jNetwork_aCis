@@ -1,22 +1,8 @@
-/*
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package net.sf.l2j.gameserver.network.clientpackets;
 
 import net.sf.l2j.Config;
-import net.sf.l2j.gameserver.model.actor.instance.L2PcInstance;
-import net.sf.l2j.gameserver.model.actor.instance.L2PcInstance.PrivateStoreType;
+import net.sf.l2j.gameserver.model.actor.instance.Player;
+import net.sf.l2j.gameserver.model.actor.instance.Player.StoreType;
 import net.sf.l2j.gameserver.model.tradelist.TradeList;
 import net.sf.l2j.gameserver.model.zone.ZoneId;
 import net.sf.l2j.gameserver.network.SystemMessageId;
@@ -58,14 +44,14 @@ public final class SetPrivateStoreListSell extends L2GameClientPacket
 	@Override
 	protected void runImpl()
 	{
-		L2PcInstance player = getClient().getActiveChar();
+		Player player = getClient().getActiveChar();
 		if (player == null)
 			return;
 		
 		if (_items == null)
 		{
 			player.sendPacket(SystemMessageId.NOT_ENOUGH_ITEMS);
-			player.setPrivateStoreType(PrivateStoreType.NONE);
+			player.setStoreType(StoreType.NONE);
 			player.broadcastUserInfo();
 			player.sendPacket(new PrivateStoreManageListSell(player, _packageSale));
 			return;
@@ -123,7 +109,7 @@ public final class SetPrivateStoreListSell extends L2GameClientPacket
 		}
 		
 		player.sitDown();
-		player.setPrivateStoreType((_packageSale) ? PrivateStoreType.PACKAGE_SELL : PrivateStoreType.SELL);
+		player.setStoreType((_packageSale) ? StoreType.PACKAGE_SELL : StoreType.SELL);
 		player.broadcastUserInfo();
 		player.broadcastPacket(new PrivateStoreMsgSell(player));
 	}

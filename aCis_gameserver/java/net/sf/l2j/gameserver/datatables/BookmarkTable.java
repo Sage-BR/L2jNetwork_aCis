@@ -1,17 +1,3 @@
-/*
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package net.sf.l2j.gameserver.datatables;
 
 import java.sql.Connection;
@@ -24,40 +10,31 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import net.sf.l2j.L2DatabaseFactory;
-import net.sf.l2j.gameserver.model.L2Bookmark;
-import net.sf.l2j.gameserver.model.actor.instance.L2PcInstance;
+import net.sf.l2j.gameserver.model.Bookmark;
+import net.sf.l2j.gameserver.model.actor.instance.Player;
 
+/**
+ * The BookmarkTable class holds Bookmark entities into a List.<br>
+ * To retrieve a Bookmark, you need its name and the player objectId.
+ */
 public class BookmarkTable
 {
-	private static Logger _log = Logger.getLogger(BookmarkTable.class.getName());
+	private static final Logger LOGGER = Logger.getLogger(BookmarkTable.class.getName());
 	
-	private final List<L2Bookmark> _bks;
-	
-	public static BookmarkTable getInstance()
-	{
-		return SingletonHolder._instance;
-	}
+	private final List<Bookmark> _bks = new ArrayList<>();
 	
 	protected BookmarkTable()
 	{
-		_bks = new ArrayList<>();
-		
-		try (Connection con = L2DatabaseFactory.getInstance().getConnection())
+		try (Connection con = L2DatabaseFactory.getInstance().getConnection(); PreparedStatement ps = con.prepareStatement("SELECT * FROM bookmarks"); ResultSet rs = ps.executeQuery())
 		{
-			PreparedStatement statement = con.prepareStatement("SELECT * FROM bookmarks");
-			ResultSet result = statement.executeQuery();
-			
-			while (result.next())
-				_bks.add(new L2Bookmark(result.getString("name"), result.getInt("obj_Id"), result.getInt("x"), result.getInt("y"), result.getInt("z")));
-			
-			result.close();
-			statement.close();
+			while (rs.next())
+				_bks.add(new Bookmark(rs.getString("name"), rs.getInt("obj_Id"), rs.getInt("x"), rs.getInt("y"), rs.getInt("z")));
 		}
 		catch (Exception e)
 		{
-			_log.log(Level.SEVERE, "BookmarkTable: Error restoring BookmarkTable: ", e);
+			LOGGER.log(Level.SEVERE, "Error restoring BookmarkTable: ", e);
 		}
-		_log.info("BookmarkTable: Restored " + _bks.size() + " bookmarks.");
+		LOGGER.info("Loaded " + _bks.size() + " bookmarks.");
 	}
 	
 	/**
@@ -77,9 +54,9 @@ public class BookmarkTable
 	 * @param objId The player Id to make checks on.
 	 * @return null if such bookmark doesn't exist, the L2Bookmark otherwise.
 	 */
-	public L2Bookmark getBookmark(String name, int objId)
+	public Bookmark getBookmark(String name, int objId)
 	{
-		for (L2Bookmark bk : _bks)
+		for (Bookmark bk : _bks)
 		{
 			if (bk.getName().equalsIgnoreCase(name) && bk.getId() == objId)
 				return bk;
@@ -92,7 +69,7 @@ public class BookmarkTable
 	 * @param objId The player Id to make checks on.
 	 * @return an array of L2Bookmark.
 	 */
-	public List<L2Bookmark> getBookmarks(int objId)
+	public List<Bookmark> getBookmarks(int objId)
 	{
 		return _bks.stream().filter(bk -> bk.getId() == objId).collect(Collectors.toList());
 	}
@@ -102,29 +79,27 @@ public class BookmarkTable
 	 * @param name The name of the bookmark.
 	 * @param player The player who requested the clan creation.
 	 */
-	public void saveBookmark(String name, L2PcInstance player)
+	public void saveBookmark(String name, Player player)
 	{
 		final int objId = player.getObjectId();
 		final int x = player.getX();
 		final int y = player.getY();
 		final int z = player.getZ();
 		
-		_bks.add(new L2Bookmark(name, objId, x, y, z));
+		_bks.add(new Bookmark(name, objId, x, y, z));
 		
-		try (Connection con = L2DatabaseFactory.getInstance().getConnection())
+		try (Connection con = L2DatabaseFactory.getInstance().getConnection(); PreparedStatement ps = con.prepareStatement("INSERT INTO bookmarks (name, obj_Id, x, y, z) values (?,?,?,?,?)"))
 		{
-			PreparedStatement statement = con.prepareStatement("INSERT INTO bookmarks (name, obj_Id, x, y, z) values (?,?,?,?,?)");
-			statement.setString(1, name);
-			statement.setInt(2, objId);
-			statement.setInt(3, x);
-			statement.setInt(4, y);
-			statement.setInt(5, z);
-			statement.execute();
-			statement.close();
+			ps.setString(1, name);
+			ps.setInt(2, objId);
+			ps.setInt(3, x);
+			ps.setInt(4, y);
+			ps.setInt(5, z);
+			ps.execute();
 		}
 		catch (Exception e)
 		{
-			_log.log(Level.SEVERE, "Error adding bookmark on DB.", e);
+			LOGGER.log(Level.SEVERE, "Error adding bookmark on DB.", e);
 		}
 	}
 	
@@ -135,28 +110,31 @@ public class BookmarkTable
 	 */
 	public void deleteBookmark(String name, int objId)
 	{
-		final L2Bookmark bookmark = getBookmark(name, objId);
+		final Bookmark bookmark = getBookmark(name, objId);
 		if (bookmark != null)
 		{
 			_bks.remove(bookmark);
 			
-			try (Connection con = L2DatabaseFactory.getInstance().getConnection())
+			try (Connection con = L2DatabaseFactory.getInstance().getConnection(); PreparedStatement ps = con.prepareStatement("DELETE FROM bookmarks WHERE name=? AND obj_Id=?"))
 			{
-				PreparedStatement statement = con.prepareStatement("DELETE FROM bookmarks WHERE name=? AND obj_Id=?");
-				statement.setString(1, name);
-				statement.setInt(2, objId);
-				statement.execute();
-				statement.close();
+				ps.setString(1, name);
+				ps.setInt(2, objId);
+				ps.execute();
 			}
 			catch (Exception e)
 			{
-				_log.log(Level.SEVERE, "Error removing bookmark from DB.", e);
+				LOGGER.log(Level.SEVERE, "Error removing bookmark from DB.", e);
 			}
 		}
 	}
 	
+	public static BookmarkTable getInstance()
+	{
+		return SingletonHolder.INSTANCE;
+	}
+	
 	private static class SingletonHolder
 	{
-		protected static final BookmarkTable _instance = new BookmarkTable();
+		protected static final BookmarkTable INSTANCE = new BookmarkTable();
 	}
 }

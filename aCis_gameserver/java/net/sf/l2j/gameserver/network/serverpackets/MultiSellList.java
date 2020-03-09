@@ -1,84 +1,83 @@
-/*
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package net.sf.l2j.gameserver.network.serverpackets;
 
-import net.sf.l2j.gameserver.datatables.ItemTable;
-import net.sf.l2j.gameserver.model.item.kind.Item;
+import static net.sf.l2j.gameserver.data.xml.MultisellData.PAGE_SIZE;
+
 import net.sf.l2j.gameserver.model.multisell.Entry;
 import net.sf.l2j.gameserver.model.multisell.Ingredient;
 import net.sf.l2j.gameserver.model.multisell.ListContainer;
 
 public class MultiSellList extends L2GameServerPacket
 {
-	protected int _listId, _page, _finished;
-	protected ListContainer _list;
+	private final ListContainer _list;
 	
-	public MultiSellList(ListContainer list, int page, int finished)
+	private int _index;
+	private int _size;
+	
+	private boolean _finished;
+	
+	public MultiSellList(ListContainer list, int index)
 	{
 		_list = list;
-		_listId = list.getListId();
-		_page = page;
-		_finished = finished;
+		_index = index;
+		
+		_size = list.getEntries().size() - index;
+		if (_size > PAGE_SIZE)
+		{
+			_finished = false;
+			_size = PAGE_SIZE;
+		}
+		else
+			_finished = true;
 	}
 	
 	@Override
 	protected void writeImpl()
 	{
 		writeC(0xd0);
-		writeD(_listId); // list id
-		writeD(_page); // page
-		writeD(_finished); // finished
-		writeD(0x28); // size of pages
-		writeD(_list == null ? 0 : _list.getEntries().size()); // list lenght
+		writeD(_list.getId()); // list id
+		writeD(1 + (_index / PAGE_SIZE)); // page
+		writeD(_finished ? 1 : 0); // finished
+		writeD(PAGE_SIZE); // size of pages
+		writeD(_size); // list lenght
 		
-		if (_list != null)
+		while (_size-- > 0)
 		{
-			for (Entry ent : _list.getEntries())
+			Entry ent = _list.getEntries().get(_index++);
+			
+			writeD(ent.getId());
+			writeD(0x00); // C6
+			writeD(0x00); // C6
+			writeC(ent.isStackable() ? 1 : 0);
+			writeH(ent.getProducts().size());
+			writeH(ent.getIngredients().size());
+			
+			for (Ingredient ing : ent.getProducts())
 			{
-				writeD(ent.getEntryId());
-				writeD(0x00); // C6
-				writeD(0x00); // C6
-				writeC(1);
-				writeH(ent.getProducts().size());
-				writeH(ent.getIngredients().size());
-				
-				for (Ingredient i : ent.getProducts())
+				writeH(ing.getItemId());
+				if (ing.getTemplate() != null)
 				{
-					Item item = ItemTable.getInstance().getTemplate(i.getItemId());
-					
-					writeH(i.getItemId());
-					writeD(item.getBodyPart());
-					writeH(item.getType2());
-					writeD(i.getItemCount());
-					writeH(i.getEnchantmentLevel());
-					writeD(0x00); // TODO: i.getAugmentId()
-					writeD(0x00); // TODO: i.getManaLeft()
+					writeD(ing.getTemplate().getBodyPart());
+					writeH(ing.getTemplate().getType2());
 				}
-				
-				for (Ingredient i : ent.getIngredients())
+				else
 				{
-					int itemId = i.getItemId();
-					Item item = ItemTable.getInstance().getTemplate(itemId);
-					
-					writeH(itemId);
-					writeH((itemId != 65336) ? item.getType2() : 65535);
-					writeD(i.getItemCount());
-					writeH(i.getEnchantmentLevel());
-					writeD(0x00); // TODO: i.getAugmentId()
-					writeD(0x00); // TODO: i.getManaLeft()
+					writeD(0);
+					writeH(65535);
 				}
+				writeD(ing.getItemCount());
+				writeH(ing.getEnchantLevel());
+				writeD(0x00); // TODO: i.getAugmentId()
+				writeD(0x00); // TODO: i.getManaLeft()
+			}
+			
+			for (Ingredient ing : ent.getIngredients())
+			{
+				writeH(ing.getItemId());
+				writeH(ing.getTemplate() != null ? ing.getTemplate().getType2() : 65535);
+				writeD(ing.getItemCount());
+				writeH(ing.getEnchantLevel());
+				writeD(0x00); // TODO: i.getAugmentId()
+				writeD(0x00); // TODO: i.getManaLeft()
 			}
 		}
 	}

@@ -1,21 +1,7 @@
-/*
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package net.sf.l2j.gameserver.scripting.quests;
 
-import net.sf.l2j.gameserver.model.actor.L2Npc;
-import net.sf.l2j.gameserver.model.actor.instance.L2PcInstance;
+import net.sf.l2j.gameserver.model.actor.Npc;
+import net.sf.l2j.gameserver.model.actor.instance.Player;
 import net.sf.l2j.gameserver.model.base.ClassId;
 import net.sf.l2j.gameserver.network.serverpackets.SocialAction;
 import net.sf.l2j.gameserver.scripting.Quest;
@@ -93,7 +79,7 @@ public class Q228_TestOfMagus extends Quest
 	}
 	
 	@Override
-	public String onAdvEvent(String event, L2Npc npc, L2PcInstance player)
+	public String onAdvEvent(String event, Npc npc, Player player)
 	{
 		String htmltext = event;
 		QuestState st = player.getQuestState(qn);
@@ -101,13 +87,19 @@ public class Q228_TestOfMagus extends Quest
 			return htmltext;
 		
 		// RUKAL
-		if (event.equalsIgnoreCase("30629-04a.htm"))
+		if (event.equalsIgnoreCase("30629-04.htm"))
 		{
 			st.setState(STATE_STARTED);
 			st.set("cond", "1");
 			st.playSound(QuestState.SOUND_ACCEPT);
-			st.giveItems(DIMENSIONAL_DIAMOND, 122);
 			st.giveItems(RUKAL_LETTER, 1);
+			
+			if (!player.getMemos().getBool("secondClassChange39", false))
+			{
+				htmltext = "30629-04a.htm";
+				st.giveItems(DIMENSIONAL_DIAMOND, DF_REWARD_39.get(player.getClassId().getId()));
+				player.getMemos().set("secondClassChange39", true);
+			}
 		}
 		else if (event.equalsIgnoreCase("30629-10.htm"))
 		{
@@ -137,16 +129,22 @@ public class Q228_TestOfMagus extends Quest
 		}
 		// WIND SYLPH
 		else if (event.equalsIgnoreCase("30412-02.htm"))
+		{
+			st.playSound(QuestState.SOUND_ITEMGET);
 			st.giveItems(SYLPH_CHARM, 1);
+		}
 		// EARTH SNAKE
 		else if (event.equalsIgnoreCase("30409-03.htm"))
+		{
+			st.playSound(QuestState.SOUND_ITEMGET);
 			st.giveItems(SERPENT_CHARM, 1);
+		}
 		
 		return htmltext;
 	}
 	
 	@Override
-	public String onTalk(L2Npc npc, L2PcInstance player)
+	public String onTalk(Npc npc, Player player)
 	{
 		String htmltext = getNoQuestMsg();
 		QuestState st = player.getQuestState(qn);
@@ -156,7 +154,7 @@ public class Q228_TestOfMagus extends Quest
 		switch (st.getState())
 		{
 			case STATE_CREATED:
-				if (player.getClassId() != ClassId.wizard && player.getClassId() != ClassId.elvenWizard && player.getClassId() != ClassId.darkWizard)
+				if (player.getClassId() != ClassId.HUMAN_WIZARD && player.getClassId() != ClassId.ELVEN_WIZARD && player.getClassId() != ClassId.DARK_WIZARD)
 					htmltext = "30629-01.htm";
 				else if (player.getLevel() < 39)
 					htmltext = "30629-02.htm";
@@ -230,16 +228,20 @@ public class Q228_TestOfMagus extends Quest
 									st.takeItems(DAZZLING_DROP, 20);
 									st.takeItems(UNDINE_CHARM, 1);
 									st.giveItems(TONE_OF_WATER, 1);
+									
 									if (st.hasQuestItems(TONE_OF_FIRE, TONE_OF_WIND, TONE_OF_EARTH))
 									{
 										st.set("cond", "6");
 										st.playSound(QuestState.SOUND_MIDDLE);
 									}
+									else
+										st.playSound(QuestState.SOUND_ITEMGET);
 								}
 							}
 							else if (!st.hasQuestItems(TONE_OF_WATER))
 							{
 								htmltext = "30413-01.htm";
+								st.playSound(QuestState.SOUND_ITEMGET);
 								st.giveItems(UNDINE_CHARM, 1);
 							}
 							else
@@ -262,11 +264,14 @@ public class Q228_TestOfMagus extends Quest
 									st.takeItems(FLAME_CRYSTAL, 5);
 									st.takeItems(SALAMANDER_CHARM, 1);
 									st.giveItems(TONE_OF_FIRE, 1);
+									
 									if (st.hasQuestItems(TONE_OF_WATER, TONE_OF_WIND, TONE_OF_EARTH))
 									{
 										st.set("cond", "6");
 										st.playSound(QuestState.SOUND_MIDDLE);
 									}
+									else
+										st.playSound(QuestState.SOUND_ITEMGET);
 								}
 							}
 							else if (!st.hasQuestItems(TONE_OF_FIRE))
@@ -296,11 +301,14 @@ public class Q228_TestOfMagus extends Quest
 									st.takeItems(WINDSUS_MANE, 10);
 									st.takeItems(WYRM_WINGBONE, 10);
 									st.giveItems(TONE_OF_WIND, 1);
+									
 									if (st.hasQuestItems(TONE_OF_WATER, TONE_OF_FIRE, TONE_OF_EARTH))
 									{
 										st.set("cond", "6");
 										st.playSound(QuestState.SOUND_MIDDLE);
 									}
+									else
+										st.playSound(QuestState.SOUND_ITEMGET);
 								}
 							}
 							else if (!st.hasQuestItems(TONE_OF_WIND))
@@ -327,11 +335,14 @@ public class Q228_TestOfMagus extends Quest
 									st.takeItems(EN_STONEGOLEM_POWDER, 10);
 									st.takeItems(SERPENT_CHARM, 1);
 									st.giveItems(TONE_OF_EARTH, 1);
+									
 									if (st.hasQuestItems(TONE_OF_WATER, TONE_OF_FIRE, TONE_OF_WIND))
 									{
 										st.set("cond", "6");
 										st.playSound(QuestState.SOUND_MIDDLE);
 									}
+									else
+										st.playSound(QuestState.SOUND_ITEMGET);
 								}
 							}
 							else if (!st.hasQuestItems(TONE_OF_EARTH))
@@ -354,7 +365,7 @@ public class Q228_TestOfMagus extends Quest
 	}
 	
 	@Override
-	public String onKill(L2Npc npc, L2PcInstance player, boolean isPet)
+	public String onKill(Npc npc, Player player, boolean isPet)
 	{
 		QuestState st = checkPlayerState(player, npc, STATE_STARTED);
 		if (st == null)

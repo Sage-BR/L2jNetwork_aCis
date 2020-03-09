@@ -4,19 +4,20 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
-import net.sf.l2j.gameserver.ThreadPoolManager;
-import net.sf.l2j.gameserver.model.actor.L2Character;
-import net.sf.l2j.gameserver.model.actor.instance.L2PcInstance;
+import net.sf.l2j.commons.concurrent.ThreadPool;
+
+import net.sf.l2j.gameserver.model.actor.Creature;
+import net.sf.l2j.gameserver.model.actor.instance.Player;
 
 /**
- * Turns off afk status of {@link L2Character} after PERIOD Ms.
+ * Turns off afk status of {@link Character} after PERIOD Ms.
  * @author SweeTs
  */
 public final class AfkTaskManager implements Runnable
 {
 	private static final long ALLOWED_AFK_PERIOD = TimeUnit.HOURS.toMillis(1); // 1h
 	
-	private final Map<L2PcInstance, Long> _players = new ConcurrentHashMap<>();
+	private final Map<Player, Long> _players = new ConcurrentHashMap<>();
 	
 	public static final AfkTaskManager getInstance()
 	{
@@ -26,23 +27,23 @@ public final class AfkTaskManager implements Runnable
 	protected AfkTaskManager()
 	{
 		// Run task each second.
-		ThreadPoolManager.getInstance().scheduleAiAtFixedRate(this, 1000, 1000);
+		ThreadPool.scheduleAtFixedRate(this, 1000, 1000);
 	}
 	
 	/**
-	 * Adds {@link L2PcInstance} to the AfkTask.
-	 * @param player : L2PcInstance to be added and checked.
+	 * Adds {@link Player} to the AfkTask.
+	 * @param player : Player to be added and checked.
 	 */
-	public final void add(L2PcInstance player)
+	public final void add(Player player)
 	{
 		_players.put(player, System.currentTimeMillis() + ALLOWED_AFK_PERIOD);
 	}
 	
 	/**
-	 * Removes {@link L2Character} from the AfkTask.
-	 * @param character : {@link L2Character} to be removed.
+	 * Removes {@link Character} from the AfkTask.
+	 * @param character : {@link Character} to be removed.
 	 */
-	public final void remove(L2Character character)
+	public final void remove(Creature character)
 	{
 		_players.remove(character);
 	}
@@ -58,14 +59,14 @@ public final class AfkTaskManager implements Runnable
 		final long time = System.currentTimeMillis();
 		
 		// Loop all characters.
-		for (Map.Entry<L2PcInstance, Long> entry : _players.entrySet())
+		for (Map.Entry<Player, Long> entry : _players.entrySet())
 		{
 			// Time hasn't passed yet, skip.
 			if (time < entry.getValue())
 				continue;
 			
 			// Get character.
-			final L2PcInstance player = entry.getKey();
+			final Player player = entry.getKey();
 			
 			player.setAfking(true);
 			

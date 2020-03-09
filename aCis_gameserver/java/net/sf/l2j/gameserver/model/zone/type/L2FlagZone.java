@@ -4,15 +4,18 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.util.Properties;
 
+import net.sf.l2j.commons.concurrent.ThreadPool;
 import net.sf.l2j.commons.random.Rnd;
-import net.sf.l2j.gameserver.ThreadPoolManager;
+
 import net.sf.l2j.gameserver.datatables.SkillTable;
 import net.sf.l2j.gameserver.model.L2Skill;
-import net.sf.l2j.gameserver.model.actor.L2Character;
-import net.sf.l2j.gameserver.model.actor.instance.L2PcInstance;
+import net.sf.l2j.gameserver.model.actor.Creature;
+import net.sf.l2j.gameserver.model.actor.instance.Player;
 import net.sf.l2j.gameserver.model.zone.L2ZoneType;
 import net.sf.l2j.gameserver.model.zone.ZoneId;
+import net.sf.l2j.gameserver.network.SystemMessageId;
 import net.sf.l2j.gameserver.network.serverpackets.ExShowScreenMessage;
+import net.sf.l2j.gameserver.taskmanager.PvpFlagTaskManager;
 
 /**
  * @author SweeTs
@@ -31,39 +34,43 @@ public class L2FlagZone extends L2ZoneType
 	static int[][] spawn_loc;
 	
 	@Override
-	protected void onEnter(L2Character character)
+	protected void onEnter(Creature Creature)
 	{
-		if (character instanceof L2PcInstance)
+		Creature.setInsideZone(ZoneId.FLAG, true);
+		if (Creature instanceof Player)
 		{
-			final L2PcInstance player = (L2PcInstance) character;
-			
-			character.setInsideZone(ZoneId.FLAG, true);
+			Player player = Creature.getActingPlayer();
+			PvpFlagTaskManager.getInstance().remove(player);
 			noblesse.getEffects(player, player);
 			player.updatePvPFlag(1);
+			((Player) Creature).sendPacket(SystemMessageId.ENTERED_COMBAT_ZONE);
+			Creature.setInsideZone(ZoneId.NO_SUMMON_FRIEND, true);
 		}
 	}
 	
 	@Override
-	protected void onExit(L2Character character)
+	protected void onExit(Creature Creature)
 	{
-		if (character instanceof L2PcInstance)
+		Creature.setInsideZone(ZoneId.FLAG, false);
+		if (Creature instanceof Player)
 		{
-			final L2PcInstance player = (L2PcInstance) character;
-			
-			character.setInsideZone(ZoneId.FLAG, false);
+			Player player = Creature.getActingPlayer();
+			PvpFlagTaskManager.getInstance().remove(player);
 			player.updatePvPFlag(0);
+			((Player) Creature).sendPacket(SystemMessageId.LEFT_COMBAT_ZONE);
+			Creature.setInsideZone(ZoneId.NO_SUMMON_FRIEND, false);
 		}
 	}
 	
 	@Override
-	public void onDieInside(L2Character character)
+	public void onDieInside(Creature Creature)
 	{
-		if (character instanceof L2PcInstance)
+		if (Creature instanceof Player)
 		{
-			final L2PcInstance activeChar = ((L2PcInstance) character);
+			final Player activeChar = ((Player) Creature);
 			activeChar.sendPacket(new ExShowScreenMessage(+ respawn + " seconds until auto respawn", 4000, 2, true));
 			
-			ThreadPoolManager.getInstance().scheduleGeneral(new Runnable()
+			ThreadPool.schedule(new Runnable()
 			{
 				@Override
 				public void run()
@@ -77,11 +84,11 @@ public class L2FlagZone extends L2ZoneType
 	}
 	
 	@Override
-	public void onReviveInside(L2Character character)
+	public void onReviveInside(Creature Creature)
 	{
-		if (character instanceof L2PcInstance)
+		if (Creature instanceof Player)
 		{
-			final L2PcInstance player = (L2PcInstance) character;
+			final Player player = (Player) Creature;
 			noblesse.getEffects(player, player);
 			
 			player.setCurrentHp(player.getMaxHp());

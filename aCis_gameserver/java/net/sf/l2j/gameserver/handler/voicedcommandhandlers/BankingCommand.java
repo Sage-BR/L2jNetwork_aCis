@@ -2,7 +2,7 @@ package net.sf.l2j.gameserver.handler.voicedcommandhandlers;
 
 import net.sf.l2j.Config;
 import net.sf.l2j.gameserver.handler.IVoicedCommandHandler;
-import net.sf.l2j.gameserver.model.actor.instance.L2PcInstance;
+import net.sf.l2j.gameserver.model.actor.instance.Player;
 import net.sf.l2j.gameserver.network.serverpackets.ItemList;
 
 public class BankingCommand implements IVoicedCommandHandler
@@ -14,7 +14,7 @@ public class BankingCommand implements IVoicedCommandHandler
 	};
 	
 	@Override
-	public boolean useVoicedCommand(final String command, final L2PcInstance activeChar, final String target)
+	public boolean useVoicedCommand(final String command, final Player activeChar, final String target)
 	{
 		if (command.equalsIgnoreCase("deposit") && !(Config.BANKING_SYSTEM_GOLDBARS <= 0))
 		{
@@ -27,9 +27,7 @@ public class BankingCommand implements IVoicedCommandHandler
 				activeChar.sendMessage("Thank you, now you have " + Config.BANKING_SYSTEM_GOLDBARS + " Goldbar(s), and " + Config.BANKING_SYSTEM_ADENA + " less adena.");
 			}
 			else
-			{
 				activeChar.sendMessage("You do not have enough Adena to convert to Goldbar(s), you need " + Config.BANKING_SYSTEM_ADENA + " Adena.");
-			}
 		}
 		else if (command.equalsIgnoreCase("withdraw") && !(Config.BANKING_SYSTEM_GOLDBARS <= 0))
 		{
@@ -51,9 +49,7 @@ public class BankingCommand implements IVoicedCommandHandler
 				activeChar.sendMessage("Thank you, now you have " + Config.BANKING_SYSTEM_ADENA + " Adena, and " + Config.BANKING_SYSTEM_GOLDBARS + " less Goldbar(s).");
 			}
 			else
-			{
 				activeChar.sendMessage("You do not have any Goldbars to turn into " + Config.BANKING_SYSTEM_ADENA + " Adena.");
-			}
 		}
 		return true;
 	}

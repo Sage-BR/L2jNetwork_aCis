@@ -1,17 +1,3 @@
-/*
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package net.sf.l2j.gameserver.model.item.instance;
 
 import java.sql.Connection;
@@ -25,28 +11,28 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
+import net.sf.l2j.commons.concurrent.ThreadPool;
+
 import net.sf.l2j.Config;
 import net.sf.l2j.L2DatabaseFactory;
-import net.sf.l2j.gameserver.ThreadPoolManager;
-import net.sf.l2j.gameserver.ai.CtrlIntention;
-import net.sf.l2j.gameserver.datatables.ItemTable;
-import net.sf.l2j.gameserver.geoengine.PathFinding;
-import net.sf.l2j.gameserver.instancemanager.MercTicketManager;
-import net.sf.l2j.gameserver.model.DropProtection;
+import net.sf.l2j.gameserver.data.ItemTable;
+import net.sf.l2j.gameserver.geoengine.GeoEngine;
+import net.sf.l2j.gameserver.instancemanager.CastleManager;
 import net.sf.l2j.gameserver.model.L2Augmentation;
-import net.sf.l2j.gameserver.model.L2Object;
-import net.sf.l2j.gameserver.model.L2World;
-import net.sf.l2j.gameserver.model.L2WorldRegion;
-import net.sf.l2j.gameserver.model.Location;
 import net.sf.l2j.gameserver.model.ShotType;
-import net.sf.l2j.gameserver.model.actor.L2Character;
-import net.sf.l2j.gameserver.model.actor.instance.L2PcInstance;
+import net.sf.l2j.gameserver.model.WorldObject;
+import net.sf.l2j.gameserver.model.actor.Creature;
+import net.sf.l2j.gameserver.model.actor.ai.CtrlIntention;
+import net.sf.l2j.gameserver.model.actor.instance.Player;
+import net.sf.l2j.gameserver.model.entity.Castle;
+import net.sf.l2j.gameserver.model.item.MercenaryTicket;
 import net.sf.l2j.gameserver.model.item.kind.Armor;
 import net.sf.l2j.gameserver.model.item.kind.EtcItem;
 import net.sf.l2j.gameserver.model.item.kind.Item;
 import net.sf.l2j.gameserver.model.item.kind.Weapon;
 import net.sf.l2j.gameserver.model.item.type.EtcItemType;
 import net.sf.l2j.gameserver.model.item.type.ItemType;
+import net.sf.l2j.gameserver.model.location.Location;
 import net.sf.l2j.gameserver.network.SystemMessageId;
 import net.sf.l2j.gameserver.network.serverpackets.ActionFailed;
 import net.sf.l2j.gameserver.network.serverpackets.DropItem;
@@ -61,11 +47,18 @@ import net.sf.l2j.gameserver.taskmanager.ItemsOnGroundTaskManager;
 /**
  * This class manages items.
  */
-public final class ItemInstance extends L2Object
+public final class ItemInstance extends WorldObject implements Runnable, Comparable<ItemInstance>
 {
-	private static final Logger _logItems = Logger.getLogger("item");
+	private static final Logger ITEM_LOG = Logger.getLogger("item");
 	
-	/** Enumeration of locations for item */
+	public static enum ItemState
+	{
+		UNCHANGED,
+		ADDED,
+		MODIFIED,
+		REMOVED
+	}
+	
 	public static enum ItemLocation
 	{
 		VOID,
@@ -78,6 +71,9 @@ public final class ItemInstance extends L2Object
 		LEASE,
 		FREIGHT
 	}
+	
+	private static final long REGULAR_LOOT_PROTECTION_TIME = 15000;
+	private static final long RAID_LOOT_PROTECTION_TIME = 300000;
 	
 	private int _ownerId;
 	private int _dropperObjectId = 0;
@@ -110,19 +106,13 @@ public final class ItemInstance extends L2Object
 	
 	private boolean _destroyProtected;
 	
-	public static final int UNCHANGED = 0;
-	public static final int ADDED = 1;
-	public static final int MODIFIED = 2;
-	public static final int REMOVED = 3;
-	private int _lastChange = 2; // 1 added, 2 modified, 3 removed
+	private ItemState _lastChange = ItemState.MODIFIED;
 	
 	private boolean _existsInDb; // if a record exists in DB.
 	private boolean _storedInDb; // if DB data is up-to-date.
 	
 	private final ReentrantLock _dbLock = new ReentrantLock();
-	private ScheduledFuture<?> _itemLootShedule;
-	
-	private final DropProtection _dropProtection = new DropProtection();
+	private ScheduledFuture<?> _dropProtection;
 	
 	private int _shotsMask = 0;
 	
@@ -166,28 +156,35 @@ public final class ItemInstance extends L2Object
 		_mana = _item.getDuration() * 60;
 	}
 	
+	@Override
+	public synchronized void run()
+	{
+		_ownerId = 0;
+		_dropProtection = null;
+	}
+	
 	/**
 	 * Sets the ownerID of the item
 	 * @param process : String Identifier of process triggering this action
 	 * @param owner_id : int designating the ID of the owner
-	 * @param creator : L2PcInstance Player requesting the item creation
-	 * @param reference : L2Object Object referencing current action like NPC selling item or previous item in transformation
+	 * @param creator : Player Player requesting the item creation
+	 * @param reference : WorldObject Object referencing current action like NPC selling item or previous item in transformation
 	 */
-	public void setOwnerId(String process, int owner_id, L2PcInstance creator, L2Object reference)
+	public void setOwnerId(String process, int owner_id, Player creator, WorldObject reference)
 	{
 		setOwnerId(owner_id);
 		
 		if (Config.LOG_ITEMS)
 		{
-			LogRecord record = new LogRecord(Level.INFO, "CHANGE:" + process);
+			final LogRecord record = new LogRecord(Level.INFO, "CHANGE:" + process);
 			record.setLoggerName("item");
 			record.setParameters(new Object[]
 			{
-				this,
 				creator,
+				this,
 				reference
 			});
-			_logItems.log(record);
+			ITEM_LOG.log(record);
 		}
 	}
 	
@@ -273,10 +270,10 @@ public final class ItemInstance extends L2Object
 	 * <U><I>Remark :</I></U> If loc and loc_data different from database, say datas not up-to-date
 	 * @param process : String Identifier of process triggering this action
 	 * @param count : int
-	 * @param creator : L2PcInstance Player requesting the item creation
-	 * @param reference : L2Object Object referencing current action like NPC selling item or previous item in transformation
+	 * @param creator : Player Player requesting the item creation
+	 * @param reference : WorldObject Object referencing current action like NPC selling item or previous item in transformation
 	 */
-	public void changeCount(String process, int count, L2PcInstance creator, L2Object reference)
+	public void changeCount(String process, int count, Player creator, WorldObject reference)
 	{
 		if (count == 0)
 			return;
@@ -293,22 +290,16 @@ public final class ItemInstance extends L2Object
 		
 		if (Config.LOG_ITEMS && process != null)
 		{
-			LogRecord record = new LogRecord(Level.INFO, "CHANGE:" + process);
+			final LogRecord record = new LogRecord(Level.INFO, "CHANGE:" + process);
 			record.setLoggerName("item");
 			record.setParameters(new Object[]
 			{
-				this,
 				creator,
+				this,
 				reference
 			});
-			_logItems.log(record);
+			ITEM_LOG.log(record);
 		}
-	}
-	
-	// No logging (function designed for shots only)
-	public void changeCountWithoutTrace(int count, L2PcInstance creator, L2Object reference)
-	{
-		changeCount(null, count, creator, reference);
 	}
 	
 	/**
@@ -367,12 +358,6 @@ public final class ItemInstance extends L2Object
 	{
 		_type2 = newtype;
 	}
-	
-	public boolean isOlyRestrictedItem()
-	{
-		return getItem().isOlyRestrictedItem();
-	}
-	
 	/**
 	 * Returns the type of item
 	 * @return Enum
@@ -482,7 +467,7 @@ public final class ItemInstance extends L2Object
 	/**
 	 * @return the last change of the item.
 	 */
-	public int getLastChange()
+	public ItemState getLastChange()
 	{
 		return _lastChange;
 	}
@@ -491,7 +476,7 @@ public final class ItemInstance extends L2Object
 	 * Sets the last change of the item
 	 * @param lastChange : int
 	 */
-	public void setLastChange(int lastChange)
+	public void setLastChange(ItemState lastChange)
 	{
 		_lastChange = lastChange;
 	}
@@ -569,7 +554,7 @@ public final class ItemInstance extends L2Object
 	 * @param allowNonTradable : if true, count non tradable items.
 	 * @return if item is available for manipulation.
 	 */
-	public boolean isAvailable(L2PcInstance player, boolean allowAdena, boolean allowNonTradable)
+	public boolean isAvailable(Player player, boolean allowAdena, boolean allowNonTradable)
 	{
 		return ((!isEquipped()) // Not equipped
 			&& (getItem().getType2() != Item.TYPE2_QUEST) // Not Quest Item
@@ -581,8 +566,14 @@ public final class ItemInstance extends L2Object
 	}
 	
 	@Override
-	public void onAction(L2PcInstance player)
+	public void onAction(Player player)
 	{
+		if (player.isFlying())
+		{
+			player.sendPacket(ActionFailed.STATIC_PACKET);
+			return;
+		}
+		
 		// Mercenaries tickets case.
 		if (_item.getItemType() == EtcItemType.CASTLE_GUARD)
 		{
@@ -592,8 +583,21 @@ public final class ItemInstance extends L2Object
 				return;
 			}
 			
-			final int castleId = MercTicketManager.getTicketCastleId(_itemId);
-			if (castleId > 0 && !player.isCastleLord(castleId))
+			final Castle castle = CastleManager.getInstance().getCastle(player);
+			if (castle == null)
+			{
+				player.sendPacket(ActionFailed.STATIC_PACKET);
+				return;
+			}
+			
+			final MercenaryTicket ticket = castle.getTicket(_itemId);
+			if (ticket == null)
+			{
+				player.sendPacket(ActionFailed.STATIC_PACKET);
+				return;
+			}
+			
+			if (!player.isCastleLord(castle.getCastleId()))
 			{
 				player.sendPacket(SystemMessageId.THIS_IS_NOT_A_MERCENARY_OF_A_CASTLE_THAT_YOU_OWN_AND_SO_CANNOT_CANCEL_POSITIONING);
 				player.sendPacket(ActionFailed.STATIC_PACKET);
@@ -601,17 +605,11 @@ public final class ItemInstance extends L2Object
 			}
 		}
 		
-		if (player.isFlying())
-		{
-			player.sendPacket(ActionFailed.STATIC_PACKET);
-			return;
-		}
-		
 		player.getAI().setIntention(CtrlIntention.PICK_UP, this);
 	}
 	
 	@Override
-	public void onActionShift(L2PcInstance player)
+	public void onActionShift(Player player)
 	{
 		if (player.isGM())
 		{
@@ -653,7 +651,7 @@ public final class ItemInstance extends L2Object
 	 */
 	public boolean isAugmented()
 	{
-		return _augmentation == null ? false : true;
+		return _augmentation != null;
 	}
 	
 	/**
@@ -795,17 +793,17 @@ public final class ItemInstance extends L2Object
 	 * @return boolean false
 	 */
 	@Override
-	public boolean isAutoAttackable(L2Character attacker)
+	public boolean isAutoAttackable(Creature attacker)
 	{
 		return false;
 	}
 	
 	/**
 	 * This function basically returns a set of functions from L2Item/L2Armor/Weapon, but may add additional functions, if this particular item instance is enhanched for a particular player.
-	 * @param player : L2Character designating the player
+	 * @param player : Creature designating the player
 	 * @return Func[]
 	 */
-	public List<Func> getStatFuncs(L2Character player)
+	public List<Func> getStatFuncs(Creature player)
 	{
 		return getItem().getStatFuncs(this, player);
 	}
@@ -913,25 +911,25 @@ public final class ItemInstance extends L2Object
 	/**
 	 * Init a dropped ItemInstance and add it in the world as a visible object.<BR>
 	 * <BR>
-	 * <FONT COLOR=#FF0000><B> <U>Caution</U> : This method DOESN'T ADD the object to _allObjects of L2World </B></FONT><BR>
+	 * <FONT COLOR=#FF0000><B> <U>Caution</U> : This method DOESN'T ADD the object to _objects of World </B></FONT><BR>
 	 * <BR>
 	 * @param dropper : the character who dropped the item.
 	 * @param x : X location of the item.
 	 * @param y : Y location of the item.
 	 * @param z : Z location of the item.
 	 */
-	public final void dropMe(L2Character dropper, int x, int y, int z)
+	public final void dropMe(Creature dropper, int x, int y, int z)
 	{
-		ThreadPoolManager.getInstance().executeTask(new ItemDropTask(this, dropper, x, y, z));
+		ThreadPool.execute(new ItemDropTask(this, dropper, x, y, z));
 	}
 	
 	public class ItemDropTask implements Runnable
 	{
 		private int _x, _y, _z;
-		private final L2Character _dropper;
+		private final Creature _dropper;
 		private final ItemInstance _itm;
 		
-		public ItemDropTask(ItemInstance item, L2Character dropper, int x, int y, int z)
+		public ItemDropTask(ItemInstance item, Creature dropper, int x, int y, int z)
 		{
 			_x = x;
 			_y = y;
@@ -943,29 +941,18 @@ public final class ItemInstance extends L2Object
 		@Override
 		public final void run()
 		{
-			assert _itm.getPosition().getWorldRegion() == null;
+			assert _itm.getRegion() == null;
 			
-			if (Config.GEODATA > 0 && _dropper != null)
+			if (_dropper != null)
 			{
-				Location dropDest = PathFinding.getInstance().canMoveToTargetLoc(_dropper.getX(), _dropper.getY(), _dropper.getZ(), _x, _y, _z);
+				Location dropDest = GeoEngine.getInstance().canMoveToTargetLoc(_dropper.getX(), _dropper.getY(), _dropper.getZ(), _x, _y, _z);
 				_x = dropDest.getX();
 				_y = dropDest.getY();
 				_z = dropDest.getZ();
 			}
 			
-			synchronized (_itm)
-			{
-				// Set the x,y,z position of the ItemInstance dropped and update its _worldregion
-				_itm.setIsVisible(true);
-				_itm.getPosition().setWorldPosition(_x, _y, _z);
-				_itm.getPosition().setWorldRegion(L2World.getInstance().getRegion(getPosition().getWorldPosition()));
-			}
-			
-			_itm.getPosition().getWorldRegion().addVisibleObject(_itm);
 			_itm.setDropperObjectId(_dropper != null ? _dropper.getObjectId() : 0); // Set the dropper Id for the knownlist packets in sendInfo
-			
-			// Add the ItemInstance dropped in the world as a visible object
-			L2World.getInstance().addVisibleObject(_itm, _itm.getPosition().getWorldRegion());
+			_itm.spawnMe(_x, _y, _z);
 			
 			ItemsOnGroundTaskManager.getInstance().add(_itm, _dropper);
 			
@@ -974,47 +961,34 @@ public final class ItemInstance extends L2Object
 	}
 	
 	/**
-	 * Remove a ItemInstance from the world and send server->client GetItem packets.<BR>
+	 * Remove a ItemInstance from the visible world and send server->client GetItem packets.<BR>
 	 * <BR>
-	 * <FONT COLOR=#FF0000><B> <U>Caution</U> : This method DOESN'T REMOVE the object from _allObjects of L2World </B></FONT><BR>
+	 * <FONT COLOR=#FF0000><B> <U>Caution</U> : This method DOESN'T REMOVE the object from _objects of World.</B></FONT><BR>
 	 * <BR>
 	 * @param player Player that pick up the item
 	 */
-	public final void pickupMe(L2Character player)
+	public final void pickupMe(Creature player)
 	{
-		assert getPosition().getWorldRegion() != null;
+		player.broadcastPacket(new GetItem(this, player.getObjectId()));
 		
-		L2WorldRegion oldregion = getPosition().getWorldRegion();
+		// Unregister dropped ticket from castle, if that item is on a castle area and is a valid ticket.
+		final Castle castle = CastleManager.getInstance().getCastle(player);
+		if (castle != null && castle.getTicket(_itemId) != null)
+			castle.removeDroppedTicket(this);
 		
-		// Create a server->client GetItem packet to pick up the ItemInstance
-		GetItem gi = new GetItem(this, player.getObjectId());
-		player.broadcastPacket(gi);
-		
-		synchronized (this)
+		if (!Config.DISABLE_TUTORIAL && (_itemId == 57 || _itemId == 6353))
 		{
-			setIsVisible(false);
-			getPosition().setWorldRegion(null);
-		}
-		
-		// if this item is a mercenary ticket, remove the spawns!
-		int itemId = getItemId();
-		
-		if (MercTicketManager.getTicketCastleId(itemId) > 0)
-			MercTicketManager.getInstance().removeTicket(this);
-		
-		if (!Config.DISABLE_TUTORIAL && (itemId == 57 || itemId == 6353))
-		{
-			L2PcInstance actor = player.getActingPlayer();
+			Player actor = player.getActingPlayer();
 			if (actor != null)
 			{
 				QuestState qs = actor.getQuestState("Tutorial");
 				if (qs != null)
-					qs.getQuest().notifyEvent("CE" + itemId + "", null, actor);
+					qs.getQuest().notifyEvent("CE" + _itemId + "", null, actor);
 			}
 		}
 		
-		// Remove the ItemInstance from the world (out of synchro, to avoid deadlocks)
-		L2World.getInstance().removeVisibleObject(this, oldregion);
+		// Calls directly setRegion(null), we don't have to care about.
+		setIsVisible(false);
 	}
 	
 	/**
@@ -1123,22 +1097,26 @@ public final class ItemInstance extends L2Object
 		return "" + _item;
 	}
 	
-	public void resetOwnerTimer()
+	public synchronized boolean hasDropProtection()
 	{
-		if (_itemLootShedule != null)
-			_itemLootShedule.cancel(true);
+		return _dropProtection != null;
+	}
+	
+	public synchronized void setDropProtection(int ownerId, boolean isRaidParty)
+	{
+		_ownerId = ownerId;
+		_dropProtection = ThreadPool.schedule(this, (isRaidParty) ? RAID_LOOT_PROTECTION_TIME : REGULAR_LOOT_PROTECTION_TIME);
+	}
+	
+	public synchronized void removeDropProtection()
+	{
+		if (_dropProtection != null)
+		{
+			_dropProtection.cancel(true);
+			_dropProtection = null;
+		}
 		
-		_itemLootShedule = null;
-	}
-	
-	public void setItemLootShedule(ScheduledFuture<?> sf)
-	{
-		_itemLootShedule = sf;
-	}
-	
-	public ScheduledFuture<?> getItemLootShedule()
-	{
-		return _itemLootShedule;
+		_ownerId = 0;
 	}
 	
 	public void setDestroyProtected(boolean destroyProtected)
@@ -1182,22 +1160,14 @@ public final class ItemInstance extends L2Object
 			_count = _initCount;
 	}
 	
-	public void setTime(int time)
-	{
-		if (time > 0)
-			_time = time;
-		else
-			_time = 0;
-	}
-	
 	public long getTime()
 	{
 		return _time;
 	}
 	
-	public long getRemainingTime()
+	public void actualizeTime()
 	{
-		return _time - System.currentTimeMillis();
+		_time = System.currentTimeMillis();
 	}
 	
 	public boolean isPetItem()
@@ -1243,13 +1213,8 @@ public final class ItemInstance extends L2Object
 		_dropperObjectId = id;
 	}
 	
-	public final DropProtection getDropProtection()
-	{
-		return _dropProtection;
-	}
-	
 	@Override
-	public void sendInfo(L2PcInstance activeChar)
+	public void sendInfo(Player activeChar)
 	{
 		if (_dropperObjectId != 0)
 			activeChar.sendPacket(new DropItem(this, _dropperObjectId));
@@ -1280,5 +1245,15 @@ public final class ItemInstance extends L2Object
 	public void unChargeAllShots()
 	{
 		_shotsMask = 0;
+	}
+	
+	@Override
+	public int compareTo(ItemInstance item)
+	{
+		final int time = Long.compare(item.getTime(), _time);
+		if (time != 0)
+			return time;
+		
+		return Integer.compare(item.getObjectId(), getObjectId());
 	}
 }

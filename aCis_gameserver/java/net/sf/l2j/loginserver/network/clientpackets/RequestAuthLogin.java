@@ -1,40 +1,28 @@
-/*
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package net.sf.l2j.loginserver.network.clientpackets;
 
+import java.net.InetAddress;
 import java.security.GeneralSecurityException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.crypto.Cipher;
 
+import net.sf.l2j.commons.random.Rnd;
+
 import net.sf.l2j.Config;
-import net.sf.l2j.loginserver.GameServerTable.GameServerInfo;
-import net.sf.l2j.loginserver.L2LoginClient;
-import net.sf.l2j.loginserver.L2LoginClient.LoginClientState;
 import net.sf.l2j.loginserver.LoginController;
 import net.sf.l2j.loginserver.LoginController.AuthLoginResult;
+import net.sf.l2j.loginserver.model.AccountInfo;
+import net.sf.l2j.loginserver.model.GameServerInfo;
+import net.sf.l2j.loginserver.network.LoginClient;
+import net.sf.l2j.loginserver.network.LoginClient.LoginClientState;
+import net.sf.l2j.loginserver.network.SessionKey;
 import net.sf.l2j.loginserver.network.serverpackets.AccountKicked;
 import net.sf.l2j.loginserver.network.serverpackets.AccountKicked.AccountKickedReason;
 import net.sf.l2j.loginserver.network.serverpackets.LoginFail.LoginFailReason;
 import net.sf.l2j.loginserver.network.serverpackets.LoginOk;
 import net.sf.l2j.loginserver.network.serverpackets.ServerList;
 
-/**
- * Format: x 0 (a leading null) x: the rsa encrypted block with the login an password
- */
 public class RequestAuthLogin extends L2LoginClientPacket
 {
 	private static Logger _log = Logger.getLogger(RequestAuthLogin.class.getName());
@@ -75,11 +63,11 @@ public class RequestAuthLogin extends L2LoginClientPacket
 	public void run()
 	{
 		byte[] decrypted = null;
-		final L2LoginClient client = getClient();
+		final LoginClient client = getClient();
 		try
 		{
 			final Cipher rsaCipher = Cipher.getInstance("RSA/ECB/nopadding");
-			rsaCipher.init(Cipher.DECRYPT_MODE, getClient().getRSAPrivateKey());
+			rsaCipher.init(Cipher.DECRYPT_MODE, client.getRSAPrivateKey());
 			decrypted = rsaCipher.doFinal(_raw, 0x00, 0x80);
 		}
 		catch (GeneralSecurityException e)
@@ -99,21 +87,27 @@ public class RequestAuthLogin extends L2LoginClientPacket
 		}
 		catch (Exception e)
 		{
+			_log.log(Level.WARNING, "", e);
 			return;
 		}
 		
-		final LoginController lc = LoginController.getInstance();
-		AuthLoginResult result = lc.tryAuthLogin(_user, _password, client);
+		final InetAddress clientAddr = client.getConnection().getInetAddress();
+		
+		final AccountInfo info = LoginController.getInstance().retrieveAccountInfo(clientAddr, _user, _password);
+		if (info == null)
+		{
+			client.close(LoginFailReason.REASON_USER_OR_PASS_WRONG);
+			return;
+		}
+		
+		final AuthLoginResult result = LoginController.getInstance().tryCheckinAccount(client, clientAddr, info);
 		switch (result)
 		{
 			case AUTH_SUCCESS:
-				client.setAccount(_user);
+				client.setAccount(info.getLogin());
 				client.setState(LoginClientState.AUTHED_LOGIN);
-				client.setSessionKey(lc.assignSessionKeyToClient(_user, client));
-				if (Config.SHOW_LICENCE)
-					client.sendPacket(new LoginOk(getClient().getSessionKey()));
-				else
-					getClient().sendPacket(new ServerList(getClient()));
+				client.setSessionKey(new SessionKey(Rnd.nextInt(), Rnd.nextInt(), Rnd.nextInt(), Rnd.nextInt()));
+				client.sendPacket((Config.SHOW_LICENCE) ? new LoginOk(client.getSessionKey()) : new ServerList(client));
 				break;
 			
 			case INVALID_PASSWORD:
@@ -125,26 +119,23 @@ public class RequestAuthLogin extends L2LoginClientPacket
 				break;
 			
 			case ALREADY_ON_LS:
-				L2LoginClient oldClient;
-				if ((oldClient = lc.getAuthedClient(_user)) != null)
+				final LoginClient oldClient = LoginController.getInstance().getAuthedClient(info.getLogin());
+				if (oldClient != null)
 				{
-					// kick the other client
 					oldClient.close(LoginFailReason.REASON_ACCOUNT_IN_USE);
-					lc.removeAuthedLoginClient(_user);
+					LoginController.getInstance().removeAuthedLoginClient(info.getLogin());
 				}
-				// kick also current client
 				client.close(LoginFailReason.REASON_ACCOUNT_IN_USE);
 				break;
 			
 			case ALREADY_ON_GS:
-				GameServerInfo gsi;
-				if ((gsi = lc.getAccountOnGameServer(_user)) != null)
+				final GameServerInfo gsi = LoginController.getInstance().getAccountOnGameServer(info.getLogin());
+				if (gsi != null)
 				{
 					client.close(LoginFailReason.REASON_ACCOUNT_IN_USE);
 					
-					// kick from there
 					if (gsi.isAuthed())
-						gsi.getGameServerThread().kickPlayer(_user);
+						gsi.getGameServerThread().kickPlayer(info.getLogin());
 				}
 				break;
 		}

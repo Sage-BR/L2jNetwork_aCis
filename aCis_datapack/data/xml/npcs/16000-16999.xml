@@ -6,7 +6,7 @@
 		<set name="height" val="31"/>
 		<set name="rHand" val="0"/>
 		<set name="lHand" val="0"/>
-		<set name="type" val="L2TamedBeast"/>
+		<set name="type" val="TamedBeast"/>
 		<set name="exp" val="0"/>
 		<set name="sp" val="0"/>
 		<set name="hp" val="2295.48154"/>
@@ -29,8 +29,7 @@
 		<set name="walkSpd" val="80"/>
 		<set name="runSpd" val="120"/>
 		<set name="dropHerbGroup" val="0"/>
-		<set name="attackRange" val="40"/>
-		<ai type="default" ssCount="0" ssRate="0" spsCount="0" spsRate="0" aggro="0" clan="pet_clan;nonpet_clan" clanRange="400" canMove="true" seedable="false"/>
+		<ai type="DEFAULT" ssCount="0" ssRate="0" spsCount="0" spsRate="0" aggro="0" clan="pet_clan;nonpet_clan" clanRange="400" canMove="true" seedable="false"/>
 		<skills>
 			<skill id="122" level="11"/>
 			<skill id="1044" level="3"/>
@@ -49,7 +48,7 @@
 		<set name="height" val="31"/>
 		<set name="rHand" val="0"/>
 		<set name="lHand" val="0"/>
-		<set name="type" val="L2TamedBeast"/>
+		<set name="type" val="TamedBeast"/>
 		<set name="exp" val="0"/>
 		<set name="sp" val="0"/>
 		<set name="hp" val="2295.48154"/>
@@ -72,8 +71,7 @@
 		<set name="walkSpd" val="80"/>
 		<set name="runSpd" val="120"/>
 		<set name="dropHerbGroup" val="0"/>
-		<set name="attackRange" val="40"/>
-		<ai type="default" ssCount="0" ssRate="0" spsCount="0" spsRate="0" aggro="0" clan="pet_clan;nonpet_clan" clanRange="400" canMove="true" seedable="false"/>
+		<ai type="DEFAULT" ssCount="0" ssRate="0" spsCount="0" spsRate="0" aggro="0" clan="pet_clan;nonpet_clan" clanRange="400" canMove="true" seedable="false"/>
 		<skills>
 			<skill id="1013" level="2"/>
 			<skill id="1048" level="5"/>
@@ -92,7 +90,7 @@
 		<set name="height" val="28"/>
 		<set name="rHand" val="0"/>
 		<set name="lHand" val="0"/>
-		<set name="type" val="L2TamedBeast"/>
+		<set name="type" val="TamedBeast"/>
 		<set name="exp" val="0"/>
 		<set name="sp" val="0"/>
 		<set name="hp" val="2395.45533"/>
@@ -115,8 +113,7 @@
 		<set name="walkSpd" val="60"/>
 		<set name="runSpd" val="120"/>
 		<set name="dropHerbGroup" val="0"/>
-		<set name="attackRange" val="40"/>
-		<ai type="default" ssCount="0" ssRate="0" spsCount="0" spsRate="0" aggro="0" clan="pet_clan;nonpet_clan" clanRange="400" canMove="true" seedable="false"/>
+		<ai type="DEFAULT" ssCount="0" ssRate="0" spsCount="0" spsRate="0" aggro="0" clan="pet_clan;nonpet_clan" clanRange="400" canMove="true" seedable="false"/>
 		<skills>
 			<skill id="122" level="12"/>
 			<skill id="1044" level="3"/>
@@ -135,7 +132,7 @@
 		<set name="height" val="28"/>
 		<set name="rHand" val="0"/>
 		<set name="lHand" val="0"/>
-		<set name="type" val="L2TamedBeast"/>
+		<set name="type" val="TamedBeast"/>
 		<set name="exp" val="0"/>
 		<set name="sp" val="0"/>
 		<set name="hp" val="2395.45533"/>
@@ -158,8 +155,7 @@
 		<set name="walkSpd" val="60"/>
 		<set name="runSpd" val="120"/>
 		<set name="dropHerbGroup" val="0"/>
-		<set name="attackRange" val="40"/>
-		<ai type="default" ssCount="0" ssRate="0" spsCount="0" spsRate="0" aggro="0" clan="pet_clan;nonpet_clan" clanRange="400" canMove="true" seedable="false"/>
+		<ai type="DEFAULT" ssCount="0" ssRate="0" spsCount="0" spsRate="0" aggro="0" clan="pet_clan;nonpet_clan" clanRange="400" canMove="true" seedable="false"/>
 		<skills>
 			<skill id="1013" level="2"/>
 			<skill id="1048" level="5"/>
@@ -178,7 +174,7 @@
 		<set name="height" val="33"/>
 		<set name="rHand" val="0"/>
 		<set name="lHand" val="0"/>
-		<set name="type" val="L2TamedBeast"/>
+		<set name="type" val="TamedBeast"/>
 		<set name="exp" val="0"/>
 		<set name="sp" val="0"/>
 		<set name="hp" val="2193.43142"/>
@@ -201,8 +197,7 @@
 		<set name="walkSpd" val="23"/>
 		<set name="runSpd" val="120"/>
 		<set name="dropHerbGroup" val="0"/>
-		<set name="attackRange" val="40"/>
-		<ai type="default" ssCount="0" ssRate="0" spsCount="0" spsRate="0" aggro="0" clan="pet_clan;nonpet_clan" clanRange="400" canMove="true" seedable="false"/>
+		<ai type="DEFAULT" ssCount="0" ssRate="0" spsCount="0" spsRate="0" aggro="0" clan="pet_clan;nonpet_clan" clanRange="400" canMove="true" seedable="false"/>
 		<skills>
 			<skill id="122" level="10"/>
 			<skill id="1044" level="3"/>
@@ -221,7 +216,7 @@
 		<set name="height" val="33"/>
 		<set name="rHand" val="0"/>
 		<set name="lHand" val="0"/>
-		<set name="type" val="L2TamedBeast"/>
+		<set name="type" val="TamedBeast"/>
 		<set name="exp" val="0"/>
 		<set name="sp" val="0"/>
 		<set name="hp" val="2193.43142"/>
@@ -244,8 +239,7 @@
 		<set name="walkSpd" val="23"/>
 		<set name="runSpd" val="120"/>
 		<set name="dropHerbGroup" val="0"/>
-		<set name="attackRange" val="40"/>
-		<ai type="default" ssCount="0" ssRate="0" spsCount="0" spsRate="0" aggro="0" clan="pet_clan;nonpet_clan" clanRange="400" canMove="true" seedable="false"/>
+		<ai type="DEFAULT" ssCount="0" ssRate="0" spsCount="0" spsRate="0" aggro="0" clan="pet_clan;nonpet_clan" clanRange="400" canMove="true" seedable="false"/>
 		<skills>
 			<skill id="1013" level="2"/>
 			<skill id="1048" level="5"/>
@@ -264,7 +258,7 @@
 		<set name="height" val="15"/>
 		<set name="rHand" val="0"/>
 		<set name="lHand" val="0"/>
-		<set name="type" val="L2Monster"/>
+		<set name="type" val="Monster"/>
 		<set name="exp" val="0"/>
 		<set name="sp" val="0"/>
 		<set name="hp" val="2295.48154"/>
@@ -287,8 +281,7 @@
 		<set name="walkSpd" val="30"/>
 		<set name="runSpd" val="120"/>
 		<set name="dropHerbGroup" val="0"/>
-		<set name="attackRange" val="40"/>
-		<ai type="default" ssCount="0" ssRate="0" spsCount="0" spsRate="0" aggro="0" clan="pet_clan;nonpet_clan" clanRange="400" canMove="true" seedable="false"/>
+		<ai type="DEFAULT" ssCount="0" ssRate="0" spsCount="0" spsRate="0" aggro="0" clan="pet_clan;nonpet_clan" clanRange="400" canMove="true" seedable="false"/>
 		<skills>
 			<skill id="4416" level="3"/>
 		</skills>
@@ -299,7 +292,7 @@
 		<set name="height" val="15"/>
 		<set name="rHand" val="0"/>
 		<set name="lHand" val="0"/>
-		<set name="type" val="L2Monster"/>
+		<set name="type" val="Monster"/>
 		<set name="exp" val="0"/>
 		<set name="sp" val="0"/>
 		<set name="hp" val="2295.48154"/>
@@ -322,8 +315,7 @@
 		<set name="walkSpd" val="30"/>
 		<set name="runSpd" val="120"/>
 		<set name="dropHerbGroup" val="0"/>
-		<set name="attackRange" val="40"/>
-		<ai type="default" ssCount="0" ssRate="0" spsCount="0" spsRate="0" aggro="0" clan="pet_clan;nonpet_clan" clanRange="400" canMove="true" seedable="false"/>
+		<ai type="DEFAULT" ssCount="0" ssRate="0" spsCount="0" spsRate="0" aggro="0" clan="pet_clan;nonpet_clan" clanRange="400" canMove="true" seedable="false"/>
 		<skills>
 			<skill id="4416" level="3"/>
 		</skills>
@@ -334,7 +326,7 @@
 		<set name="height" val="15.7"/>
 		<set name="rHand" val="0"/>
 		<set name="lHand" val="0"/>
-		<set name="type" val="L2Monster"/>
+		<set name="type" val="Monster"/>
 		<set name="exp" val="0"/>
 		<set name="sp" val="0"/>
 		<set name="hp" val="2395.45533"/>
@@ -357,8 +349,7 @@
 		<set name="walkSpd" val="28"/>
 		<set name="runSpd" val="120"/>
 		<set name="dropHerbGroup" val="0"/>
-		<set name="attackRange" val="40"/>
-		<ai type="default" ssCount="0" ssRate="0" spsCount="0" spsRate="0" aggro="0" clan="pet_clan;nonpet_clan" clanRange="400" canMove="true" seedable="false"/>
+		<ai type="DEFAULT" ssCount="0" ssRate="0" spsCount="0" spsRate="0" aggro="0" clan="pet_clan;nonpet_clan" clanRange="400" canMove="true" seedable="false"/>
 		<skills>
 			<skill id="4416" level="3"/>
 		</skills>
@@ -369,7 +360,7 @@
 		<set name="height" val="15.7"/>
 		<set name="rHand" val="0"/>
 		<set name="lHand" val="0"/>
-		<set name="type" val="L2Monster"/>
+		<set name="type" val="Monster"/>
 		<set name="exp" val="0"/>
 		<set name="sp" val="0"/>
 		<set name="hp" val="2395.45533"/>
@@ -392,8 +383,7 @@
 		<set name="walkSpd" val="28"/>
 		<set name="runSpd" val="120"/>
 		<set name="dropHerbGroup" val="0"/>
-		<set name="attackRange" val="40"/>
-		<ai type="default" ssCount="0" ssRate="0" spsCount="0" spsRate="0" aggro="0" clan="pet_clan;nonpet_clan" clanRange="400" canMove="true" seedable="false"/>
+		<ai type="DEFAULT" ssCount="0" ssRate="0" spsCount="0" spsRate="0" aggro="0" clan="pet_clan;nonpet_clan" clanRange="400" canMove="true" seedable="false"/>
 		<skills>
 			<skill id="4416" level="3"/>
 		</skills>
@@ -404,7 +394,7 @@
 		<set name="height" val="15"/>
 		<set name="rHand" val="0"/>
 		<set name="lHand" val="0"/>
-		<set name="type" val="L2Monster"/>
+		<set name="type" val="Monster"/>
 		<set name="exp" val="0"/>
 		<set name="sp" val="0"/>
 		<set name="hp" val="2193.43142"/>
@@ -427,8 +417,7 @@
 		<set name="walkSpd" val="13"/>
 		<set name="runSpd" val="120"/>
 		<set name="dropHerbGroup" val="0"/>
-		<set name="attackRange" val="40"/>
-		<ai type="default" ssCount="0" ssRate="0" spsCount="0" spsRate="0" aggro="0" clan="pet_clan;nonpet_clan" clanRange="400" canMove="true" seedable="false"/>
+		<ai type="DEFAULT" ssCount="0" ssRate="0" spsCount="0" spsRate="0" aggro="0" clan="pet_clan;nonpet_clan" clanRange="400" canMove="true" seedable="false"/>
 		<skills>
 			<skill id="4416" level="3"/>
 		</skills>
@@ -439,7 +428,7 @@
 		<set name="height" val="15"/>
 		<set name="rHand" val="0"/>
 		<set name="lHand" val="0"/>
-		<set name="type" val="L2Monster"/>
+		<set name="type" val="Monster"/>
 		<set name="exp" val="0"/>
 		<set name="sp" val="0"/>
 		<set name="hp" val="2193.43142"/>
@@ -462,8 +451,7 @@
 		<set name="walkSpd" val="13"/>
 		<set name="runSpd" val="120"/>
 		<set name="dropHerbGroup" val="0"/>
-		<set name="attackRange" val="40"/>
-		<ai type="default" ssCount="0" ssRate="0" spsCount="0" spsRate="0" aggro="0" clan="pet_clan;nonpet_clan" clanRange="400" canMove="true" seedable="false"/>
+		<ai type="DEFAULT" ssCount="0" ssRate="0" spsCount="0" spsRate="0" aggro="0" clan="pet_clan;nonpet_clan" clanRange="400" canMove="true" seedable="false"/>
 		<skills>
 			<skill id="4416" level="3"/>
 		</skills>

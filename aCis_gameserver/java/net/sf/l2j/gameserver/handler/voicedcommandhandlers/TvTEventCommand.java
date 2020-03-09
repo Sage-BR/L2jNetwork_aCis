@@ -18,7 +18,7 @@ import net.sf.l2j.Config;
 import net.sf.l2j.gameserver.cache.HtmCache;
 import net.sf.l2j.gameserver.events.TvTEvent;
 import net.sf.l2j.gameserver.handler.IVoicedCommandHandler;
-import net.sf.l2j.gameserver.model.actor.instance.L2PcInstance;
+import net.sf.l2j.gameserver.model.actor.instance.Player;
 import net.sf.l2j.gameserver.model.olympiad.OlympiadManager;
 import net.sf.l2j.gameserver.network.clientpackets.Say2;
 import net.sf.l2j.gameserver.network.serverpackets.CreatureSay;
@@ -37,21 +37,20 @@ public class TvTEventCommand implements IVoicedCommandHandler
 	};
 	
 	@Override
-	public boolean useVoicedCommand(final String command, final L2PcInstance activeChar, final String target)
+	public boolean useVoicedCommand(final String command, final Player activeChar, final String target)
 	{
-		if (command.startsWith("tvtjoin"))
-			JoinTvT(target, activeChar);
-		
-		else if (command.startsWith("tvtleave"))
-			LeaveTvT(activeChar);
-		
-		else if (command.startsWith("tvtstatus"))
-			TvTStatus(activeChar);
-		
+		if (Config.TVT_CMD)
+			if (command.startsWith("tvtjoin"))
+				JoinTvT(target, activeChar);
+			else if (command.startsWith("tvtleave"))
+				LeaveTvT(activeChar);
+			else if (command.startsWith("tvtstatus"))
+				TvTStatus(activeChar);
+			
 		return true;
 	}
 	
-	public static boolean JoinTvT(final String command, L2PcInstance activeChar)
+	public static boolean JoinTvT(final String command, Player activeChar)
 	{
 		int playerLevel = activeChar.getLevel();
 		if (!TvTEvent.isParticipating())
@@ -62,6 +61,8 @@ public class TvTEventCommand implements IVoicedCommandHandler
 			activeChar.sendPacket(new CreatureSay(0, Say2.HERO_VOICE, "TvT Event", "Cursed weapon owners are not allowed to participate."));
 		else if (activeChar.isInJail())
 			activeChar.sendPacket(new CreatureSay(0, Say2.HERO_VOICE, "TvT Event", "Nothing for you!."));
+		else if (activeChar.isAio())
+			activeChar.sendPacket(new CreatureSay(0, Say2.HERO_VOICE, "TvT Event", "AIO player can not register!."));
 		else if (OlympiadManager.getInstance().isRegisteredInComp(activeChar))
 			activeChar.sendPacket(new CreatureSay(0, Say2.HERO_VOICE, "TvT Event", "Olympiad participants can't register."));
 		else if (activeChar.getKarma() > 0)
@@ -82,7 +83,7 @@ public class TvTEventCommand implements IVoicedCommandHandler
 		return false;
 	}
 	
-	public boolean LeaveTvT(final L2PcInstance activeChar)
+	public boolean LeaveTvT(final Player activeChar)
 	{
 		if (!TvTEvent.isParticipating())
 			activeChar.sendPacket(new CreatureSay(0, Say2.HERO_VOICE, "Hey " + activeChar.getName() + "", "There is no TvT Event in progress."));
@@ -98,7 +99,7 @@ public class TvTEventCommand implements IVoicedCommandHandler
 		return false;
 	}
 	
-	public boolean TvTStatus(final L2PcInstance activeChar)
+	public boolean TvTStatus(final Player activeChar)
 	{
 		if (!TvTEvent.isStarted())
 			activeChar.sendPacket(new CreatureSay(0, Say2.HERO_VOICE, "TvT Event", "TvT Event is not in progress yet."));

@@ -14,20 +14,21 @@
  */
 package net.sf.l2j.gameserver.events;
 
+import net.sf.l2j.commons.concurrent.ThreadPool;
+
 import net.sf.l2j.Config;
-import net.sf.l2j.gameserver.ThreadPoolManager;
 import net.sf.l2j.gameserver.datatables.SkillTable;
 import net.sf.l2j.gameserver.model.L2Effect;
 import net.sf.l2j.gameserver.model.L2Skill;
-import net.sf.l2j.gameserver.model.actor.L2Summon;
-import net.sf.l2j.gameserver.model.actor.instance.L2PcInstance;
+import net.sf.l2j.gameserver.model.actor.Summon;
+import net.sf.l2j.gameserver.model.actor.instance.Player;
 
 public class TvTEventTeleport implements Runnable
 {
 	/** Gives Noblesse to players */
 	static L2Skill noblesse = SkillTable.getInstance().getInfo(1323, 1);
 	/** The instance of the player to teleport */
-	public L2PcInstance _playerInstance;
+	public Player _playerInstance;
 	/** Coordinates of the spot to teleport to */
 	public int[] _coordinates = new int[3];
 	/** Admin removed this player from event */
@@ -40,7 +41,7 @@ public class TvTEventTeleport implements Runnable
 	 * @param fastSchedule
 	 * @param adminRemove
 	 */
-	public TvTEventTeleport(L2PcInstance playerInstance, int[] coordinates, boolean fastSchedule, boolean adminRemove)
+	public TvTEventTeleport(Player playerInstance, int[] coordinates, boolean fastSchedule, boolean adminRemove)
 	{
 		_playerInstance = playerInstance;
 		_coordinates = coordinates;
@@ -52,7 +53,7 @@ public class TvTEventTeleport implements Runnable
 		if (fastSchedule)
 			delay = 0;
 		
-		ThreadPoolManager.getInstance().scheduleGeneral(this, delay);
+		ThreadPool.schedule(this, delay);
 	}
 	
 	/**
@@ -66,7 +67,7 @@ public class TvTEventTeleport implements Runnable
 		if (_playerInstance == null)
 			return;
 		
-		L2Summon summon = _playerInstance.getPet();
+		Summon summon = _playerInstance.getPet();
 		
 		if (summon != null)
 			summon.unSummon(_playerInstance);
@@ -77,7 +78,7 @@ public class TvTEventTeleport implements Runnable
 				effect.exit();
 		}
 		
-		ThreadPoolManager.getInstance().scheduleGeneral(new Runnable()
+		ThreadPool.schedule(new Runnable()
 		{
 			@Override
 			public void run()

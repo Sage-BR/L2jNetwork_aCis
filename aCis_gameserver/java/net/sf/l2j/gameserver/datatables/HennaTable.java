@@ -1,17 +1,3 @@
-/*
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package net.sf.l2j.gameserver.datatables;
 
 import java.io.File;
@@ -41,34 +27,35 @@ public class HennaTable
 	{
 		try
 		{
-			final File f = new File("./data/xml/henna.xml");
-			final Document doc = XMLDocumentFactory.getInstance().loadDocument(f);
-			final Node n = doc.getFirstChild();
+			final File f = new File("./data/xml/hennas.xml");
+			final StatsSet set = new StatsSet();
 			
+			final Document doc = XMLDocumentFactory.getInstance().loadDocument(f);
+			
+			final Node n = doc.getFirstChild();
 			for (Node d = n.getFirstChild(); d != null; d = d.getNextSibling())
 			{
 				if (!d.getNodeName().equalsIgnoreCase("henna"))
 					continue;
 				
-				final StatsSet hennaDat = new StatsSet();
-				final Integer id = Integer.valueOf(d.getAttributes().getNamedItem("symbol_id").getNodeValue());
+				final int id = Integer.valueOf(d.getAttributes().getNamedItem("symbol_id").getNodeValue());
 				
-				hennaDat.set("symbol_id", id);
+				set.set("symbol_id", id);
 				
-				hennaDat.set("dye", Integer.valueOf(d.getAttributes().getNamedItem("dye_id").getNodeValue()));
-				hennaDat.set("price", Integer.valueOf(d.getAttributes().getNamedItem("price").getNodeValue()));
+				set.set("dye", Integer.valueOf(d.getAttributes().getNamedItem("dye_id").getNodeValue()));
+				set.set("price", Integer.valueOf(d.getAttributes().getNamedItem("price").getNodeValue()));
 				
-				hennaDat.set("INT", Integer.valueOf(d.getAttributes().getNamedItem("INT").getNodeValue()));
-				hennaDat.set("STR", Integer.valueOf(d.getAttributes().getNamedItem("STR").getNodeValue()));
-				hennaDat.set("CON", Integer.valueOf(d.getAttributes().getNamedItem("CON").getNodeValue()));
-				hennaDat.set("MEN", Integer.valueOf(d.getAttributes().getNamedItem("MEN").getNodeValue()));
-				hennaDat.set("DEX", Integer.valueOf(d.getAttributes().getNamedItem("DEX").getNodeValue()));
-				hennaDat.set("WIT", Integer.valueOf(d.getAttributes().getNamedItem("WIT").getNodeValue()));
-				final String[] classes = d.getAttributes().getNamedItem("classes").getNodeValue().split(",");
+				set.set("INT", Integer.valueOf(d.getAttributes().getNamedItem("INT").getNodeValue()));
+				set.set("STR", Integer.valueOf(d.getAttributes().getNamedItem("STR").getNodeValue()));
+				set.set("CON", Integer.valueOf(d.getAttributes().getNamedItem("CON").getNodeValue()));
+				set.set("MEN", Integer.valueOf(d.getAttributes().getNamedItem("MEN").getNodeValue()));
+				set.set("DEX", Integer.valueOf(d.getAttributes().getNamedItem("DEX").getNodeValue()));
+				set.set("WIT", Integer.valueOf(d.getAttributes().getNamedItem("WIT").getNodeValue()));
 				
-				final Henna template = new Henna(hennaDat);
+				final Henna template = new Henna(set);
 				_henna.put(id, template);
 				
+				final String[] classes = d.getAttributes().getNamedItem("classes").getNodeValue().split(",");
 				for (String clas : classes)
 				{
 					final Integer classId = Integer.valueOf(clas);
@@ -81,6 +68,7 @@ public class HennaTable
 					else
 						_hennaTrees.get(classId).add(template);
 				}
+				set.clear();
 			}
 		}
 		catch (Exception e)

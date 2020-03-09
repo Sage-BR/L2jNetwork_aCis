@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <list>
-	<class id="31" parentId="-1">
-		<set name="className" val="DE Fighter" />
-		<set name="raceId" val="2" />
+	<class id="31"><!-- Dark Fighter -->
 		<set name="str" val="41" />
 		<set name="con" val="32" />
 		<set name="dex" val="34" />
@@ -14,6 +12,8 @@
 		<set name="mAtk" val="6" />
 		<set name="mDef" val="41" />
 		<set name="runSpd" val="122" />
+		<set name="walkSpd" val="85" />
+		<set name="swimSpd" val="50" />
 		<set name="spawnX" val="28377" />
 		<set name="spawnY" val="10916" />
 		<set name="spawnZ" val="-4224" />
@@ -26,8 +26,6 @@
 		<set name="mpTable" val="30;35.46;40.98;46.56;52.2;57.9;63.66;69.48;75.36;81.3;87.3;93.36;99.48;105.66;111.9;118.2;124.56;130.98;137.46;144;150.6;157.26;163.98;170.76;177.6;184.5;191.46;198.48;205.56;212.7;219.9;227.16;234.48;241.86;249.3;256.8;264.36;271.98;279.66;287.4;295.2;303.06;310.98;318.96;327;335.1;343.26;351.48;359.76;368.1;376.5;384.96;393.48;402.06;410.7;419.4;428.16;436.98;445.86;454.8;463.8;472.86;481.98;491.16;500.4;509.7;519.06;528.48;537.96;547.5;557.1;566.76;576.48;586.26;596.1;606;615.96;625.98;636.06;646.2" />
 		<set name="cpTable" val="37.6;43.06;48.58;54.16;59.8;65.5;71.26;77.08;82.96;88.9;94.9;100.96;107.08;113.26;119.5;125.8;132.16;138.58;145.06;151.6;158.2;164.86;171.58;178.36;185.2;192.1;199.06;206.08;213.16;220.3;227.5;234.76;242.08;249.46;256.9;264.4;271.96;279.58;287.26;295;302.8;310.66;318.58;326.56;334.6;342.7;350.86;359.08;367.36;375.7;384.1;392.56;401.08;409.66;418.3;427;435.76;444.58;453.46;462.4;471.4;480.46;489.58;498.76;508;517.3;526.66;536.08;545.56;555.1;564.7;574.36;584.08;593.86;603.7;613.6;623.56;633.58;643.66;653.8" />
 		<skillTrees>
-			<!-- AntBuff Shield -->
-			<skill id="8000" lvl="1" sp="0" minLvl="1" />
 			<!-- Power Strike -->
 			<skill id="3" lvl="1" sp="50" minLvl="5" />
 			<skill id="3" lvl="2" sp="50" minLvl="5" />
@@ -100,9 +98,7 @@
 		</skillTrees>
 		<items val="1147;1146;10;2369;5588" />
 	</class>
-	<class id="32" parentId="31">
-		<set name="className" val="Palus Knight" />
-		<set name="raceId" val="2" />
+	<class id="32"><!-- Palus Knight -->
 		<set name="str" val="41" />
 		<set name="con" val="32" />
 		<set name="dex" val="34" />
@@ -114,6 +110,8 @@
 		<set name="mAtk" val="6" />
 		<set name="mDef" val="41" />
 		<set name="runSpd" val="122" />
+		<set name="walkSpd" val="85" />
+		<set name="swimSpd" val="50" />
 		<set name="spawnX" val="28377" />
 		<set name="spawnY" val="10916" />
 		<set name="spawnZ" val="-4224" />
@@ -236,9 +234,7 @@
 			<skill id="232" lvl="15" sp="9000" minLvl="36" />
 		</skillTrees>
 	</class>
-	<class id="35" parentId="31">
-		<set name="className" val="Assassin" />
-		<set name="raceId" val="2" />
+	<class id="35"><!-- Assassin -->
 		<set name="str" val="41" />
 		<set name="con" val="32" />
 		<set name="dex" val="34" />
@@ -250,6 +246,8 @@
 		<set name="mAtk" val="6" />
 		<set name="mDef" val="41" />
 		<set name="runSpd" val="122" />
+		<set name="walkSpd" val="85" />
+		<set name="swimSpd" val="50" />
 		<set name="spawnX" val="28377" />
 		<set name="spawnY" val="10916" />
 		<set name="spawnZ" val="-4224" />
@@ -419,9 +417,7 @@
 			<skill id="312" lvl="5" sp="22000" minLvl="36" />
 		</skillTrees>
 	</class>
-	<class id="33" parentId="32">
-		<set name="className" val="Shillien Knight" />
-		<set name="raceId" val="2" />
+	<class id="33"><!-- Shillien Knight -->
 		<set name="str" val="41" />
 		<set name="con" val="32" />
 		<set name="dex" val="34" />
@@ -433,6 +429,8 @@
 		<set name="mAtk" val="6" />
 		<set name="mDef" val="41" />
 		<set name="runSpd" val="122" />
+		<set name="walkSpd" val="85" />
+		<set name="swimSpd" val="50" />
 		<set name="spawnX" val="28377" />
 		<set name="spawnY" val="10916" />
 		<set name="spawnZ" val="-4224" />
@@ -919,9 +917,7 @@
 			<skill id="1405" lvl="2" sp="0" minLvl="61" />
 		</skillTrees>
 	</class>
-	<class id="34" parentId="32">
-		<set name="className" val="Bladedancer" />
-		<set name="raceId" val="2" />
+	<class id="34"><!-- Bladedancer -->
 		<set name="str" val="41" />
 		<set name="con" val="32" />
 		<set name="dex" val="34" />
@@ -933,6 +929,8 @@
 		<set name="mAtk" val="6" />
 		<set name="mDef" val="41" />
 		<set name="runSpd" val="122" />
+		<set name="walkSpd" val="85" />
+		<set name="swimSpd" val="50" />
 		<set name="spawnX" val="28377" />
 		<set name="spawnY" val="10916" />
 		<set name="spawnZ" val="-4224" />
@@ -1232,9 +1230,7 @@
 			<skill id="1405" lvl="2" sp="0" minLvl="61" />
 		</skillTrees>
 	</class>
-	<class id="36" parentId="35">
-		<set name="className" val="Abyss Walker" />
-		<set name="raceId" val="2" />
+	<class id="36"><!-- Abyss Walker -->
 		<set name="str" val="41" />
 		<set name="con" val="32" />
 		<set name="dex" val="34" />
@@ -1246,6 +1242,8 @@
 		<set name="mAtk" val="6" />
 		<set name="mDef" val="41" />
 		<set name="runSpd" val="122" />
+		<set name="walkSpd" val="85" />
+		<set name="swimSpd" val="50" />
 		<set name="spawnX" val="28377" />
 		<set name="spawnY" val="10916" />
 		<set name="spawnZ" val="-4224" />
@@ -1688,9 +1686,7 @@
 			<skill id="1405" lvl="2" sp="0" minLvl="61" />
 		</skillTrees>
 	</class>
-	<class id="37" parentId="35">
-		<set name="className" val="Phantom Ranger" />
-		<set name="raceId" val="2" />
+	<class id="37"><!-- Phantom Ranger -->
 		<set name="str" val="41" />
 		<set name="con" val="32" />
 		<set name="dex" val="34" />
@@ -1702,6 +1698,8 @@
 		<set name="mAtk" val="6" />
 		<set name="mDef" val="41" />
 		<set name="runSpd" val="122" />
+		<set name="walkSpd" val="85" />
+		<set name="swimSpd" val="50" />
 		<set name="spawnX" val="28377" />
 		<set name="spawnY" val="10916" />
 		<set name="spawnZ" val="-4224" />
@@ -2101,9 +2099,7 @@
 			<skill id="1405" lvl="2" sp="0" minLvl="61" />
 		</skillTrees>
 	</class>
-	<class id="106" parentId="33">
-		<set name="className" val="Shillien Templar" />
-		<set name="raceId" val="2" />
+	<class id="106"><!-- Shillien Templar -->
 		<set name="str" val="41" />
 		<set name="con" val="32" />
 		<set name="dex" val="34" />
@@ -2115,6 +2111,8 @@
 		<set name="mAtk" val="6" />
 		<set name="mDef" val="41" />
 		<set name="runSpd" val="122" />
+		<set name="walkSpd" val="85" />
+		<set name="swimSpd" val="50" />
 		<set name="spawnX" val="28377" />
 		<set name="spawnY" val="10916" />
 		<set name="spawnZ" val="-4224" />
@@ -2152,9 +2150,7 @@
 			<skill id="1405" lvl="4" sp="0" minLvl="76" />
 		</skillTrees>
 	</class>
-	<class id="107" parentId="34">
-		<set name="className" val="Spectral Dancer" />
-		<set name="raceId" val="2" />
+	<class id="107"><!-- Spectral Dancer -->
 		<set name="str" val="41" />
 		<set name="con" val="32" />
 		<set name="dex" val="34" />
@@ -2166,6 +2162,8 @@
 		<set name="mAtk" val="6" />
 		<set name="mDef" val="41" />
 		<set name="runSpd" val="122" />
+		<set name="walkSpd" val="85" />
+		<set name="swimSpd" val="50" />
 		<set name="spawnX" val="28377" />
 		<set name="spawnY" val="10916" />
 		<set name="spawnZ" val="-4224" />
@@ -2199,9 +2197,7 @@
 			<skill id="1405" lvl="4" sp="0" minLvl="76" />
 		</skillTrees>
 	</class>
-	<class id="108" parentId="36">
-		<set name="className" val="Ghost Hunter" />
-		<set name="raceId" val="2" />
+	<class id="108"><!-- Ghost Hunter -->
 		<set name="str" val="41" />
 		<set name="con" val="32" />
 		<set name="dex" val="34" />
@@ -2213,6 +2209,8 @@
 		<set name="mAtk" val="6" />
 		<set name="mDef" val="41" />
 		<set name="runSpd" val="122" />
+		<set name="walkSpd" val="85" />
+		<set name="swimSpd" val="50" />
 		<set name="spawnX" val="28377" />
 		<set name="spawnY" val="10916" />
 		<set name="spawnZ" val="-4224" />
@@ -2252,9 +2250,7 @@
 			<skill id="1405" lvl="4" sp="0" minLvl="76" />
 		</skillTrees>
 	</class>
-	<class id="109" parentId="37">
-		<set name="className" val="Ghost Sentinel" />
-		<set name="raceId" val="2" />
+	<class id="109"><!-- Ghost Sentinel -->
 		<set name="str" val="41" />
 		<set name="con" val="32" />
 		<set name="dex" val="34" />
@@ -2266,6 +2262,8 @@
 		<set name="mAtk" val="6" />
 		<set name="mDef" val="41" />
 		<set name="runSpd" val="122" />
+		<set name="walkSpd" val="85" />
+		<set name="swimSpd" val="50" />
 		<set name="spawnX" val="28377" />
 		<set name="spawnY" val="10916" />
 		<set name="spawnZ" val="-4224" />

@@ -1,17 +1,3 @@
-/*
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package net.sf.l2j.gameserver.datatables;
 
 import java.io.File;
@@ -19,31 +5,31 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ScheduledFuture;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
 import net.sf.l2j.Config;
 import net.sf.l2j.L2DatabaseFactory;
-import net.sf.l2j.gameserver.ThreadPoolManager;
 import net.sf.l2j.gameserver.idfactory.IdFactory;
-import net.sf.l2j.gameserver.model.L2Object;
-import net.sf.l2j.gameserver.model.L2World;
-import net.sf.l2j.gameserver.model.actor.L2Attackable;
-import net.sf.l2j.gameserver.model.actor.instance.L2PcInstance;
+import net.sf.l2j.gameserver.model.World;
+import net.sf.l2j.gameserver.model.WorldObject;
+import net.sf.l2j.gameserver.model.actor.Attackable;
+import net.sf.l2j.gameserver.model.actor.instance.Player;
 import net.sf.l2j.gameserver.model.item.instance.ItemInstance;
 import net.sf.l2j.gameserver.model.item.instance.ItemInstance.ItemLocation;
+import net.sf.l2j.gameserver.model.item.instance.ItemInstance.ItemState;
 import net.sf.l2j.gameserver.model.item.kind.Armor;
 import net.sf.l2j.gameserver.model.item.kind.EtcItem;
 import net.sf.l2j.gameserver.model.item.kind.Item;
 import net.sf.l2j.gameserver.model.item.kind.Weapon;
+import net.sf.l2j.gameserver.model.item.type.EtcItemType;
 import net.sf.l2j.gameserver.skills.DocumentItem;
 
 public class ItemTable
 {
 	private static final Logger _log = Logger.getLogger(ItemTable.class.getName());
-	private static final Logger _logItems = Logger.getLogger("item");
+	private static final Logger ITEM_LOG = Logger.getLogger("item");
 	
 	public static final Map<String, Integer> _slots = new HashMap<>();
 	
@@ -146,39 +132,29 @@ public class ItemTable
 	 * @param process : String Identifier of process triggering this action
 	 * @param itemId : int Item Identifier of the item to be created
 	 * @param count : int Quantity of items to be created for stackable items
-	 * @param actor : L2PcInstance Player requesting the item creation
+	 * @param actor : Player Player requesting the item creation
 	 * @param reference : L2Object Object referencing current action like NPC selling item or previous item in transformation
 	 * @return ItemInstance corresponding to the new item
 	 */
-	public ItemInstance createItem(String process, int itemId, int count, L2PcInstance actor, L2Object reference)
+	public ItemInstance createItem(String process, int itemId, int count, Player actor, WorldObject reference)
 	{
 		// Create and Init the ItemInstance corresponding to the Item Identifier
 		ItemInstance item = new ItemInstance(IdFactory.getInstance().getNextId(), itemId);
 		
 		if (process.equalsIgnoreCase("loot"))
 		{
-			ScheduledFuture<?> itemLootShedule;
-			if (reference instanceof L2Attackable && ((L2Attackable) reference).isRaid()) // loot privilege for raids
+			if (reference instanceof Attackable && ((Attackable) reference).isRaid())
 			{
-				L2Attackable raid = (L2Attackable) reference;
-				// if in CommandChannel and was killing a World/RaidBoss
+				final Attackable raid = (Attackable) reference;
 				if (raid.getFirstCommandChannelAttacked() != null && !Config.AUTO_LOOT_RAID)
-				{
-					item.setOwnerId(raid.getFirstCommandChannelAttacked().getChannelLeader().getObjectId());
-					itemLootShedule = ThreadPoolManager.getInstance().scheduleGeneral(new ResetOwner(item), 300000);
-					item.setItemLootShedule(itemLootShedule);
-				}
+					item.setDropProtection(raid.getFirstCommandChannelAttacked().getLeaderObjectId(), true);
 			}
 			else if (!Config.AUTO_LOOT)
-			{
-				item.setOwnerId(actor.getObjectId());
-				itemLootShedule = ThreadPoolManager.getInstance().scheduleGeneral(new ResetOwner(item), 15000);
-				item.setItemLootShedule(itemLootShedule);
-			}
+				item.setDropProtection(actor.getObjectId(), false);
 		}
 		
-		// Add the ItemInstance object to _allObjects of L2world
-		L2World.getInstance().addObject(item);
+		// Add the ItemInstance object to _objects of World.
+		World.getInstance().addObject(item);
 		
 		// Set Item parameters
 		if (item.isStackable() && count > 1)
@@ -186,15 +162,15 @@ public class ItemTable
 		
 		if (Config.LOG_ITEMS)
 		{
-			LogRecord record = new LogRecord(Level.INFO, "CREATE:" + process);
+			final LogRecord record = new LogRecord(Level.INFO, "CREATE:" + process);
 			record.setLoggerName("item");
 			record.setParameters(new Object[]
 			{
-				item,
 				actor,
+				item,
 				reference
 			});
-			_logItems.log(record);
+			ITEM_LOG.log(record);
 		}
 		
 		return item;
@@ -218,36 +194,36 @@ public class ItemTable
 	 * Destroys the ItemInstance.
 	 * @param process : String Identifier of process triggering this action
 	 * @param item : ItemInstance The instance of object to delete
-	 * @param actor : L2PcInstance Player requesting the item destroy
+	 * @param actor : Player Player requesting the item destroy
 	 * @param reference : L2Object Object referencing current action like NPC selling item or previous item in transformation
 	 */
-	public void destroyItem(String process, ItemInstance item, L2PcInstance actor, L2Object reference)
+	public void destroyItem(String process, ItemInstance item, Player actor, WorldObject reference)
 	{
 		synchronized (item)
 		{
 			item.setCount(0);
 			item.setOwnerId(0);
 			item.setLocation(ItemLocation.VOID);
-			item.setLastChange(ItemInstance.REMOVED);
+			item.setLastChange(ItemState.REMOVED);
 			
-			L2World.getInstance().removeObject(item);
+			World.getInstance().removeObject(item);
 			IdFactory.getInstance().releaseId(item.getObjectId());
 			
 			if (Config.LOG_ITEMS)
 			{
-				LogRecord record = new LogRecord(Level.INFO, "DELETE:" + process);
+				final LogRecord record = new LogRecord(Level.INFO, "DELETE:" + process);
 				record.setLoggerName("item");
 				record.setParameters(new Object[]
 				{
-					item,
 					actor,
+					item,
 					reference
 				});
-				_logItems.log(record);
+				ITEM_LOG.log(record);
 			}
 			
 			// if it's a pet control item, delete the pet as well
-			if (PetDataTable.isPetCollar(item.getItemId()))
+			if (item.getItemType() == EtcItemType.PET_COLLAR)
 			{
 				try (Connection con = L2DatabaseFactory.getInstance().getConnection())
 				{
@@ -271,23 +247,6 @@ public class ItemTable
 		_weapons.clear();
 		
 		load();
-	}
-	
-	protected static class ResetOwner implements Runnable
-	{
-		ItemInstance _item;
-		
-		public ResetOwner(ItemInstance item)
-		{
-			_item = item;
-		}
-		
-		@Override
-		public void run()
-		{
-			_item.setOwnerId(0);
-			_item.setItemLootShedule(null);
-		}
 	}
 	
 	private static class SingletonHolder

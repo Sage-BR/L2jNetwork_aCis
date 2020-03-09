@@ -1,26 +1,12 @@
-/*
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package net.sf.l2j.gameserver.scripting.scripts.village_master;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import net.sf.l2j.gameserver.model.actor.L2Npc;
-import net.sf.l2j.gameserver.model.actor.instance.L2PcInstance;
+import net.sf.l2j.gameserver.model.actor.Npc;
+import net.sf.l2j.gameserver.model.actor.instance.Player;
 import net.sf.l2j.gameserver.model.base.ClassId;
-import net.sf.l2j.gameserver.model.base.Race;
+import net.sf.l2j.gameserver.model.base.ClassRace;
 import net.sf.l2j.gameserver.network.serverpackets.HennaInfo;
 import net.sf.l2j.gameserver.scripting.Quest;
 import net.sf.l2j.gameserver.scripting.QuestState;
@@ -90,8 +76,8 @@ public class SecondClassChange extends Quest
 		});
 		Classes.put("SE", new int[]
 		{
-			42,
 			43,
+			42,
 			2,
 			34,
 			35,
@@ -501,7 +487,7 @@ public class SecondClassChange extends Quest
 		});
 	}
 	
-	private static final int[] SECONDCLASSNPCS =
+	public static final int[] SECONDCLASSNPCS =
 	{
 		// Dark Elfs
 		31328,
@@ -580,7 +566,7 @@ public class SecondClassChange extends Quest
 	}
 	
 	@Override
-	public String onAdvEvent(String event, L2Npc npc, L2PcInstance player)
+	public String onAdvEvent(String event, Npc npc, Player player)
 	{
 		String htmltext = event;
 		QuestState st = player.getQuestState(qn);
@@ -625,7 +611,7 @@ public class SecondClassChange extends Quest
 	}
 	
 	@Override
-	public String onTalk(L2Npc npc, L2PcInstance player)
+	public String onTalk(Npc npc, Player player)
 	{
 		String htmltext = Quest.getNoQuestMsg();
 		QuestState st = player.getQuestState(qn);
@@ -652,17 +638,17 @@ public class SecondClassChange extends Quest
 			case 31334:
 			case 31974:
 			case 32096:
-				if (player.getRace() == Race.DarkElf)
+				if (player.getRace() == ClassRace.DARK_ELF)
 				{
 					if (player.getClassId().level() == 1)
 					{
-						if (player.getClassId() == ClassId.palusKnight)
+						if (player.getClassId() == ClassId.PALUS_KNIGHT)
 							htmltext = "master_de-01.htm";
-						else if (player.getClassId() == ClassId.shillienOracle)
+						else if (player.getClassId() == ClassId.SHILLIEN_ORACLE)
 							htmltext = "master_de-08.htm";
-						else if (player.getClassId() == ClassId.assassin)
+						else if (player.getClassId() == ClassId.ASSASSIN)
 							htmltext = "master_de-12.htm";
-						else if (player.getClassId() == ClassId.darkWizard)
+						else if (player.getClassId() == ClassId.DARK_WIZARD)
 							htmltext = "master_de-19.htm";
 					}
 					else
@@ -680,15 +666,15 @@ public class SecondClassChange extends Quest
 			case 31288:
 			case 31326:
 			case 31977:
-				if (player.getRace() == Race.Orc)
+				if (player.getRace() == ClassRace.ORC)
 				{
 					if (player.getClassId().level() == 1)
 					{
-						if (player.getClassId() == ClassId.orcMonk)
+						if (player.getClassId() == ClassId.MONK)
 							htmltext = "master_orc-01.htm";
-						else if (player.getClassId() == ClassId.orcRaider)
+						else if (player.getClassId() == ClassId.ORC_RAIDER)
 							htmltext = "master_orc-05.htm";
-						else if (player.getClassId() == ClassId.orcShaman)
+						else if (player.getClassId() == ClassId.ORC_SHAMAN)
 							htmltext = "master_orc-09.htm";
 					}
 					else
@@ -706,13 +692,13 @@ public class SecondClassChange extends Quest
 			case 31269:
 			case 31314:
 			case 31958:
-				if (player.getRace() == Race.Dwarf)
+				if (player.getRace() == ClassRace.DWARF)
 				{
 					if (player.getClassId().level() == 1)
 					{
-						if (player.getClassId() == ClassId.scavenger)
+						if (player.getClassId() == ClassId.SCAVENGER)
 							htmltext = "master_dwarf-01.htm";
-						else if (player.getClassId() == ClassId.artisan)
+						else if (player.getClassId() == ClassId.ARTISAN)
 							htmltext = "master_dwarf-15.htm";
 					}
 					else
@@ -730,13 +716,13 @@ public class SecondClassChange extends Quest
 			case 31272:
 			case 31317:
 			case 31961:
-				if (player.getRace() == Race.Dwarf)
+				if (player.getRace() == ClassRace.DWARF)
 				{
 					if (player.getClassId().level() == 1)
 					{
-						if (player.getClassId() == ClassId.scavenger)
+						if (player.getClassId() == ClassId.SCAVENGER)
 							htmltext = "master_dwarf-22.htm";
-						else if (player.getClassId() == ClassId.artisan)
+						else if (player.getClassId() == ClassId.ARTISAN)
 							htmltext = "master_dwarf-05.htm";
 					}
 					else
@@ -753,19 +739,19 @@ public class SecondClassChange extends Quest
 			case 30900:
 			case 31965:
 			case 32094:
-				if (player.getRace() == Race.Human || player.getRace() == Race.Elf)
+				if (player.getRace() == ClassRace.HUMAN || player.getRace() == ClassRace.ELF)
 				{
 					if (player.getClassId().level() == 1)
 					{
-						if (player.getClassId() == ClassId.elvenKnight)
+						if (player.getClassId() == ClassId.ELVEN_KNIGHT)
 							htmltext = "master_human_elf_fighter-01.htm";
-						else if (player.getClassId() == ClassId.knight)
+						else if (player.getClassId() == ClassId.KNIGHT)
 							htmltext = "master_human_elf_fighter-08.htm";
-						else if (player.getClassId() == ClassId.rogue)
+						else if (player.getClassId() == ClassId.ROGUE)
 							htmltext = "master_human_elf_fighter-15.htm";
-						else if (player.getClassId() == ClassId.elvenScout)
+						else if (player.getClassId() == ClassId.ELVEN_SCOUT)
 							htmltext = "master_human_elf_fighter-22.htm";
-						else if (player.getClassId() == ClassId.warrior)
+						else if (player.getClassId() == ClassId.WARRIOR)
 							htmltext = "master_human_elf_fighter-29.htm";
 						else
 							htmltext = "master_human_elf_fighter-78.htm";
@@ -783,13 +769,13 @@ public class SecondClassChange extends Quest
 			case 30694:
 			case 30854:
 			case 31996:
-				if (player.getRace() == Race.Elf || player.getRace() == Race.Human)
+				if (player.getRace() == ClassRace.ELF || player.getRace() == ClassRace.HUMAN)
 				{
 					if (player.getClassId().level() == 1)
 					{
-						if (player.getClassId() == ClassId.elvenWizard)
+						if (player.getClassId() == ClassId.ELVEN_WIZARD)
 							htmltext = "master_human_elf_mystic-01.htm";
-						else if (player.getClassId() == ClassId.wizard)
+						else if (player.getClassId() == ClassId.HUMAN_WIZARD)
 							htmltext = "master_human_elf_mystic-08.htm";
 						else
 							htmltext = "master_human_elf_mystic-40.htm";
@@ -812,13 +798,13 @@ public class SecondClassChange extends Quest
 			case 31968:
 			case 32095:
 			case 31336:
-				if (player.getRace() == Race.Human || player.getRace() == Race.Elf)
+				if (player.getRace() == ClassRace.HUMAN || player.getRace() == ClassRace.ELF)
 				{
 					if (player.getClassId().level() == 1)
 					{
-						if (player.getClassId() == ClassId.oracle)
+						if (player.getClassId() == ClassId.ELVEN_ORACLE)
 							htmltext = "master_human_elf_buffer-01.htm";
-						else if (player.getClassId() == ClassId.cleric)
+						else if (player.getClassId() == ClassId.CLERIC)
 							htmltext = "master_human_elf_buffer-05.htm";
 						else
 							htmltext = "master_human_elf_buffer-26.htm";
@@ -839,28 +825,28 @@ public class SecondClassChange extends Quest
 	 * @param player : The player to make checks on.
 	 * @return a String corresponding to html directory.
 	 */
-	private static String getClassHtml(L2PcInstance player)
+	private static String getClassHtml(Player player)
 	{
 		String change = "";
 		
 		switch (player.getRace())
 		{
-			case DarkElf:
+			case DARK_ELF:
 				change = "master_de";
 				break;
 			
-			case Dwarf:
+			case DWARF:
 				change = "master_dwarf";
 				break;
 			
-			case Orc:
+			case ORC:
 				change = "master_orc";
 				break;
 			
-			case Human:
-			case Elf:
+			case HUMAN:
+			case ELF:
 				if (player.isMageClass())
-					change = (player.getClassId() == ClassId.wizard || player.getClassId() == ClassId.elvenWizard) ? "master_human_elf_mystic" : "master_human_elf_buffer";
+					change = (player.getClassId() == ClassId.HUMAN_WIZARD || player.getClassId() == ClassId.ELVEN_WIZARD) ? "master_human_elf_mystic" : "master_human_elf_buffer";
 				else
 					change = "master_human_elf_fighter";
 				break;

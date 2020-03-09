@@ -1,35 +1,20 @@
-/*
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package net.sf.l2j.gameserver.datatables;
 
 import java.io.File;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import net.sf.l2j.gameserver.model.item.ArmorSet;
+import net.sf.l2j.gameserver.templates.StatsSet;
 import net.sf.l2j.gameserver.xmlfactory.XMLDocumentFactory;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
-/**
- * @author godson, Luno, nBd
- */
 public class ArmorSetsTable
 {
 	private static Logger _log = Logger.getLogger(ArmorSetsTable.class.getName());
@@ -45,32 +30,26 @@ public class ArmorSetsTable
 	{
 		try
 		{
-			File f = new File("./data/xml/armorsets.xml");
+			File f = new File("./data/xml/armorSets.xml");
 			Document doc = XMLDocumentFactory.getInstance().loadDocument(f);
+			
+			final StatsSet set = new StatsSet();
 			
 			Node n = doc.getFirstChild();
 			for (Node d = n.getFirstChild(); d != null; d = d.getNextSibling())
 			{
-				if (d.getNodeName().equalsIgnoreCase("armorset"))
+				if (!d.getNodeName().equalsIgnoreCase("armorset"))
+					continue;
+				
+				final NamedNodeMap attrs = d.getAttributes();
+				for (int i = 0; i < attrs.getLength(); i++)
 				{
-					NamedNodeMap attrs = d.getAttributes();
-					
-					final int chest = Integer.parseInt(attrs.getNamedItem("chest").getNodeValue());
-					final int[] set =
-					{
-						chest,
-						Integer.parseInt(attrs.getNamedItem("legs").getNodeValue()),
-						Integer.parseInt(attrs.getNamedItem("head").getNodeValue()),
-						Integer.parseInt(attrs.getNamedItem("gloves").getNodeValue()),
-						Integer.parseInt(attrs.getNamedItem("feet").getNodeValue())
-					};
-					final int skillId = Integer.parseInt(attrs.getNamedItem("skillId").getNodeValue());
-					final int shield = Integer.parseInt(attrs.getNamedItem("shield").getNodeValue());
-					final int shieldSkillId = Integer.parseInt(attrs.getNamedItem("shieldSkillId").getNodeValue());
-					final int enchant6Skill = Integer.parseInt(attrs.getNamedItem("enchant6Skill").getNodeValue());
-					
-					_armorSets.put(chest, new ArmorSet(set, skillId, shield, shieldSkillId, enchant6Skill));
+					final Node att = attrs.item(i);
+					set.set(att.getNodeName(), att.getNodeValue());
 				}
+				
+				_armorSets.put(set.getInteger("chest"), new ArmorSet(set));
+				set.clear();
 			}
 		}
 		catch (Exception e)
@@ -83,6 +62,11 @@ public class ArmorSetsTable
 	public ArmorSet getSet(int chestId)
 	{
 		return _armorSets.get(chestId);
+	}
+	
+	public Collection<ArmorSet> getSets()
+	{
+		return _armorSets.values();
 	}
 	
 	private static class SingletonHolder

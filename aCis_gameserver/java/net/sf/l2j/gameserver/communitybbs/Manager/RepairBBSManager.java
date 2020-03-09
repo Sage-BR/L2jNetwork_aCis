@@ -9,7 +9,7 @@ import java.util.logging.Logger;
 
 import net.sf.l2j.L2DatabaseFactory;
 import net.sf.l2j.gameserver.cache.HtmCache;
-import net.sf.l2j.gameserver.model.actor.instance.L2PcInstance;
+import net.sf.l2j.gameserver.model.actor.instance.Player;
 
 public class RepairBBSManager extends BaseBBSManager
 {
@@ -21,12 +21,10 @@ public class RepairBBSManager extends BaseBBSManager
 	}
 	
 	@Override
-	public void parseCmd(String command, L2PcInstance activeChar)
+	public void parseCmd(String command, Player activeChar)
 	{
 		if (command.equals("_bbsShowRepair"))
-		{
 			showRepairWindow(activeChar);
-		}
 		else if (command.startsWith("_bbsRepair"))
 		{
 			String val = command.substring(10);
@@ -34,9 +32,7 @@ public class RepairBBSManager extends BaseBBSManager
 			String repairChar = "";
 			
 			if (st.countTokens() == 1)
-			{
 				repairChar = st.nextToken();
-			}
 			
 			if (repairChar == null)
 			{
@@ -60,13 +56,13 @@ public class RepairBBSManager extends BaseBBSManager
 			}
 			else
 				activeChar.sendMessage("Something went wrong. Please contact with the server's administrator.");
-				return;
+			return;
 		}
 		else
 			super.parseCmd(command, activeChar);
 	}
 	
-	private static void showRepairWindow(L2PcInstance activeChar)
+	private static void showRepairWindow(Player activeChar)
 	{
 		String content = HtmCache.getInstance().getHtm("data/html/CommunityBoard/top/repair.htm");
 		
@@ -74,21 +70,18 @@ public class RepairBBSManager extends BaseBBSManager
 		separateAndSend(content, activeChar);
 	}
 	
-	private static String getCharList(L2PcInstance activeChar)
+	private static String getCharList(Player activeChar)
 	{
 		String result = "";
 		String repCharAcc = activeChar.getAccountName();
-		try (Connection con = L2DatabaseFactory.getInstance().getConnection())
+		try (Connection con = L2DatabaseFactory.getInstance().getConnection(); PreparedStatement statement = con.prepareStatement("SELECT char_name FROM characters WHERE account_name=?"))
 		{
-			PreparedStatement statement = con.prepareStatement("SELECT char_name FROM characters WHERE account_name=?");
 			statement.setString(1, repCharAcc);
 			ResultSet rset = statement.executeQuery();
 			while (rset.next())
 			{
 				if (activeChar.getName().compareTo(rset.getString(1)) != 0)
-				{
 					result = result + rset.getString(1) + ";";
-				}
 			}
 			rset.close();
 			statement.close();
@@ -102,36 +95,30 @@ public class RepairBBSManager extends BaseBBSManager
 	}
 	
 	@SuppressWarnings("null")
-	private static boolean checkAcc(L2PcInstance activeChar, String repairChar)
+	private static boolean checkAcc(Player activeChar, String repairChar)
 	{
 		boolean result = false;
 		String repCharAcc = "";
-		try (Connection con = L2DatabaseFactory.getInstance().getConnection())
+		try (Connection con = L2DatabaseFactory.getInstance().getConnection(); PreparedStatement ps = con.prepareStatement("SELECT account_name FROM characters WHERE char_name=?"))
 		{
-			PreparedStatement statement = con.prepareStatement("SELECT account_name FROM characters WHERE char_name=?");
-			statement.setString(1, repairChar);
-			ResultSet rset = statement.executeQuery();
+			ps.setString(1, repairChar);
+			ResultSet rset = ps.executeQuery();
 			if (rset.next())
-			{
 				repCharAcc = rset.getString(1);
-			}
+			
 			rset.close();
-			statement.close();
+			ps.close();
 			try
 			{
 				if (con != null)
-				{
 					con.close();
-				}
 			}
 			catch (SQLException e)
 			{
 				e.printStackTrace();
 			}
 			if (activeChar.getAccountName().compareTo(repCharAcc) != 0)
-			{
 				return result;
-			}
 		}
 		catch (SQLException e)
 		{
@@ -143,36 +130,30 @@ public class RepairBBSManager extends BaseBBSManager
 	}
 	
 	@SuppressWarnings("null")
-	private static boolean checkJail(L2PcInstance activeChar, String repairChar)
+	private static boolean checkJail(Player activeChar, String repairChar)
 	{
 		boolean result = false;
 		int repCharJail = 0;
-		try (Connection con = L2DatabaseFactory.getInstance().getConnection())
+		try (Connection con = L2DatabaseFactory.getInstance().getConnection(); PreparedStatement ps = con.prepareStatement("SELECT punish_level FROM characters WHERE char_name=?"))
 		{
-			PreparedStatement statement = con.prepareStatement("SELECT punish_level FROM characters WHERE char_name=?");
-			statement.setString(1, repairChar);
-			ResultSet rset = statement.executeQuery();
+			ps.setString(1, repairChar);
+			ResultSet rset = ps.executeQuery();
 			if (rset.next())
-			{
 				repCharJail = rset.getInt(1);
-			}
+			
 			rset.close();
-			statement.close();
+			ps.close();
 			try
 			{
 				if (con != null)
-				{
 					con.close();
-				}
 			}
 			catch (SQLException e)
 			{
 				e.printStackTrace();
 			}
 			if (repCharJail <= 1)
-			{
 				return result;
-			}
 		}
 		catch (SQLException e)
 		{
@@ -183,13 +164,11 @@ public class RepairBBSManager extends BaseBBSManager
 		return result;
 	}
 	
-	private static boolean checkChar(L2PcInstance activeChar, String repairChar)
+	private static boolean checkChar(Player activeChar, String repairChar)
 	{
 		boolean result = false;
 		if (activeChar.getName().compareTo(repairChar) == 0)
-		{
 			result = true;
-		}
 		return result;
 	}
 	
@@ -203,9 +182,8 @@ public class RepairBBSManager extends BaseBBSManager
 			
 			int objId = 0;
 			if (rset.next())
-			{
 				objId = rset.getInt(1);
-			}
+			
 			rset.close();
 			statement.close();
 			if (objId == 0)
@@ -214,14 +192,6 @@ public class RepairBBSManager extends BaseBBSManager
 				return;
 			}
 			statement = con.prepareStatement("UPDATE characters SET x=17867, y=170259, z=-3503 WHERE obj_Id=?");
-			statement.setInt(1, objId);
-			statement.execute();
-			statement.close();
-			statement = con.prepareStatement("DELETE FROM character_shortcuts WHERE char_obj_id=?");
-			statement.setInt(1, objId);
-			statement.execute();
-			statement.close();
-			statement = con.prepareStatement("UPDATE items SET loc=\"WAREHOUSE\" WHERE owner_id=? AND loc=\"PAPERDOLL\"");
 			statement.setInt(1, objId);
 			statement.execute();
 			statement.close();

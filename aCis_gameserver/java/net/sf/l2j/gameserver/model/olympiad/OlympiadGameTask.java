@@ -1,24 +1,11 @@
-/*
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package net.sf.l2j.gameserver.model.olympiad;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import net.sf.l2j.commons.concurrent.ThreadPool;
+
 import net.sf.l2j.Config;
-import net.sf.l2j.gameserver.ThreadPoolManager;
 import net.sf.l2j.gameserver.model.zone.type.L2OlympiadStadiumZone;
 import net.sf.l2j.gameserver.network.SystemMessageId;
 import net.sf.l2j.gameserver.network.serverpackets.SystemMessage;
@@ -156,7 +143,7 @@ public final class OlympiadGameTask implements Runnable
 		_game = game;
 		_state = GameState.BEGIN;
 		_needAnnounce = false;
-		ThreadPoolManager.getInstance().executeTask(this);
+		ThreadPool.execute(this);
 	}
 	
 	@Override
@@ -165,9 +152,16 @@ public final class OlympiadGameTask implements Runnable
 		try
 		{
 			int delay = 1; // schedule next call after 1s
+			
+			if (_countDown == Config.ALT_OLY_RESTORE_IN_SECOND_COUNTDOWN)
+			{
+				_game.buffPlayers();
+				_game.healPlayers();
+			}
+			
 			switch (_state)
 			{
-			// Game created
+				// Game created
 				case BEGIN:
 				{
 					_state = GameState.TELE_TO_ARENA;
@@ -187,6 +181,11 @@ public final class OlympiadGameTask implements Runnable
 				// Game start, port players to arena
 				case GAME_STARTED:
 				{
+					if (_game.checkDualbox())
+					{
+						_state = GameState.CLEANUP;
+						break;
+					}
 					if (!startGame())
 					{
 						_state = GameState.GAME_STOPPED;
@@ -204,7 +203,10 @@ public final class OlympiadGameTask implements Runnable
 					_zone.broadcastPacket(SystemMessage.getSystemMessage(SystemMessageId.THE_GAME_WILL_START_IN_S1_SECOND_S).addNumber(_countDown));
 					
 					if (_countDown == 20)
-						_game.buffAndHealPlayers();
+					{
+						_game.buffPlayers();
+						_game.healPlayers();
+					}
 					
 					delay = getDelay(BATTLE_START_TIME);
 					if (_countDown <= 0)
@@ -216,7 +218,10 @@ public final class OlympiadGameTask implements Runnable
 				case BATTLE_STARTED:
 				{
 					_countDown = 0;
+					
+					_game.healPlayers();
 					_game.resetDamage();
+					
 					_state = GameState.BATTLE_IN_PROGRESS; // set state first, used in zone update
 					if (!startBattle())
 						_state = GameState.GAME_STOPPED;
@@ -261,7 +266,7 @@ public final class OlympiadGameTask implements Runnable
 					return;
 				}
 			}
-			ThreadPoolManager.getInstance().scheduleGeneral(this, delay * 1000);
+			ThreadPool.schedule(this, delay * 1000);
 		}
 		catch (Exception e)
 		{
@@ -281,7 +286,7 @@ public final class OlympiadGameTask implements Runnable
 			
 			_log.log(Level.WARNING, "Exception in " + _state + ", trying to port players back: " + e.getMessage(), e);
 			_state = GameState.GAME_STOPPED;
-			ThreadPoolManager.getInstance().scheduleGeneral(this, 1000);
+			ThreadPool.schedule(this, 1000);
 		}
 	}
 	

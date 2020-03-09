@@ -41,7 +41,7 @@ CREATE TABLE IF NOT EXISTS characters (
   `wantspeace` tinyint(3) unsigned DEFAULT '0',
   `isin7sdungeon` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `punish_level` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `punish_timer` int(10) unsigned NOT NULL DEFAULT '0',
+  `punish_timer` BIGINT UNSIGNED NOT NULL DEFAULT 0,
   `power_grade` tinyint(3) unsigned DEFAULT NULL,
   `nobless` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `hero` tinyint(3) unsigned NOT NULL DEFAULT '0',
@@ -54,9 +54,12 @@ CREATE TABLE IF NOT EXISTS characters (
   `clan_join_expiry_time` bigint(20) unsigned NOT NULL DEFAULT '0',
   `clan_create_expiry_time` bigint(20) unsigned NOT NULL DEFAULT '0',
   `death_penalty_level` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `color` decimal(1,0) NOT NULL DEFAULT '0',
   `lastHzvote` bigint(20) NOT NULL DEFAULT '0',
   `lastTZvote` bigint(20) NOT NULL DEFAULT '0',
   `lastNZvote` bigint(20) NOT NULL DEFAULT '0',
+  `pin` int(4) DEFAULT NULL,
+  `pinsubmited` int(1) DEFAULT '1',
   PRIMARY KEY (`obj_Id`),
   KEY `clanid` (`clanid`)
 );

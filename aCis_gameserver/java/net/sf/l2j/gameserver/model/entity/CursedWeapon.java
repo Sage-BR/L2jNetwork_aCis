@@ -1,17 +1,3 @@
-/*
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package net.sf.l2j.gameserver.model.entity;
 
 import java.sql.Connection;
@@ -22,19 +8,20 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import net.sf.l2j.L2DatabaseFactory;
+import net.sf.l2j.commons.concurrent.ThreadPool;
 import net.sf.l2j.commons.random.Rnd;
-import net.sf.l2j.gameserver.ThreadPoolManager;
-import net.sf.l2j.gameserver.datatables.ItemTable;
-import net.sf.l2j.gameserver.datatables.SkillTable;
-import net.sf.l2j.gameserver.geoengine.GeoData;
+
+import net.sf.l2j.L2DatabaseFactory;
+import net.sf.l2j.gameserver.data.ItemTable;
+import net.sf.l2j.gameserver.data.SkillTable;
+import net.sf.l2j.gameserver.geoengine.GeoEngine;
 import net.sf.l2j.gameserver.model.L2Effect;
-import net.sf.l2j.gameserver.model.L2Party.MessageType;
-import net.sf.l2j.gameserver.model.Location;
-import net.sf.l2j.gameserver.model.actor.L2Attackable;
-import net.sf.l2j.gameserver.model.actor.L2Character;
-import net.sf.l2j.gameserver.model.actor.instance.L2PcInstance;
+import net.sf.l2j.gameserver.model.actor.Attackable;
+import net.sf.l2j.gameserver.model.actor.Creature;
+import net.sf.l2j.gameserver.model.actor.instance.Player;
+import net.sf.l2j.gameserver.model.group.Party.MessageType;
 import net.sf.l2j.gameserver.model.item.instance.ItemInstance;
+import net.sf.l2j.gameserver.model.location.Location;
 import net.sf.l2j.gameserver.network.SystemMessageId;
 import net.sf.l2j.gameserver.network.serverpackets.Earthquake;
 import net.sf.l2j.gameserver.network.serverpackets.ExRedSky;
@@ -52,7 +39,7 @@ public class CursedWeapon
 	private ItemInstance _item = null;
 	
 	private int _playerId = 0;
-	protected L2PcInstance _player = null;
+	protected Player _player = null;
 	
 	// Skill id and max level. Max level is took from skillid (allow custom skills).
 	private final int _skillId;
@@ -310,7 +297,7 @@ public class CursedWeapon
 	 * It drops the item on ground, and reset player stats.
 	 * @param killer : The player who killed CW owner.
 	 */
-	private void dropFromPlayer(L2Character killer)
+	private void dropFromPlayer(Creature killer)
 	{
 		_player.abortAttack();
 		
@@ -330,7 +317,7 @@ public class CursedWeapon
 		cancelDailyTimerTask();
 		
 		// Activate the "1h dropped CW" timer.
-		_dropTimerTask = ThreadPoolManager.getInstance().scheduleGeneral(new DropTimerTask(), 3600000L);
+		_dropTimerTask = ThreadPool.schedule(new DropTimerTask(), 3600000L);
 		
 		// Reset current stage to 1.
 		_currentStage = 1;
@@ -339,7 +326,7 @@ public class CursedWeapon
 		removeFromDb();
 		
 		SystemMessage sm = SystemMessage.getSystemMessage(SystemMessageId.S2_WAS_DROPPED_IN_THE_S1_REGION);
-		sm.addZoneName(_player.getX(), _player.getY(), _player.getZ());
+		sm.addZoneName(_player.getPosition());
 		sm.addItemName(_itemId);
 		
 		Broadcast.toAllOnlinePlayers(sm);
@@ -351,14 +338,14 @@ public class CursedWeapon
 	 * @param attackable : The monster who dropped CW.
 	 * @param player : The player who killed the monster.
 	 */
-	private void dropFromMob(L2Attackable attackable, L2PcInstance player)
+	private void dropFromMob(Attackable attackable, Player player)
 	{
 		_isActivated = false;
 		
 		// get position
 		int x = attackable.getX() + Rnd.get(-70, 70);
 		int y = attackable.getY() + Rnd.get(-70, 70);
-		int z = GeoData.getInstance().getHeight(x, y, attackable.getZ());
+		int z = GeoEngine.getInstance().getHeight(x, y, attackable.getZ());
 		
 		// create item and drop it
 		_item = ItemTable.getInstance().createItem("CursedWeapon", _itemId, 1, player, attackable);
@@ -372,7 +359,7 @@ public class CursedWeapon
 		_isDropped = true;
 		
 		SystemMessage sm = SystemMessage.getSystemMessage(SystemMessageId.S2_WAS_DROPPED_IN_THE_S1_REGION);
-		sm.addZoneName(player.getX(), player.getY(), player.getZ());
+		sm.addZoneName(player.getPosition());
 		sm.addItemName(_itemId);
 		
 		Broadcast.toAllOnlinePlayers(sm);
@@ -388,7 +375,7 @@ public class CursedWeapon
 	public void cursedOnLogin()
 	{
 		SystemMessage msg = SystemMessage.getSystemMessage(SystemMessageId.S2_OWNER_HAS_LOGGED_INTO_THE_S1_REGION);
-		msg.addZoneName(_player.getX(), _player.getY(), _player.getZ());
+		msg.addZoneName(_player.getPosition());
 		msg.addItemName(_player.getCursedWeaponEquippedId());
 		Broadcast.toAllOnlinePlayers(msg);
 		
@@ -434,7 +421,7 @@ public class CursedWeapon
 			_hungryTime = _durationLost * 60;
 			_endTime = (System.currentTimeMillis() + _duration * 3600000L);
 			
-			_overallTimerTask = ThreadPoolManager.getInstance().scheduleGeneralAtFixedRate(new OverallTimerTask(), 60000L, 60000L);
+			_overallTimerTask = ThreadPool.scheduleAtFixedRate(new OverallTimerTask(), 60000L, 60000L);
 		}
 		else
 		{
@@ -443,13 +430,13 @@ public class CursedWeapon
 				endOfLife();
 			else
 			{
-				_dailyTimerTask = ThreadPoolManager.getInstance().scheduleGeneralAtFixedRate(new DailyTimerTask(), 60000L, 60000L);
-				_overallTimerTask = ThreadPoolManager.getInstance().scheduleGeneralAtFixedRate(new OverallTimerTask(), 60000L, 60000L);
+				_dailyTimerTask = ThreadPool.scheduleAtFixedRate(new DailyTimerTask(), 60000L, 60000L);
+				_overallTimerTask = ThreadPool.scheduleAtFixedRate(new OverallTimerTask(), 60000L, 60000L);
 			}
 		}
 	}
 	
-	public boolean checkDrop(L2Attackable attackable, L2PcInstance player)
+	public boolean checkDrop(Attackable attackable, Player player)
 	{
 		if (Rnd.get(1000000) < _dropRate)
 		{
@@ -458,15 +445,15 @@ public class CursedWeapon
 			
 			// Start timers.
 			_endTime = System.currentTimeMillis() + _duration * 3600000L;
-			_overallTimerTask = ThreadPoolManager.getInstance().scheduleGeneralAtFixedRate(new OverallTimerTask(), 60000L, 60000L);
-			_dropTimerTask = ThreadPoolManager.getInstance().scheduleGeneral(new DropTimerTask(), 3600000L);
+			_overallTimerTask = ThreadPool.scheduleAtFixedRate(new OverallTimerTask(), 60000L, 60000L);
+			_dropTimerTask = ThreadPool.schedule(new DropTimerTask(), 3600000L);
 			
 			return true;
 		}
 		return false;
 	}
 	
-	public void activate(L2PcInstance player, ItemInstance item)
+	public void activate(Player player, ItemInstance item)
 	{
 		// if the player is mounted, attempt to unmount first and pick it if successful.
 		if (player.isMounted() && !player.dismount())
@@ -494,7 +481,7 @@ public class CursedWeapon
 		_hungryTime = _durationLost * 60;
 		
 		// Activate the daily timer.
-		_dailyTimerTask = ThreadPoolManager.getInstance().scheduleGeneralAtFixedRate(new DailyTimerTask(), 60000L, 60000L);
+		_dailyTimerTask = ThreadPool.scheduleAtFixedRate(new DailyTimerTask(), 60000L, 60000L);
 		
 		// Cancel the "1h dropped CW" timer.
 		cancelDropTimerTask();
@@ -507,7 +494,7 @@ public class CursedWeapon
 		_player.setPkKills(0);
 		
 		if (_player.isInParty())
-			_player.getParty().removePartyMember(_player, MessageType.Expelled);
+			_player.getParty().removePartyMember(_player, MessageType.EXPELLED);
 		
 		// Disable active toggles
 		for (L2Effect effect : _player.getAllEffects())
@@ -530,7 +517,7 @@ public class CursedWeapon
 		_player.broadcastUserInfo();
 		
 		// _player.broadcastPacket(new SocialAction(_player, 17));
-		Broadcast.toAllOnlinePlayers(SystemMessage.getSystemMessage(SystemMessageId.THE_OWNER_OF_S2_HAS_APPEARED_IN_THE_S1_REGION).addZoneName(_player.getX(), _player.getY(), _player.getZ()).addItemName(_item.getItemId()));
+		Broadcast.toAllOnlinePlayers(SystemMessage.getSystemMessage(SystemMessageId.THE_OWNER_OF_S2_HAS_APPEARED_IN_THE_S1_REGION).addZoneName(_player.getPosition()).addItemName(_item.getItemId()));
 	}
 	
 	public void loadData()
@@ -639,7 +626,7 @@ public class CursedWeapon
 	 * This method checks if the CW is dropped or simply dissapears.
 	 * @param killer : The killer of CW's owner.
 	 */
-	public void dropIt(L2Character killer)
+	public void dropIt(Creature killer)
 	{
 		// Remove it
 		if (Rnd.get(100) <= _disapearChance)
@@ -718,7 +705,7 @@ public class CursedWeapon
 		_stageKills = stageKills;
 	}
 	
-	public void setPlayer(L2PcInstance player)
+	public void setPlayer(Player player)
 	{
 		_player = player;
 	}
@@ -773,7 +760,7 @@ public class CursedWeapon
 		return _playerId;
 	}
 	
-	public L2PcInstance getPlayer()
+	public Player getPlayer()
 	{
 		return _player;
 	}
@@ -823,7 +810,7 @@ public class CursedWeapon
 		return _hungryTime;
 	}
 	
-	public void goTo(L2PcInstance player)
+	public void goTo(Player player)
 	{
 		if (player == null)
 			return;
@@ -841,10 +828,10 @@ public class CursedWeapon
 	public Location getWorldPosition()
 	{
 		if (_isActivated && _player != null)
-			return _player.getPosition().getWorldPosition();
+			return _player.getPosition();
 		
 		if (_isDropped && _item != null)
-			return _item.getPosition().getWorldPosition();
+			return _item.getPosition();
 		
 		return null;
 	}

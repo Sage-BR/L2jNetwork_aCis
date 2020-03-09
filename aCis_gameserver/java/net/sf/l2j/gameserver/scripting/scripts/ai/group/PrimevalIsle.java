@@ -1,32 +1,19 @@
-/*
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package net.sf.l2j.gameserver.scripting.scripts.ai.group;
 
-import net.sf.l2j.gameserver.ai.CtrlEvent;
-import net.sf.l2j.gameserver.datatables.SkillTable;
-import net.sf.l2j.gameserver.datatables.SpawnTable;
+import net.sf.l2j.commons.util.ArraysUtil;
+
+import net.sf.l2j.gameserver.data.SkillTable;
+import net.sf.l2j.gameserver.data.SpawnTable;
+import net.sf.l2j.gameserver.geoengine.GeoEngine;
 import net.sf.l2j.gameserver.model.L2Skill;
 import net.sf.l2j.gameserver.model.L2Spawn;
-import net.sf.l2j.gameserver.model.actor.L2Attackable;
-import net.sf.l2j.gameserver.model.actor.L2Character;
-import net.sf.l2j.gameserver.model.actor.L2Npc;
-import net.sf.l2j.gameserver.model.actor.L2Playable;
-import net.sf.l2j.gameserver.model.actor.instance.L2PcInstance;
+import net.sf.l2j.gameserver.model.actor.Attackable;
+import net.sf.l2j.gameserver.model.actor.Npc;
+import net.sf.l2j.gameserver.model.actor.Playable;
+import net.sf.l2j.gameserver.model.actor.ai.CtrlIntention;
+import net.sf.l2j.gameserver.model.actor.instance.Player;
 import net.sf.l2j.gameserver.scripting.EventType;
-import net.sf.l2j.gameserver.scripting.scripts.ai.AbstractNpcAI;
-import net.sf.l2j.gameserver.util.Util;
+import net.sf.l2j.gameserver.scripting.scripts.ai.L2AttackableAIScript;
 
 /**
  * Primeval Isle AIs. This script controls following behaviors :
@@ -36,7 +23,7 @@ import net.sf.l2j.gameserver.util.Util;
  * <li>Pterosaurs and Tyrannosaurus : can see through Silent Move.</li>
  * </ul>
  */
-public class PrimevalIsle extends AbstractNpcAI
+public class PrimevalIsle extends L2AttackableAIScript
 {
 	private static final int[] SPRIGANTS =
 	{
@@ -62,24 +49,28 @@ public class PrimevalIsle extends AbstractNpcAI
 		super("ai/group");
 		
 		for (L2Spawn npc : SpawnTable.getInstance().getSpawnTable())
-			if (Util.contains(MOBIDS, npc.getNpcId()) && npc.getLastSpawn() != null && npc.getLastSpawn() instanceof L2Attackable)
-				((L2Attackable) npc.getLastSpawn()).seeThroughSilentMove(true);
-		
-		registerMobs(SPRIGANTS, EventType.ON_AGGRO, EventType.ON_KILL);
+			if (ArraysUtil.contains(MOBIDS, npc.getNpcId()) && npc.getNpc() != null && npc.getNpc() instanceof Attackable)
+				((Attackable) npc.getNpc()).seeThroughSilentMove(true);
+	}
+	
+	@Override
+	protected void registerNpcs()
+	{
+		addEventIds(SPRIGANTS, EventType.ON_AGGRO, EventType.ON_KILL);
 		addAttackId(ANCIENT_EGG);
 		addSpawnId(MOBIDS);
 	}
 	
 	@Override
-	public String onAdvEvent(String event, L2Npc npc, L2PcInstance player)
+	public String onAdvEvent(String event, Npc npc, Player player)
 	{
-		if (!(npc instanceof L2Attackable))
+		if (!(npc instanceof Attackable))
 			return null;
 		
 		if (event.equalsIgnoreCase("skill"))
 		{
 			int playableCounter = 0;
-			for (L2Playable playable : npc.getKnownList().getKnownTypeInRadius(L2Playable.class, npc.getAggroRange()))
+			for (Playable playable : npc.getKnownTypeInRadius(Playable.class, npc.getTemplate().getAggroRange()))
 			{
 				if (!playable.isDead())
 					playableCounter++;
@@ -99,7 +90,7 @@ public class PrimevalIsle extends AbstractNpcAI
 	}
 	
 	@Override
-	public String onAggro(L2Npc npc, L2PcInstance player, boolean isPet)
+	public String onAggro(Npc npc, Player player, boolean isPet)
 	{
 		if (player == null)
 			return null;
@@ -116,7 +107,7 @@ public class PrimevalIsle extends AbstractNpcAI
 	}
 	
 	@Override
-	public String onKill(L2Npc npc, L2PcInstance killer, boolean isPet)
+	public String onKill(Npc npc, Player killer, boolean isPet)
 	{
 		if (getQuestTimer("skill", npc, null) != null)
 			cancelQuestTimer("skill", npc, null);
@@ -125,31 +116,32 @@ public class PrimevalIsle extends AbstractNpcAI
 	}
 	
 	@Override
-	public String onAttack(L2Npc npc, L2PcInstance player, int damage, boolean isPet)
+	public String onAttack(Npc npc, Player attacker, int damage, boolean isPet, L2Skill skill)
 	{
-		if (player == null)
-			return null;
-		
 		// Retrieve the attacker.
-		final L2Character originalAttacker = (isPet ? player.getPet() : player);
+		final Playable originalAttacker = (isPet ? attacker.getPet() : attacker);
 		
 		// Make all mobs found in a radius 2k aggressive towards attacker.
-		for (L2Attackable obj : player.getKnownList().getKnownTypeInRadius(L2Attackable.class, 2000))
+		for (Attackable called : attacker.getKnownTypeInRadius(Attackable.class, 2000))
 		{
-			if (obj.isDead() || obj == npc)
+			// Caller hasn't AI or is dead.
+			if (!called.hasAI() || called.isDead())
 				continue;
 			
-			obj.getAI().notifyEvent(CtrlEvent.EVT_AGGRESSION, originalAttacker, 1);
+			// Check if the Attackable can help the actor.
+			final CtrlIntention calledIntention = called.getAI().getIntention();
+			if ((calledIntention == CtrlIntention.IDLE || calledIntention == CtrlIntention.ACTIVE || (calledIntention == CtrlIntention.MOVE_TO && !called.isRunning())) && GeoEngine.getInstance().canSeeTarget(originalAttacker, called))
+				attack(called, originalAttacker, 1);
 		}
 		
 		return null;
 	}
 	
 	@Override
-	public String onSpawn(L2Npc npc)
+	public String onSpawn(Npc npc)
 	{
-		if (npc instanceof L2Attackable)
-			((L2Attackable) npc).seeThroughSilentMove(true);
+		if (npc instanceof Attackable)
+			((Attackable) npc).seeThroughSilentMove(true);
 		
 		return super.onSpawn(npc);
 	}

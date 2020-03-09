@@ -1,21 +1,10 @@
-/*
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package net.sf.l2j.gameserver.scripting.quests;
 
 import net.sf.l2j.commons.random.Rnd;
-import net.sf.l2j.gameserver.model.actor.L2Npc;
-import net.sf.l2j.gameserver.model.actor.instance.L2PcInstance;
-import net.sf.l2j.gameserver.model.base.Race;
+
+import net.sf.l2j.gameserver.model.actor.Npc;
+import net.sf.l2j.gameserver.model.actor.instance.Player;
+import net.sf.l2j.gameserver.model.base.ClassRace;
 import net.sf.l2j.gameserver.model.itemcontainer.Inventory;
 import net.sf.l2j.gameserver.network.serverpackets.SocialAction;
 import net.sf.l2j.gameserver.scripting.Quest;
@@ -88,7 +77,7 @@ public class Q218_TestimonyOfLife extends Quest
 	}
 	
 	@Override
-	public String onAdvEvent(String event, L2Npc npc, L2PcInstance player)
+	public String onAdvEvent(String event, Npc npc, Player player)
 	{
 		String htmltext = event;
 		QuestState st = player.getQuestState(qn);
@@ -101,7 +90,13 @@ public class Q218_TestimonyOfLife extends Quest
 			st.set("cond", "1");
 			st.playSound(QuestState.SOUND_ACCEPT);
 			st.giveItems(CARDIEN_LETTER, 1);
-			st.giveItems(DIMENSIONAL_DIAMOND, 16);
+			
+			if (!player.getMemos().getBool("secondClassChange37", false))
+			{
+				htmltext = "30460-04a.htm";
+				st.giveItems(DIMENSIONAL_DIAMOND, DF_REWARD_37.get(player.getRace().ordinal()));
+				player.getMemos().set("secondClassChange37", true);
+			}
 		}
 		else if (event.equalsIgnoreCase("30154-07.htm"))
 		{
@@ -179,7 +174,7 @@ public class Q218_TestimonyOfLife extends Quest
 	}
 	
 	@Override
-	public String onTalk(L2Npc npc, L2PcInstance player)
+	public String onTalk(Npc npc, Player player)
 	{
 		QuestState st = player.getQuestState(qn);
 		String htmltext = getNoQuestMsg();
@@ -189,7 +184,7 @@ public class Q218_TestimonyOfLife extends Quest
 		switch (st.getState())
 		{
 			case STATE_CREATED:
-				if (player.getRace() != Race.Elf)
+				if (player.getRace() != ClassRace.ELF)
 					htmltext = "30460-01.htm";
 				else if (player.getLevel() < 37 || player.getClassId().level() != 1)
 					htmltext = "30460-02.htm";
@@ -378,7 +373,7 @@ public class Q218_TestimonyOfLife extends Quest
 						else if (cond > 17)
 							htmltext = "30655-06.htm";
 						break;
-				
+					
 				}
 				break;
 			
@@ -391,7 +386,7 @@ public class Q218_TestimonyOfLife extends Quest
 	}
 	
 	@Override
-	public String onKill(L2Npc npc, L2PcInstance player, boolean isPet)
+	public String onKill(Npc npc, Player player, boolean isPet)
 	{
 		QuestState st = checkPlayerState(player, npc, STATE_STARTED);
 		if (st == null)

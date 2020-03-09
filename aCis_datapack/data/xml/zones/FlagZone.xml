@@ -1,10 +1,3 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <list>
-	<!-- PvP Zone -->
-	<zone id="99999" type="FlagZone" shape="NPoly" minZ="-4792" maxZ="-208">
-		<node X="4850" Y="-4736" />
-		<node X="7294" Y="-4712" />
-		<node X="8529" Y="-820" />
-		<node X="3615" Y="-737" />
-	</zone>
 </list>

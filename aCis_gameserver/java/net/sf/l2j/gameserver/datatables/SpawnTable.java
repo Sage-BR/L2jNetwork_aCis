@@ -1,17 +1,3 @@
-/*
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package net.sf.l2j.gameserver.datatables;
 
 import java.sql.Connection;
@@ -67,37 +53,35 @@ public class SpawnTable
 				template1 = NpcTable.getInstance().getTemplate(rset.getInt("npc_templateid"));
 				if (template1 != null)
 				{
-					if (template1.isType("L2SiegeGuard"))
+					if (template1.isType("SiegeGuard"))
 					{
 						// Don't spawn guards, they're spawned during castle sieges.
 					}
-					else if (template1.isType("L2RaidBoss"))
+					else if (template1.isType("RaidBoss"))
 					{
 						// Don't spawn raidbosses ; raidbosses are supposed to be loaded in another table !
 						_log.warning("SpawnTable: RB (" + template1.getIdTemplate() + ") is in regular spawnlist, move it in raidboss_spawnlist.");
 					}
-					else if (!Config.ALLOW_CLASS_MASTERS && template1.isType("L2ClassMaster"))
+					else if (!Config.ALLOW_CLASS_MASTERS && template1.isType("ClassMaster"))
 					{
 						// Dont' spawn class masters (if config is setuped to false).
 					}
-					else if (!Config.WYVERN_ALLOW_UPGRADER && template1.isType("L2WyvernManager"))
+					else if (!Config.WYVERN_ALLOW_UPGRADER && template1.isType("WyvernManagerNpc"))
 					{
 						// Dont' spawn wyvern managers (if config is setuped to false).
 					}
 					else
 					{
 						spawnDat = new L2Spawn(template1);
-						spawnDat.setLocx(rset.getInt("locx"));
-						spawnDat.setLocy(rset.getInt("locy"));
-						spawnDat.setLocz(rset.getInt("locz"));
-						spawnDat.setHeading(rset.getInt("heading"));
+						spawnDat.setLoc(rset.getInt("locx"), rset.getInt("locy"), rset.getInt("locz"), rset.getInt("heading"));
 						spawnDat.setRespawnDelay(rset.getInt("respawn_delay"));
-						spawnDat.setRandomRespawnDelay(rset.getInt("respawn_rand"));
+						spawnDat.setRespawnRandom(rset.getInt("respawn_rand"));
 						
 						switch (rset.getInt("periodOfDay"))
 						{
 							case 0: // default
-								spawnDat.init();
+								spawnDat.setRespawnState(true);
+								spawnDat.doSpawn(false);
 								break;
 							
 							case 1: // Day
@@ -139,11 +123,11 @@ public class SpawnTable
 			{
 				PreparedStatement statement = con.prepareStatement("INSERT INTO spawnlist (npc_templateid,locx,locy,locz,heading,respawn_delay) values(?,?,?,?,?,?)");
 				statement.setInt(1, spawn.getNpcId());
-				statement.setInt(2, spawn.getLocx());
-				statement.setInt(3, spawn.getLocy());
-				statement.setInt(4, spawn.getLocz());
+				statement.setInt(2, spawn.getLocX());
+				statement.setInt(3, spawn.getLocY());
+				statement.setInt(4, spawn.getLocZ());
 				statement.setInt(5, spawn.getHeading());
-				statement.setInt(6, spawn.getRespawnDelay() / 1000);
+				statement.setInt(6, spawn.getRespawnDelay());
 				statement.execute();
 				statement.close();
 			}
@@ -165,9 +149,9 @@ public class SpawnTable
 			try (Connection con = L2DatabaseFactory.getInstance().getConnection())
 			{
 				PreparedStatement statement = con.prepareStatement("DELETE FROM spawnlist WHERE locx=? AND locy=? AND locz=? AND npc_templateid=? AND heading=?");
-				statement.setInt(1, spawn.getLocx());
-				statement.setInt(2, spawn.getLocy());
-				statement.setInt(3, spawn.getLocz());
+				statement.setInt(1, spawn.getLocX());
+				statement.setInt(2, spawn.getLocY());
+				statement.setInt(3, spawn.getLocZ());
 				statement.setInt(4, spawn.getNpcId());
 				statement.setInt(5, spawn.getHeading());
 				statement.execute();

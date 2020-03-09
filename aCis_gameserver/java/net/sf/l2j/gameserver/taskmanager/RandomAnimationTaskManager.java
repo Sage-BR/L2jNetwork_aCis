@@ -1,34 +1,21 @@
-/*
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package net.sf.l2j.gameserver.taskmanager;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import net.sf.l2j.Config;
+import net.sf.l2j.commons.concurrent.ThreadPool;
 import net.sf.l2j.commons.random.Rnd;
-import net.sf.l2j.gameserver.ThreadPoolManager;
-import net.sf.l2j.gameserver.ai.CtrlIntention;
-import net.sf.l2j.gameserver.model.actor.L2Npc;
+
+import net.sf.l2j.Config;
+import net.sf.l2j.gameserver.model.actor.Npc;
+import net.sf.l2j.gameserver.model.actor.ai.CtrlIntention;
 
 /**
- * Handles {@link L2Npc} random social animation after specified time.
+ * Handles {@link Npc} random social animation after specified time.
  */
 public final class RandomAnimationTaskManager implements Runnable
 {
-	private final Map<L2Npc, Long> _characters = new ConcurrentHashMap<>();
+	private final Map<Npc, Long> _characters = new ConcurrentHashMap<>();
 	
 	public static final RandomAnimationTaskManager getInstance()
 	{
@@ -38,15 +25,15 @@ public final class RandomAnimationTaskManager implements Runnable
 	protected RandomAnimationTaskManager()
 	{
 		// Run task each second.
-		ThreadPoolManager.getInstance().scheduleAiAtFixedRate(this, 1000, 1000);
+		ThreadPool.scheduleAtFixedRate(this, 1000, 1000);
 	}
 	
 	/**
-	 * Adds {@link L2Npc} to the RandomAnimationTask with additional interval.
-	 * @param character : {@link L2Npc} to be added.
+	 * Adds {@link Npc} to the RandomAnimationTask with additional interval.
+	 * @param character : {@link Npc} to be added.
 	 * @param interval : Interval in seconds, after which the decay task is triggered.
 	 */
-	public final void add(L2Npc character, int interval)
+	public final void add(Npc character, int interval)
 	{
 		_characters.put(character, System.currentTimeMillis() + interval * 1000);
 	}
@@ -62,13 +49,13 @@ public final class RandomAnimationTaskManager implements Runnable
 		final long time = System.currentTimeMillis();
 		
 		// Loop all characters.
-		for (Map.Entry<L2Npc, Long> entry : _characters.entrySet())
+		for (Map.Entry<Npc, Long> entry : _characters.entrySet())
 		{
 			// Time hasn't passed yet, skip.
 			if (time < entry.getValue())
 				continue;
 			
-			final L2Npc character = entry.getKey();
+			final Npc character = entry.getKey();
 			
 			// Cancels timer on specific cases.
 			if (character.isMob())

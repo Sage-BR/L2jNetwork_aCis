@@ -1,17 +1,3 @@
-/*
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package net.sf.l2j.gameserver.datatables;
 
 import java.io.File;
@@ -23,11 +9,12 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import net.sf.l2j.Config;
 import net.sf.l2j.commons.random.Rnd;
+
+import net.sf.l2j.Config;
 import net.sf.l2j.gameserver.model.L2ManufactureItem;
 import net.sf.l2j.gameserver.model.L2Skill;
-import net.sf.l2j.gameserver.model.actor.instance.L2PcInstance;
+import net.sf.l2j.gameserver.model.actor.instance.Player;
 import net.sf.l2j.gameserver.model.holder.IntIntHolder;
 import net.sf.l2j.gameserver.model.item.RecipeList;
 import net.sf.l2j.gameserver.model.item.instance.ItemInstance;
@@ -41,7 +28,6 @@ import net.sf.l2j.gameserver.network.serverpackets.RecipeShopItemInfo;
 import net.sf.l2j.gameserver.network.serverpackets.StatusUpdate;
 import net.sf.l2j.gameserver.network.serverpackets.SystemMessage;
 import net.sf.l2j.gameserver.taskmanager.AttackStanceTaskManager;
-import net.sf.l2j.gameserver.util.Util;
 import net.sf.l2j.gameserver.xmlfactory.XMLDocumentFactory;
 
 import org.w3c.dom.Document;
@@ -160,14 +146,14 @@ public class RecipeTable
 		return null;
 	}
 	
-	public void requestBookOpen(L2PcInstance player, boolean isDwarvenCraft)
+	public void requestBookOpen(Player player, boolean isDwarvenCraft)
 	{
 		RecipeBookItemList response = new RecipeBookItemList(isDwarvenCraft, player.getMaxMp());
 		response.addRecipes(isDwarvenCraft ? player.getDwarvenRecipeBook() : player.getCommonRecipeBook());
 		player.sendPacket(response);
 	}
 	
-	public void requestManufactureItem(L2PcInstance manufacturer, int recipeListId, L2PcInstance player)
+	public void requestManufactureItem(Player manufacturer, int recipeListId, Player player)
 	{
 		final RecipeList recipeList = getValidRecipeList(player, recipeListId);
 		if (recipeList == null)
@@ -177,17 +163,14 @@ public class RecipeTable
 		Collection<RecipeList> commonRecipes = manufacturer.getCommonRecipeBook();
 		
 		if (!dwarfRecipes.contains(recipeList) && !commonRecipes.contains(recipeList))
-		{
-			Util.handleIllegalPlayerAction(player, player.getName() + " of account " + player.getAccountName() + " sent a false recipe id.", Config.DEFAULT_PUNISH);
 			return;
-		}
 		
 		final RecipeItemMaker maker = new RecipeItemMaker(manufacturer, recipeList, player);
 		if (maker._isValid)
 			maker.run();
 	}
 	
-	public void requestMakeItem(L2PcInstance player, int recipeListId)
+	public void requestMakeItem(Player player, int recipeListId)
 	{
 		if (AttackStanceTaskManager.getInstance().isInAttackStance(player) || player.isInDuel())
 		{
@@ -203,10 +186,7 @@ public class RecipeTable
 		Collection<RecipeList> commonRecipes = player.getCommonRecipeBook();
 		
 		if (!dwarfRecipes.contains(recipeList) && !commonRecipes.contains(recipeList))
-		{
-			Util.handleIllegalPlayerAction(player, player.getName() + " of account " + player.getAccountName() + " sent a false recipe id.", Config.DEFAULT_PUNISH);
 			return;
-		}
 		
 		final RecipeItemMaker maker = new RecipeItemMaker(player, recipeList, player);
 		if (maker._isValid)
@@ -217,14 +197,14 @@ public class RecipeTable
 	{
 		protected boolean _isValid;
 		protected final RecipeList _recipeList;
-		protected final L2PcInstance _player; // "crafter"
-		protected final L2PcInstance _target; // "customer"
+		protected final Player _player; // "crafter"
+		protected final Player _target; // "customer"
 		protected final int _skillId;
 		protected final int _skillLevel;
 		protected double _manaRequired;
 		protected int _price;
 		
-		public RecipeItemMaker(L2PcInstance pPlayer, RecipeList pRecipeList, L2PcInstance pTarget)
+		public RecipeItemMaker(Player pPlayer, RecipeList pRecipeList, Player pTarget)
 		{
 			_player = pPlayer;
 			_target = pTarget;
@@ -236,7 +216,7 @@ public class RecipeTable
 			
 			_manaRequired = _recipeList.getMpCost();
 			
-			_player.isInCraftMode(true);
+			_player.setCrafting(true);
 			
 			if (_player.isAlikeDead() || _target.isAlikeDead())
 			{
@@ -305,7 +285,7 @@ public class RecipeTable
 			updateMakeInfo(true);
 			updateStatus();
 			
-			_player.isInCraftMode(false);
+			_player.setCrafting(false);
 			_isValid = true;
 		}
 		
@@ -364,8 +344,8 @@ public class RecipeTable
 			{
 				if (_target != _player)
 				{
-					_player.sendPacket(SystemMessage.getSystemMessage(SystemMessageId.CREATION_OF_S2_FOR_S1_AT_S3_ADENA_FAILED).addPcName(_target).addItemName(_recipeList.getItemId()).addItemNumber(_price));
-					_target.sendPacket(SystemMessage.getSystemMessage(SystemMessageId.S1_FAILED_TO_CREATE_S2_FOR_S3_ADENA).addPcName(_player).addItemName(_recipeList.getItemId()).addItemNumber(_price));
+					_player.sendPacket(SystemMessage.getSystemMessage(SystemMessageId.CREATION_OF_S2_FOR_S1_AT_S3_ADENA_FAILED).addCharName(_target).addItemName(_recipeList.getItemId()).addItemNumber(_price));
+					_target.sendPacket(SystemMessage.getSystemMessage(SystemMessageId.S1_FAILED_TO_CREATE_S2_FOR_S3_ADENA).addCharName(_player).addItemName(_recipeList.getItemId()).addItemNumber(_price));
 				}
 				else
 					_target.sendPacket(SystemMessageId.ITEM_MIXING_FAILED);
@@ -376,7 +356,7 @@ public class RecipeTable
 			// update load and mana bar of craft window
 			updateStatus();
 			
-			_player.isInCraftMode(false);
+			_player.setCrafting(false);
 			_target.sendPacket(new ItemList(_target, false));
 		}
 		
@@ -439,7 +419,7 @@ public class RecipeTable
 		private void abort()
 		{
 			updateMakeInfo(false);
-			_player.isInCraftMode(false);
+			_player.setCrafting(false);
 		}
 		
 		private void rewardPlayer()
@@ -474,13 +454,13 @@ public class RecipeTable
 		}
 	}
 	
-	private RecipeList getValidRecipeList(L2PcInstance player, int id)
+	private RecipeList getValidRecipeList(Player player, int id)
 	{
 		final RecipeList recipeList = _lists.get(id);
 		if (recipeList == null || recipeList.getNeededRecipeParts().isEmpty())
 		{
 			player.sendMessage("No recipe for: " + id);
-			player.isInCraftMode(false);
+			player.setCrafting(false);
 			return null;
 		}
 		return recipeList;

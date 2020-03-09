@@ -1,37 +1,27 @@
-/*
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package net.sf.l2j.gameserver.model.actor.status;
 
-import net.sf.l2j.gameserver.model.actor.L2Attackable;
-import net.sf.l2j.gameserver.model.actor.L2Character;
+import java.util.Collection;
+
+import net.sf.l2j.gameserver.model.actor.Attackable;
+import net.sf.l2j.gameserver.model.actor.Creature;
+import net.sf.l2j.gameserver.model.actor.instance.Player;
+import net.sf.l2j.gameserver.network.serverpackets.AbstractNpcInfo;
 
 public class AttackableStatus extends NpcStatus
 {
-	public AttackableStatus(L2Attackable activeChar)
+	public AttackableStatus(Attackable activeChar)
 	{
 		super(activeChar);
 	}
 	
 	@Override
-	public final void reduceHp(double value, L2Character attacker)
+	public final void reduceHp(double value, Creature attacker)
 	{
 		reduceHp(value, attacker, true, false, false);
 	}
 	
 	@Override
-	public final void reduceHp(double value, L2Character attacker, boolean awake, boolean isDOT, boolean isHpConsumption)
+	public final void reduceHp(double value, Creature attacker, boolean awake, boolean isDOT, boolean isHpConsumption)
 	{
 		if (getActiveChar().isDead())
 			return;
@@ -58,8 +48,24 @@ public class AttackableStatus extends NpcStatus
 	}
 	
 	@Override
-	public L2Attackable getActiveChar()
+	public void setCurrentHp(double newHp, boolean broadcastPacket)
 	{
-		return (L2Attackable) super.getActiveChar();
+		super.setCurrentHp(newHp, broadcastPacket);
+		
+		if (getActiveChar().getFakePc() != null)
+		{
+			Collection<Player> plrs = getActiveChar().getKnownType(Player.class);
+			for (Player player : plrs)
+			{
+				if (player != null)
+					player.sendPacket(new AbstractNpcInfo.NpcInfo(getActiveChar(), player));
+			}
+		}
+	}
+	
+	@Override
+	public Attackable getActiveChar()
+	{
+		return (Attackable) super.getActiveChar();
 	}
 }

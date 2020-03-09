@@ -223,3 +223,4 @@ INSERT INTO `raidboss_spawnlist` VALUES
 -- (29060,106000,-128000,-3000,0,36,24,0,0,0), -- Captain Of The Ice Queen's Royal Guard (59) -- stats to be done
 -- (29062,-16382,-53450,-10432,0,36,24,0,0,0), -- High Priestess Van Halter (87) -- stats to be done (Spawn by Quest)
 (29095,141569,-45908,-2387,0,36,24,0,0,0); -- Gordon (87) -- walking around Goddard
+INSERT INTO `raidboss_spawnlist` VALUES ('51006', '55312', '219168', '-3225', '12132', '72', '24', '0', '858518', '399600');

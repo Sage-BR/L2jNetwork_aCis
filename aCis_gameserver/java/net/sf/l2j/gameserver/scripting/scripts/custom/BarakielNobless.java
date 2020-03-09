@@ -14,8 +14,8 @@
 */
 package net.sf.l2j.gameserver.scripting.scripts.custom;
 
-import net.sf.l2j.gameserver.model.actor.L2Npc;
-import net.sf.l2j.gameserver.model.actor.instance.L2PcInstance;
+import net.sf.l2j.gameserver.model.actor.Npc;
+import net.sf.l2j.gameserver.model.actor.instance.Player;
 import net.sf.l2j.gameserver.scripting.Quest;
 
 public class BarakielNobless extends Quest
@@ -28,15 +28,15 @@ public class BarakielNobless extends Quest
 	}
 	
 	@Override
-	public String onKill(L2Npc npc, L2PcInstance player, boolean isPet)
+	public String onKill(Npc npc, Player player, boolean isPet)
 	{
 		if (player.getParty() != null)
 		{
-			for (L2PcInstance members : player.getParty().getPartyMembers())
+			for (Player members : player.getParty().getMembers())
 			{
 				if (!members.isInsideRadius(npc, 2000, false, false))
 				{
-					members.sendMessage("You were too far away from Barakiel buddy. You've missed the chance of becoming Noblesse!");
+					members.sendMessage("You were too far away from Barakiel. You've missed the chance of becoming Noblesse!");
 					continue;
 				}
 				if (!members.isNoble())
@@ -45,11 +45,7 @@ public class BarakielNobless extends Quest
 					members.getInventory().addItem("Noblesse Tiara", 7694, 1, members, null);
 					members.sendMessage("Congratulations! All party members have obtained Noblesse Status");
 				}
-				else
-				{
-					members.sendMessage("You are already Noblesse. Once It's done,It's forever buddy!");
-				}
-				
+				members.sendMessage("You are already Noblesse!");
 				members.broadcastUserInfo();
 			}
 		}

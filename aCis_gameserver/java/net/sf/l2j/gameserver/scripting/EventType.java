@@ -1,17 +1,3 @@
-/*
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package net.sf.l2j.gameserver.scripting;
 
 /**
@@ -26,6 +12,7 @@ public enum EventType
 	ON_ATTACK_ACT(true), // onAttackAct event is triggered when a mob attacks someone
 	ON_KILL(true), // onKill action triggered when a mob gets killed.
 	ON_SPAWN(true), // onSpawn action triggered when an NPC is spawned or respawned.
+	ON_DECAY(true), // onDecay action triggered when a NPC decays.
 	ON_SKILL_SEE(true), // NPC or Mob saw a person casting a skill (regardless what the target is).
 	ON_FACTION_CALL(true), // NPC or Mob saw a person casting a skill (regardless what the target is).
 	ON_AGGRO(true), // a person came within the Npc/Mob's range

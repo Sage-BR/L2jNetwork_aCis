@@ -1,19 +1,7 @@
-/*
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package net.sf.l2j.gameserver.scripting.quests;
 
-import net.sf.l2j.gameserver.model.actor.L2Npc;
-import net.sf.l2j.gameserver.model.actor.instance.L2PcInstance;
+import net.sf.l2j.gameserver.model.actor.Npc;
+import net.sf.l2j.gameserver.model.actor.instance.Player;
 import net.sf.l2j.gameserver.network.serverpackets.SocialAction;
 import net.sf.l2j.gameserver.scripting.Quest;
 import net.sf.l2j.gameserver.scripting.QuestState;
@@ -59,7 +47,7 @@ public class Q242_PossessorOfAPreciousSoul extends Quest
 	}
 	
 	@Override
-	public String onAdvEvent(String event, L2Npc npc, L2PcInstance player)
+	public String onAdvEvent(String event, Npc npc, Player player)
 	{
 		String htmltext = event;
 		QuestState st = player.getQuestState(qn);
@@ -147,7 +135,7 @@ public class Q242_PossessorOfAPreciousSoul extends Quest
 		// Despawn Pure Unicorn
 		else if (event.equalsIgnoreCase("dspu"))
 		{
-			npc.getSpawn().stopRespawn();
+			npc.getSpawn().setRespawnState(false);
 			npc.deleteMe();
 			startQuestTimer("sfu", 2000, null, player, false);
 			return null;
@@ -156,7 +144,7 @@ public class Q242_PossessorOfAPreciousSoul extends Quest
 		else if (event.equalsIgnoreCase("sfu"))
 		{
 			npc = addSpawn(FALLEN_UNICORN, 85884, -76588, -3470, 0, false, 0, true);
-			npc.getSpawn().startRespawn();
+			npc.getSpawn().setRespawnState(true);
 			return null;
 		}
 		
@@ -164,7 +152,7 @@ public class Q242_PossessorOfAPreciousSoul extends Quest
 	}
 	
 	@Override
-	public String onTalk(L2Npc npc, L2PcInstance player)
+	public String onTalk(Npc npc, Player player)
 	{
 		String htmltext = getNoQuestMsg();
 		QuestState st = player.getQuestState(qn);
@@ -318,7 +306,7 @@ public class Q242_PossessorOfAPreciousSoul extends Quest
 							if (!_unicorn) // Global variable check to prevent multiple spawns
 							{
 								_unicorn = true;
-								npc.getSpawn().stopRespawn(); // Despawn fallen unicorn
+								npc.getSpawn().setRespawnState(false); // Despawn fallen unicorn
 								npc.deleteMe();
 								startQuestTimer("spu", 3000, npc, player, false);
 							}
@@ -352,7 +340,7 @@ public class Q242_PossessorOfAPreciousSoul extends Quest
 	}
 	
 	@Override
-	public String onKill(L2Npc npc, L2PcInstance player, boolean isPet)
+	public String onKill(Npc npc, Player player, boolean isPet)
 	{
 		QuestState st = checkPlayerCondition(player, npc, "cond", "9");
 		if (st == null || !player.isSubClassActive())

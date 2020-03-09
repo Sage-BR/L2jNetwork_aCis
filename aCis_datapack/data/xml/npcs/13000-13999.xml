@@ -6,7 +6,7 @@
 		<set name="height" val="120"/>
 		<set name="rHand" val="0"/>
 		<set name="lHand" val="0"/>
-		<set name="type" val="L2Npc"/>
+		<set name="type" val="Folk"/>
 		<set name="exp" val="490"/>
 		<set name="sp" val="10"/>
 		<set name="hp" val="2444.46819"/>
@@ -29,8 +29,7 @@
 		<set name="walkSpd" val="50"/>
 		<set name="runSpd" val="120"/>
 		<set name="dropHerbGroup" val="0"/>
-		<set name="attackRange" val="40"/>
-		<ai type="default" ssCount="0" ssRate="0" spsCount="0" spsRate="0" aggro="0" canMove="true" seedable="false"/>
+		<ai type="DEFAULT" ssCount="0" ssRate="0" spsCount="0" spsRate="0" aggro="0" canMove="true" seedable="false"/>
 		<skills>
 			<skill id="4045" level="1"/>
 			<skill id="4416" level="19"/>
@@ -42,7 +41,7 @@
 		<set name="height" val="35"/>
 		<set name="rHand" val="0"/>
 		<set name="lHand" val="0"/>
-		<set name="type" val="L2ControlTower"/>
+		<set name="type" val="ControlTower"/>
 		<set name="exp" val="0"/>
 		<set name="sp" val="10"/>
 		<set name="hp" val="342.5127"/>
@@ -65,8 +64,7 @@
 		<set name="walkSpd" val="50"/>
 		<set name="runSpd" val="1"/>
 		<set name="dropHerbGroup" val="0"/>
-		<set name="attackRange" val="40"/>
-		<ai type="default" ssCount="0" ssRate="0" spsCount="0" spsRate="0" aggro="0" canMove="true" seedable="false"/>
+		<ai type="DEFAULT" ssCount="0" ssRate="0" spsCount="0" spsRate="0" aggro="0" canMove="true" seedable="false"/>
 		<skills>
 			<skill id="4045" level="1"/>
 			<skill id="4416" level="19"/>
@@ -78,7 +76,7 @@
 		<set name="height" val="35"/>
 		<set name="rHand" val="0"/>
 		<set name="lHand" val="0"/>
-		<set name="type" val="L2ControlTower"/>
+		<set name="type" val="MutedFolk"/>
 		<set name="exp" val="0"/>
 		<set name="sp" val="10"/>
 		<set name="hp" val="342.5127"/>
@@ -101,8 +99,7 @@
 		<set name="walkSpd" val="50"/>
 		<set name="runSpd" val="1"/>
 		<set name="dropHerbGroup" val="0"/>
-		<set name="attackRange" val="40"/>
-		<ai type="default" ssCount="0" ssRate="0" spsCount="0" spsRate="0" aggro="0" canMove="true" seedable="false"/>
+		<ai type="DEFAULT" ssCount="0" ssRate="0" spsCount="0" spsRate="0" aggro="0" canMove="true" seedable="false"/>
 		<skills>
 			<skill id="4045" level="1"/>
 			<skill id="4416" level="19"/>
@@ -114,7 +111,7 @@
 		<set name="height" val="35"/>
 		<set name="rHand" val="0"/>
 		<set name="lHand" val="0"/>
-		<set name="type" val="L2FlameTower"/>
+		<set name="type" val="FlameTower"/>
 		<set name="exp" val="0"/>
 		<set name="sp" val="10"/>
 		<set name="hp" val="342.5127"/>
@@ -137,8 +134,7 @@
 		<set name="walkSpd" val="50"/>
 		<set name="runSpd" val="1"/>
 		<set name="dropHerbGroup" val="0"/>
-		<set name="attackRange" val="40"/>
-		<ai type="default" ssCount="0" ssRate="0" spsCount="0" spsRate="0" aggro="0" canMove="true" seedable="false"/>
+		<ai type="DEFAULT" ssCount="0" ssRate="0" spsCount="0" spsRate="0" aggro="0" canMove="true" seedable="false"/>
 		<skills>
 			<skill id="4045" level="1"/>
 			<skill id="4416" level="19"/>
@@ -150,7 +146,7 @@
 		<set name="height" val="35"/>
 		<set name="rHand" val="0"/>
 		<set name="lHand" val="0"/>
-		<set name="type" val="L2FlameTower"/>
+		<set name="type" val="MutedFolk"/>
 		<set name="exp" val="0"/>
 		<set name="sp" val="10"/>
 		<set name="hp" val="342.5127"/>
@@ -173,8 +169,7 @@
 		<set name="walkSpd" val="50"/>
 		<set name="runSpd" val="1"/>
 		<set name="dropHerbGroup" val="0"/>
-		<set name="attackRange" val="40"/>
-		<ai type="default" ssCount="0" ssRate="0" spsCount="0" spsRate="0" aggro="0" canMove="true" seedable="false"/>
+		<ai type="DEFAULT" ssCount="0" ssRate="0" spsCount="0" spsRate="0" aggro="0" canMove="true" seedable="false"/>
 		<skills>
 			<skill id="4045" level="1"/>
 			<skill id="4416" level="19"/>
@@ -186,7 +181,7 @@
 		<set name="height" val="0.01"/>
 		<set name="rHand" val="0"/>
 		<set name="lHand" val="0"/>
-		<set name="type" val="L2Npc"/>
+		<set name="type" val="ChristmasTree"/>
 		<set name="exp" val="0"/>
 		<set name="sp" val="10"/>
 		<set name="hp" val="2444.46819"/>
@@ -209,8 +204,7 @@
 		<set name="walkSpd" val="30"/>
 		<set name="runSpd" val="120"/>
 		<set name="dropHerbGroup" val="0"/>
-		<set name="attackRange" val="40"/>
-		<ai type="default" ssCount="0" ssRate="0" spsCount="0" spsRate="0" aggro="0" canMove="true" seedable="false"/>
+		<ai type="DEFAULT" ssCount="0" ssRate="0" spsCount="0" spsRate="0" aggro="0" canMove="true" seedable="false"/>
 		<skills>
 			<skill id="4045" level="1"/>
 			<skill id="4416" level="8"/>
@@ -222,7 +216,7 @@
 		<set name="height" val="0.01"/>
 		<set name="rHand" val="0"/>
 		<set name="lHand" val="0"/>
-		<set name="type" val="L2Npc"/>
+		<set name="type" val="ChristmasTree"/>
 		<set name="exp" val="0"/>
 		<set name="sp" val="10"/>
 		<set name="hp" val="2444.46819"/>
@@ -245,8 +239,7 @@
 		<set name="walkSpd" val="30"/>
 		<set name="runSpd" val="120"/>
 		<set name="dropHerbGroup" val="0"/>
-		<set name="attackRange" val="40"/>
-		<ai type="default" ssCount="0" ssRate="0" spsCount="0" spsRate="0" aggro="0" canMove="true" seedable="false"/>
+		<ai type="DEFAULT" ssCount="0" ssRate="0" spsCount="0" spsRate="0" aggro="0" canMove="true" seedable="false"/>
 		<skills>
 			<skill id="4045" level="1"/>
 			<skill id="4416" level="8"/>
@@ -258,7 +251,7 @@
 		<set name="height" val="0.1"/>
 		<set name="rHand" val="0"/>
 		<set name="lHand" val="0"/>
-		<set name="type" val="L2Npc"/>
+		<set name="type" val="Folk"/>
 		<set name="exp" val="0"/>
 		<set name="sp" val="0"/>
 		<set name="hp" val="3046.70947"/>
@@ -281,8 +274,7 @@
 		<set name="walkSpd" val="1"/>
 		<set name="runSpd" val="160"/>
 		<set name="dropHerbGroup" val="0"/>
-		<set name="attackRange" val="40"/>
-		<ai type="default" ssCount="0" ssRate="0" spsCount="0" spsRate="0" aggro="0" clan="fire_clan" clanRange="300" canMove="true" seedable="false"/>
+		<ai type="DEFAULT" ssCount="0" ssRate="0" spsCount="0" spsRate="0" aggro="0" clan="fire_clan" clanRange="300" canMove="true" seedable="false"/>
 		<skills>
 			<skill id="4045" level="1"/>
 			<skill id="4416" level="2"/>
@@ -294,7 +286,7 @@
 		<set name="height" val="25"/>
 		<set name="rHand" val="0"/>
 		<set name="lHand" val="0"/>
-		<set name="type" val="L2Monster"/>
+		<set name="type" val="Monster"/>
 		<set name="exp" val="7133"/>
 		<set name="sp" val="810"/>
 		<set name="hp" val="39.74519"/>
@@ -317,8 +309,7 @@
 		<set name="walkSpd" val="50"/>
 		<set name="runSpd" val="100"/>
 		<set name="dropHerbGroup" val="0"/>
-		<set name="attackRange" val="40"/>
-		<ai type="default" ssCount="0" ssRate="0" spsCount="0" spsRate="0" aggro="0" canMove="true" seedable="false"/>
+		<ai type="DEFAULT" ssCount="0" ssRate="0" spsCount="0" spsRate="0" aggro="0" canMove="true" seedable="false"/>
 		<skills>
 			<skill id="4416" level="19"/>
 		</skills>
@@ -329,7 +320,7 @@
 		<set name="height" val="40"/>
 		<set name="rHand" val="0"/>
 		<set name="lHand" val="0"/>
-		<set name="type" val="L2Monster"/>
+		<set name="type" val="Monster"/>
 		<set name="exp" val="7557"/>
 		<set name="sp" val="858"/>
 		<set name="hp" val="39.74519"/>
@@ -352,8 +343,7 @@
 		<set name="walkSpd" val="50"/>
 		<set name="runSpd" val="100"/>
 		<set name="dropHerbGroup" val="0"/>
-		<set name="attackRange" val="40"/>
-		<ai type="default" ssCount="0" ssRate="0" spsCount="0" spsRate="0" aggro="0" canMove="true" seedable="false"/>
+		<ai type="DEFAULT" ssCount="0" ssRate="0" spsCount="0" spsRate="0" aggro="0" canMove="true" seedable="false"/>
 		<skills>
 			<skill id="4416" level="19"/>
 		</skills>
@@ -364,7 +354,7 @@
 		<set name="height" val="10"/>
 		<set name="rHand" val="0"/>
 		<set name="lHand" val="0"/>
-		<set name="type" val="L2Npc"/>
+		<set name="type" val="Folk"/>
 		<set name="exp" val="0"/>
 		<set name="sp" val="0"/>
 		<set name="hp" val="2444.46819"/>
@@ -387,8 +377,7 @@
 		<set name="walkSpd" val="50"/>
 		<set name="runSpd" val="20"/>
 		<set name="dropHerbGroup" val="0"/>
-		<set name="attackRange" val="40"/>
-		<ai type="default" ssCount="0" ssRate="0" spsCount="0" spsRate="0" aggro="0" canMove="true" seedable="false"/>
+		<ai type="DEFAULT" ssCount="0" ssRate="0" spsCount="0" spsRate="0" aggro="0" canMove="true" seedable="false"/>
 		<skills>
 			<skill id="4045" level="1"/>
 			<skill id="4390" level="1"/>
@@ -401,7 +390,7 @@
 		<set name="height" val="10"/>
 		<set name="rHand" val="0"/>
 		<set name="lHand" val="0"/>
-		<set name="type" val="L2Npc"/>
+		<set name="type" val="Folk"/>
 		<set name="exp" val="0"/>
 		<set name="sp" val="0"/>
 		<set name="hp" val="2444.46819"/>
@@ -424,8 +413,7 @@
 		<set name="walkSpd" val="50"/>
 		<set name="runSpd" val="20"/>
 		<set name="dropHerbGroup" val="0"/>
-		<set name="attackRange" val="40"/>
-		<ai type="default" ssCount="0" ssRate="0" spsCount="0" spsRate="0" aggro="0" canMove="true" seedable="false"/>
+		<ai type="DEFAULT" ssCount="0" ssRate="0" spsCount="0" spsRate="0" aggro="0" canMove="true" seedable="false"/>
 		<skills>
 			<skill id="4045" level="1"/>
 			<skill id="4390" level="1"/>
@@ -438,7 +426,7 @@
 		<set name="height" val="10"/>
 		<set name="rHand" val="0"/>
 		<set name="lHand" val="0"/>
-		<set name="type" val="L2Npc"/>
+		<set name="type" val="Folk"/>
 		<set name="exp" val="0"/>
 		<set name="sp" val="0"/>
 		<set name="hp" val="2444.46819"/>
@@ -461,8 +449,7 @@
 		<set name="walkSpd" val="50"/>
 		<set name="runSpd" val="20"/>
 		<set name="dropHerbGroup" val="0"/>
-		<set name="attackRange" val="40"/>
-		<ai type="default" ssCount="0" ssRate="0" spsCount="0" spsRate="0" aggro="0" canMove="true" seedable="false"/>
+		<ai type="DEFAULT" ssCount="0" ssRate="0" spsCount="0" spsRate="0" aggro="0" canMove="true" seedable="false"/>
 		<skills>
 			<skill id="4045" level="1"/>
 			<skill id="4390" level="1"/>
@@ -475,7 +462,7 @@
 		<set name="height" val="10"/>
 		<set name="rHand" val="0"/>
 		<set name="lHand" val="0"/>
-		<set name="type" val="L2Npc"/>
+		<set name="type" val="Folk"/>
 		<set name="exp" val="0"/>
 		<set name="sp" val="0"/>
 		<set name="hp" val="2444.46819"/>
@@ -498,8 +485,7 @@
 		<set name="walkSpd" val="50"/>
 		<set name="runSpd" val="20"/>
 		<set name="dropHerbGroup" val="0"/>
-		<set name="attackRange" val="40"/>
-		<ai type="default" ssCount="0" ssRate="0" spsCount="0" spsRate="0" aggro="0" canMove="true" seedable="false"/>
+		<ai type="DEFAULT" ssCount="0" ssRate="0" spsCount="0" spsRate="0" aggro="0" canMove="true" seedable="false"/>
 		<skills>
 			<skill id="4045" level="1"/>
 			<skill id="4390" level="1"/>
@@ -512,7 +498,7 @@
 		<set name="height" val="10"/>
 		<set name="rHand" val="0"/>
 		<set name="lHand" val="0"/>
-		<set name="type" val="L2Npc"/>
+		<set name="type" val="Folk"/>
 		<set name="exp" val="0"/>
 		<set name="sp" val="0"/>
 		<set name="hp" val="2444.46819"/>
@@ -535,8 +521,7 @@
 		<set name="walkSpd" val="50"/>
 		<set name="runSpd" val="20"/>
 		<set name="dropHerbGroup" val="0"/>
-		<set name="attackRange" val="40"/>
-		<ai type="default" ssCount="0" ssRate="0" spsCount="0" spsRate="0" aggro="0" canMove="true" seedable="false"/>
+		<ai type="DEFAULT" ssCount="0" ssRate="0" spsCount="0" spsRate="0" aggro="0" canMove="true" seedable="false"/>
 		<skills>
 			<skill id="4045" level="1"/>
 			<skill id="4390" level="1"/>
@@ -549,7 +534,7 @@
 		<set name="height" val="10"/>
 		<set name="rHand" val="0"/>
 		<set name="lHand" val="0"/>
-		<set name="type" val="L2Npc"/>
+		<set name="type" val="Folk"/>
 		<set name="exp" val="0"/>
 		<set name="sp" val="0"/>
 		<set name="hp" val="2444.46819"/>
@@ -572,8 +557,7 @@
 		<set name="walkSpd" val="50"/>
 		<set name="runSpd" val="20"/>
 		<set name="dropHerbGroup" val="0"/>
-		<set name="attackRange" val="40"/>
-		<ai type="default" ssCount="0" ssRate="0" spsCount="0" spsRate="0" aggro="0" canMove="true" seedable="false"/>
+		<ai type="DEFAULT" ssCount="0" ssRate="0" spsCount="0" spsRate="0" aggro="0" canMove="true" seedable="false"/>
 		<skills>
 			<skill id="4045" level="1"/>
 			<skill id="4390" level="1"/>
@@ -586,7 +570,7 @@
 		<set name="height" val="10"/>
 		<set name="rHand" val="0"/>
 		<set name="lHand" val="0"/>
-		<set name="type" val="L2Npc"/>
+		<set name="type" val="Folk"/>
 		<set name="exp" val="0"/>
 		<set name="sp" val="0"/>
 		<set name="hp" val="2444.46819"/>
@@ -609,8 +593,7 @@
 		<set name="walkSpd" val="50"/>
 		<set name="runSpd" val="20"/>
 		<set name="dropHerbGroup" val="0"/>
-		<set name="attackRange" val="40"/>
-		<ai type="default" ssCount="0" ssRate="0" spsCount="0" spsRate="0" aggro="0" canMove="true" seedable="false"/>
+		<ai type="DEFAULT" ssCount="0" ssRate="0" spsCount="0" spsRate="0" aggro="0" canMove="true" seedable="false"/>
 		<skills>
 			<skill id="4045" level="1"/>
 			<skill id="4390" level="1"/>
@@ -623,7 +606,7 @@
 		<set name="height" val="10"/>
 		<set name="rHand" val="0"/>
 		<set name="lHand" val="0"/>
-		<set name="type" val="L2Npc"/>
+		<set name="type" val="Folk"/>
 		<set name="exp" val="0"/>
 		<set name="sp" val="0"/>
 		<set name="hp" val="2444.46819"/>
@@ -646,8 +629,7 @@
 		<set name="walkSpd" val="50"/>
 		<set name="runSpd" val="20"/>
 		<set name="dropHerbGroup" val="0"/>
-		<set name="attackRange" val="40"/>
-		<ai type="default" ssCount="0" ssRate="0" spsCount="0" spsRate="0" aggro="0" canMove="true" seedable="false"/>
+		<ai type="DEFAULT" ssCount="0" ssRate="0" spsCount="0" spsRate="0" aggro="0" canMove="true" seedable="false"/>
 		<skills>
 			<skill id="4045" level="1"/>
 			<skill id="4390" level="1"/>
@@ -660,7 +642,7 @@
 		<set name="height" val="10"/>
 		<set name="rHand" val="0"/>
 		<set name="lHand" val="0"/>
-		<set name="type" val="L2Npc"/>
+		<set name="type" val="Folk"/>
 		<set name="exp" val="0"/>
 		<set name="sp" val="0"/>
 		<set name="hp" val="2444.46819"/>
@@ -683,8 +665,7 @@
 		<set name="walkSpd" val="50"/>
 		<set name="runSpd" val="20"/>
 		<set name="dropHerbGroup" val="0"/>
-		<set name="attackRange" val="40"/>
-		<ai type="default" ssCount="0" ssRate="0" spsCount="0" spsRate="0" aggro="0" canMove="true" seedable="false"/>
+		<ai type="DEFAULT" ssCount="0" ssRate="0" spsCount="0" spsRate="0" aggro="0" canMove="true" seedable="false"/>
 		<skills>
 			<skill id="4045" level="1"/>
 			<skill id="4390" level="1"/>
@@ -697,7 +678,7 @@
 		<set name="height" val="10"/>
 		<set name="rHand" val="0"/>
 		<set name="lHand" val="0"/>
-		<set name="type" val="L2Npc"/>
+		<set name="type" val="Folk"/>
 		<set name="exp" val="0"/>
 		<set name="sp" val="0"/>
 		<set name="hp" val="2444.46819"/>
@@ -720,8 +701,7 @@
 		<set name="walkSpd" val="50"/>
 		<set name="runSpd" val="20"/>
 		<set name="dropHerbGroup" val="0"/>
-		<set name="attackRange" val="40"/>
-		<ai type="default" ssCount="0" ssRate="0" spsCount="0" spsRate="0" aggro="0" canMove="true" seedable="false"/>
+		<ai type="DEFAULT" ssCount="0" ssRate="0" spsCount="0" spsRate="0" aggro="0" canMove="true" seedable="false"/>
 		<skills>
 			<skill id="4045" level="1"/>
 			<skill id="4390" level="1"/>
@@ -734,7 +714,7 @@
 		<set name="height" val="10"/>
 		<set name="rHand" val="0"/>
 		<set name="lHand" val="0"/>
-		<set name="type" val="L2Npc"/>
+		<set name="type" val="Folk"/>
 		<set name="exp" val="0"/>
 		<set name="sp" val="0"/>
 		<set name="hp" val="2444.46819"/>
@@ -757,8 +737,7 @@
 		<set name="walkSpd" val="50"/>
 		<set name="runSpd" val="20"/>
 		<set name="dropHerbGroup" val="0"/>
-		<set name="attackRange" val="40"/>
-		<ai type="default" ssCount="0" ssRate="0" spsCount="0" spsRate="0" aggro="0" canMove="true" seedable="false"/>
+		<ai type="DEFAULT" ssCount="0" ssRate="0" spsCount="0" spsRate="0" aggro="0" canMove="true" seedable="false"/>
 		<skills>
 			<skill id="4045" level="1"/>
 			<skill id="4390" level="1"/>
@@ -771,7 +750,7 @@
 		<set name="height" val="10"/>
 		<set name="rHand" val="0"/>
 		<set name="lHand" val="0"/>
-		<set name="type" val="L2Npc"/>
+		<set name="type" val="Folk"/>
 		<set name="exp" val="0"/>
 		<set name="sp" val="0"/>
 		<set name="hp" val="2444.46819"/>
@@ -794,8 +773,7 @@
 		<set name="walkSpd" val="50"/>
 		<set name="runSpd" val="20"/>
 		<set name="dropHerbGroup" val="0"/>
-		<set name="attackRange" val="40"/>
-		<ai type="default" ssCount="0" ssRate="0" spsCount="0" spsRate="0" aggro="0" canMove="true" seedable="false"/>
+		<ai type="DEFAULT" ssCount="0" ssRate="0" spsCount="0" spsRate="0" aggro="0" canMove="true" seedable="false"/>
 		<skills>
 			<skill id="4045" level="1"/>
 			<skill id="4390" level="1"/>
@@ -808,7 +786,7 @@
 		<set name="height" val="10"/>
 		<set name="rHand" val="0"/>
 		<set name="lHand" val="0"/>
-		<set name="type" val="L2Npc"/>
+		<set name="type" val="Folk"/>
 		<set name="exp" val="0"/>
 		<set name="sp" val="0"/>
 		<set name="hp" val="2444.46819"/>
@@ -831,8 +809,7 @@
 		<set name="walkSpd" val="50"/>
 		<set name="runSpd" val="20"/>
 		<set name="dropHerbGroup" val="0"/>
-		<set name="attackRange" val="40"/>
-		<ai type="default" ssCount="0" ssRate="0" spsCount="0" spsRate="0" aggro="0" canMove="true" seedable="false"/>
+		<ai type="DEFAULT" ssCount="0" ssRate="0" spsCount="0" spsRate="0" aggro="0" canMove="true" seedable="false"/>
 		<skills>
 			<skill id="4045" level="1"/>
 			<skill id="4390" level="1"/>
@@ -845,7 +822,7 @@
 		<set name="height" val="18.3"/>
 		<set name="rHand" val="0"/>
 		<set name="lHand" val="0"/>
-		<set name="type" val="L2Npc"/>
+		<set name="type" val="Folk"/>
 		<set name="exp" val="0"/>
 		<set name="sp" val="0"/>
 		<set name="hp" val="680"/>
@@ -868,8 +845,7 @@
 		<set name="walkSpd" val="60"/>
 		<set name="runSpd" val="160"/>
 		<set name="dropHerbGroup" val="0"/>
-		<set name="attackRange" val="40"/>
-		<ai type="default" ssCount="0" ssRate="0" spsCount="0" spsRate="0" aggro="0" clan="pig_clan" clanRange="1000" canMove="true" seedable="false"/>
+		<ai type="DEFAULT" ssCount="0" ssRate="0" spsCount="0" spsRate="0" aggro="0" clan="pig_clan" clanRange="1000" canMove="true" seedable="false"/>
 		<skills>
 			<skill id="4416" level="4"/>
 		</skills>
@@ -880,7 +856,7 @@
 		<set name="height" val="18.3"/>
 		<set name="rHand" val="0"/>
 		<set name="lHand" val="0"/>
-		<set name="type" val="L2Npc"/>
+		<set name="type" val="Folk"/>
 		<set name="exp" val="0"/>
 		<set name="sp" val="0"/>
 		<set name="hp" val="680"/>
@@ -903,8 +879,7 @@
 		<set name="walkSpd" val="60"/>
 		<set name="runSpd" val="160"/>
 		<set name="dropHerbGroup" val="0"/>
-		<set name="attackRange" val="40"/>
-		<ai type="default" ssCount="0" ssRate="0" spsCount="0" spsRate="0" aggro="0" clan="pig_clan" clanRange="1000" canMove="true" seedable="false"/>
+		<ai type="DEFAULT" ssCount="0" ssRate="0" spsCount="0" spsRate="0" aggro="0" clan="pig_clan" clanRange="1000" canMove="true" seedable="false"/>
 		<skills>
 			<skill id="4416" level="4"/>
 		</skills>
@@ -915,7 +890,7 @@
 		<set name="height" val="18.3"/>
 		<set name="rHand" val="0"/>
 		<set name="lHand" val="0"/>
-		<set name="type" val="L2Npc"/>
+		<set name="type" val="Folk"/>
 		<set name="exp" val="0"/>
 		<set name="sp" val="0"/>
 		<set name="hp" val="680"/>
@@ -938,8 +913,7 @@
 		<set name="walkSpd" val="60"/>
 		<set name="runSpd" val="160"/>
 		<set name="dropHerbGroup" val="0"/>
-		<set name="attackRange" val="40"/>
-		<ai type="default" ssCount="0" ssRate="0" spsCount="0" spsRate="0" aggro="0" clan="pig_clan" clanRange="1000" canMove="true" seedable="false"/>
+		<ai type="DEFAULT" ssCount="0" ssRate="0" spsCount="0" spsRate="0" aggro="0" clan="pig_clan" clanRange="1000" canMove="true" seedable="false"/>
 		<skills>
 			<skill id="4416" level="4"/>
 		</skills>
@@ -950,7 +924,7 @@
 		<set name="height" val="38.7"/>
 		<set name="rHand" val="0"/>
 		<set name="lHand" val="0"/>
-		<set name="type" val="L2Npc"/>
+		<set name="type" val="Folk"/>
 		<set name="exp" val="0"/>
 		<set name="sp" val="0"/>
 		<set name="hp" val="3400"/>
@@ -973,8 +947,7 @@
 		<set name="walkSpd" val="60"/>
 		<set name="runSpd" val="160"/>
 		<set name="dropHerbGroup" val="0"/>
-		<set name="attackRange" val="40"/>
-		<ai type="default" ssCount="0" ssRate="0" spsCount="0" spsRate="0" aggro="0" clan="pig_clan" clanRange="1000" canMove="true" seedable="false"/>
+		<ai type="DEFAULT" ssCount="0" ssRate="0" spsCount="0" spsRate="0" aggro="0" clan="pig_clan" clanRange="1000" canMove="true" seedable="false"/>
 		<skills>
 			<skill id="4416" level="4"/>
 		</skills>
@@ -985,7 +958,7 @@
 		<set name="height" val="18.3"/>
 		<set name="rHand" val="0"/>
 		<set name="lHand" val="0"/>
-		<set name="type" val="L2Npc"/>
+		<set name="type" val="Folk"/>
 		<set name="exp" val="0"/>
 		<set name="sp" val="0"/>
 		<set name="hp" val="680"/>
@@ -1008,8 +981,7 @@
 		<set name="walkSpd" val="60"/>
 		<set name="runSpd" val="160"/>
 		<set name="dropHerbGroup" val="0"/>
-		<set name="attackRange" val="40"/>
-		<ai type="default" ssCount="0" ssRate="0" spsCount="0" spsRate="0" aggro="0" clan="pig_clan" clanRange="1000" canMove="true" seedable="false"/>
+		<ai type="DEFAULT" ssCount="0" ssRate="0" spsCount="0" spsRate="0" aggro="0" clan="pig_clan" clanRange="1000" canMove="true" seedable="false"/>
 		<skills>
 			<skill id="4416" level="4"/>
 		</skills>
@@ -1020,7 +992,7 @@
 		<set name="height" val="8.5"/>
 		<set name="rHand" val="0"/>
 		<set name="lHand" val="0"/>
-		<set name="type" val="L2Npc"/>
+		<set name="type" val="Folk"/>
 		<set name="exp" val="0"/>
 		<set name="sp" val="0"/>
 		<set name="hp" val="2880.37628"/>
@@ -1043,8 +1015,7 @@
 		<set name="walkSpd" val="80"/>
 		<set name="runSpd" val="1"/>
 		<set name="dropHerbGroup" val="0"/>
-		<set name="attackRange" val="40"/>
-		<ai type="default" ssCount="0" ssRate="0" spsCount="0" spsRate="0" aggro="500" canMove="true" seedable="false"/>
+		<ai type="DEFAULT" ssCount="0" ssRate="0" spsCount="0" spsRate="0" aggro="500" canMove="true" seedable="false"/>
 		<skills>
 			<skill id="4045" level="1"/>
 			<skill id="4416" level="2"/>

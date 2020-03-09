@@ -14,14 +14,14 @@
  */
 package net.sf.l2j.gameserver.handler;
 
-import net.sf.l2j.gameserver.model.actor.instance.L2PcInstance;
+import net.sf.l2j.gameserver.model.actor.instance.Player;
 
 /**
  * @author Baggos
  */
 public interface IVoicedCommandHandler
 {
-	public boolean useVoicedCommand(String command, L2PcInstance activeChar, String params);
+	public boolean useVoicedCommand(String command, Player activeChar, String params);
 	
 	public String[] getVoicedCommandList();
 }

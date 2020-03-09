@@ -14,19 +14,22 @@
  */
 package net.sf.l2j.gameserver.handler.admincommandhandlers;
 
+import java.util.logging.Logger;
+
 import net.sf.l2j.Config;
 import net.sf.l2j.gameserver.events.TvTEvent;
 import net.sf.l2j.gameserver.events.TvTEventTeleport;
 import net.sf.l2j.gameserver.handler.IAdminCommandHandler;
-import net.sf.l2j.gameserver.model.L2Object;
-import net.sf.l2j.gameserver.model.actor.instance.L2PcInstance;
-import net.sf.l2j.gameserver.util.GMAudit;
+import net.sf.l2j.gameserver.model.WorldObject;
+import net.sf.l2j.gameserver.model.actor.instance.Player;
 
 /**
  * @author FBIagent The class handles administrator commands for the TvT Engine which was first implemented by FBIagent
  */
 public class AdminTvTEvent implements IAdminCommandHandler
 {
+	private static final Logger GMAUDIT_LOG = Logger.getLogger("gmaudit");
+	
 	private static final String[] ADMIN_COMMANDS =
 	{
 		"admin_tvt_add",
@@ -34,34 +37,33 @@ public class AdminTvTEvent implements IAdminCommandHandler
 	};
 	
 	@Override
-	public boolean useAdminCommand(String command, L2PcInstance adminInstance)
+	public boolean useAdminCommand(String command, Player adminInstance)
 	{
-		
-		GMAudit.auditGMAction(adminInstance.getName(), command, (adminInstance.getTarget() != null ? adminInstance.getTarget().getName() : "no-target"), "");
+		GMAUDIT_LOG.info(adminInstance.getName() + " [" + adminInstance.getObjectId() + "] used '" + command + "' command on: " + ((adminInstance.getTarget() != null) ? adminInstance.getTarget().getName() : "none"));
 		
 		if (command.equals("admin_tvt_add"))
 		{
-			L2Object target = adminInstance.getTarget();
+			WorldObject target = adminInstance.getTarget();
 			
-			if (target == null || !(target instanceof L2PcInstance))
+			if (target == null || !(target instanceof Player))
 			{
 				adminInstance.sendMessage("You should select a player!");
 				return true;
 			}
 			
-			add(adminInstance, (L2PcInstance) target);
+			add(adminInstance, (Player) target);
 		}
 		else if (command.equals("admin_tvt_remove"))
 		{
-			L2Object target = adminInstance.getTarget();
+			WorldObject target = adminInstance.getTarget();
 			
-			if (target == null || !(target instanceof L2PcInstance))
+			if (target == null || !(target instanceof Player))
 			{
 				adminInstance.sendMessage("You should select a player!");
 				return true;
 			}
 			
-			remove(adminInstance, (L2PcInstance) target);
+			remove(adminInstance, (Player) target);
 		}
 		
 		return true;
@@ -73,7 +75,7 @@ public class AdminTvTEvent implements IAdminCommandHandler
 		return ADMIN_COMMANDS;
 	}
 	
-	private static void add(L2PcInstance adminInstance, L2PcInstance playerInstance)
+	private static void add(Player adminInstance, Player playerInstance)
 	{
 		if (TvTEvent.isPlayerParticipant(playerInstance.getName()))
 		{
@@ -92,7 +94,7 @@ public class AdminTvTEvent implements IAdminCommandHandler
 			new TvTEventTeleport(playerInstance, TvTEvent.getParticipantTeamCoordinates(playerInstance.getName()), true, false);
 	}
 	
-	private static void remove(L2PcInstance adminInstance, L2PcInstance playerInstance)
+	private static void remove(Player adminInstance, Player playerInstance)
 	{
 		if (!TvTEvent.removeParticipant(playerInstance.getName()))
 		{

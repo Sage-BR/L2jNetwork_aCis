@@ -1,35 +1,18 @@
-/*
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package net.sf.l2j.gameserver.scripting.scripts.ai.group;
 
 import net.sf.l2j.commons.random.Rnd;
-import net.sf.l2j.gameserver.datatables.SkillTable;
-import net.sf.l2j.gameserver.model.L2Object;
-import net.sf.l2j.gameserver.model.L2Skill;
-import net.sf.l2j.gameserver.model.actor.L2Npc;
-import net.sf.l2j.gameserver.model.actor.instance.L2ChestInstance;
-import net.sf.l2j.gameserver.model.actor.instance.L2PcInstance;
-import net.sf.l2j.gameserver.scripting.EventType;
-import net.sf.l2j.gameserver.scripting.scripts.ai.AbstractNpcAI;
-import net.sf.l2j.gameserver.util.Util;
+import net.sf.l2j.commons.util.ArraysUtil;
 
-/**
- * Chest AI implementation.
- * @author Fulminus
- */
-public class Chests extends AbstractNpcAI
+import net.sf.l2j.gameserver.data.SkillTable;
+import net.sf.l2j.gameserver.model.L2Skill;
+import net.sf.l2j.gameserver.model.WorldObject;
+import net.sf.l2j.gameserver.model.actor.Npc;
+import net.sf.l2j.gameserver.model.actor.instance.Chest;
+import net.sf.l2j.gameserver.model.actor.instance.Player;
+import net.sf.l2j.gameserver.scripting.EventType;
+import net.sf.l2j.gameserver.scripting.scripts.ai.L2AttackableAIScript;
+
+public class Chests extends L2AttackableAIScript
 {
 	private static final int SKILL_DELUXE_KEY = 2229;
 	private static final int SKILL_BOX_KEY = 2065;
@@ -103,20 +86,24 @@ public class Chests extends AbstractNpcAI
 	public Chests()
 	{
 		super("ai/group");
-		
-		registerMobs(NPC_IDS, EventType.ON_ATTACK, EventType.ON_SKILL_SEE);
 	}
 	
 	@Override
-	public String onSkillSee(L2Npc npc, L2PcInstance caster, L2Skill skill, L2Object[] targets, boolean isPet)
+	protected void registerNpcs()
 	{
-		if (npc instanceof L2ChestInstance)
+		addEventIds(NPC_IDS, EventType.ON_ATTACK, EventType.ON_SKILL_SEE);
+	}
+	
+	@Override
+	public String onSkillSee(Npc npc, Player caster, L2Skill skill, WorldObject[] targets, boolean isPet)
+	{
+		if (npc instanceof Chest)
 		{
 			// This behavior is only run when the target of skill is the passed npc.
-			if (!Util.contains(targets, npc))
+			if (!ArraysUtil.contains(targets, npc))
 				return super.onSkillSee(npc, caster, skill, targets, isPet);
 			
-			final L2ChestInstance chest = ((L2ChestInstance) npc);
+			final Chest chest = ((Chest) npc);
 			
 			// If this chest has already been interacted, no further AI decisions are needed.
 			if (!chest.isInteracted())
@@ -163,11 +150,11 @@ public class Chests extends AbstractNpcAI
 	}
 	
 	@Override
-	public String onAttack(L2Npc npc, L2PcInstance attacker, int damage, boolean isPet)
+	public String onAttack(Npc npc, Player attacker, int damage, boolean isPet, L2Skill skill)
 	{
-		if (npc instanceof L2ChestInstance)
+		if (npc instanceof Chest)
 		{
-			final L2ChestInstance chest = ((L2ChestInstance) npc);
+			final Chest chest = ((Chest) npc);
 			
 			// If this has already been interacted, no further AI decisions are needed.
 			if (!chest.isInteracted())
@@ -182,6 +169,6 @@ public class Chests extends AbstractNpcAI
 					attack(chest, ((isPet) ? attacker.getPet() : attacker), ((damage * 100) / (chest.getLevel() + 7)));
 			}
 		}
-		return super.onAttack(npc, attacker, damage, isPet);
+		return super.onAttack(npc, attacker, damage, isPet, skill);
 	}
 }

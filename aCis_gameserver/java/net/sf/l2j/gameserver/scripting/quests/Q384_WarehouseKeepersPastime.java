@@ -1,15 +1,3 @@
-/*
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package net.sf.l2j.gameserver.scripting.quests;
 
 import java.util.HashMap;
@@ -17,11 +5,12 @@ import java.util.Map;
 
 import net.sf.l2j.commons.lang.StringUtil;
 import net.sf.l2j.commons.random.Rnd;
-import net.sf.l2j.gameserver.model.actor.L2Npc;
-import net.sf.l2j.gameserver.model.actor.instance.L2PcInstance;
+import net.sf.l2j.commons.util.ArraysUtil;
+
+import net.sf.l2j.gameserver.model.actor.Npc;
+import net.sf.l2j.gameserver.model.actor.instance.Player;
 import net.sf.l2j.gameserver.scripting.Quest;
 import net.sf.l2j.gameserver.scripting.QuestState;
-import net.sf.l2j.gameserver.util.Util;
 
 public class Q384_WarehouseKeepersPastime extends Quest
 {
@@ -138,7 +127,7 @@ public class Q384_WarehouseKeepersPastime extends Quest
 			100,
 			951
 		}
-	// Scroll: Enchant Weapon (C)
+		// Scroll: Enchant Weapon (C)
 	};
 	
 	private static final int[][] _rewards_10_lose =
@@ -159,7 +148,7 @@ public class Q384_WarehouseKeepersPastime extends Quest
 			100,
 			917
 		}
-	// Necklace of Mermaid
+		// Necklace of Mermaid
 	};
 	
 	private static final int[][] _rewards_100_win =
@@ -180,7 +169,7 @@ public class Q384_WarehouseKeepersPastime extends Quest
 			100,
 			401
 		}
-	// Drake Leather Armor
+		// Drake Leather Armor
 	};
 	
 	private static final int[][] _rewards_100_lose =
@@ -201,7 +190,7 @@ public class Q384_WarehouseKeepersPastime extends Quest
 			100,
 			135
 		}
-	// Samurai Longsword
+		// Samurai Longsword
 	};
 	
 	public Q384_WarehouseKeepersPastime()
@@ -218,7 +207,7 @@ public class Q384_WarehouseKeepersPastime extends Quest
 	}
 	
 	@Override
-	public String onAdvEvent(String event, L2Npc npc, L2PcInstance player)
+	public String onAdvEvent(String event, Npc npc, Player player)
 	{
 		String htmltext = event;
 		QuestState st = player.getQuestState(qn);
@@ -276,7 +265,7 @@ public class Q384_WarehouseKeepersPastime extends Quest
 			String playerArray = st.get("playerArray");
 			
 			// Verify if the given number is already on the player array, if yes, it's invalid, otherwise register it.
-			if (Util.contains(playerArray.split(""), number))
+			if (ArraysUtil.contains(playerArray.split(""), number))
 				htmltext = fillBoard(st, getHtmlText(npcId + "-" + String.valueOf(14 + 2 * playerArray.length()) + ".htm"));
 			else
 			{
@@ -295,7 +284,7 @@ public class Q384_WarehouseKeepersPastime extends Quest
 			String playerArray = st.get("playerArray");
 			
 			// Verify if the given number is already on the player array, if yes, it's invalid, otherwise calculate reward.
-			if (Util.contains(playerArray.split(""), number))
+			if (ArraysUtil.contains(playerArray.split(""), number))
 				htmltext = fillBoard(st, getHtmlText(npcId + "-26.htm"));
 			else
 			{
@@ -313,7 +302,7 @@ public class Q384_WarehouseKeepersPastime extends Quest
 					// test line combination
 					boolean won = true;
 					for (int index : map)
-						won &= Util.contains(playerChoice, board[index]);
+						won &= ArraysUtil.contains(playerChoice, board[index]);
 					
 					// cut the loop, when you won
 					if (won)
@@ -357,7 +346,7 @@ public class Q384_WarehouseKeepersPastime extends Quest
 				for (int i = 1; i < 10; i++)
 				{
 					htmltext = htmltext.replace("<?Cell" + i + "?>", board[i]);
-					htmltext = htmltext.replace("<?FontColor" + i + "?>", (Util.contains(playerChoice, board[i])) ? "ff0000" : "ffffff");
+					htmltext = htmltext.replace("<?FontColor" + i + "?>", (ArraysUtil.contains(playerChoice, board[i])) ? "ff0000" : "ffffff");
 				}
 			}
 		}
@@ -366,7 +355,7 @@ public class Q384_WarehouseKeepersPastime extends Quest
 	}
 	
 	@Override
-	public String onTalk(L2Npc npc, L2PcInstance player)
+	public String onTalk(Npc npc, Player player)
 	{
 		String htmltext = getNoQuestMsg();
 		QuestState st = player.getQuestState(qn);
@@ -397,9 +386,9 @@ public class Q384_WarehouseKeepersPastime extends Quest
 	}
 	
 	@Override
-	public String onKill(L2Npc npc, L2PcInstance player, boolean isPet)
+	public String onKill(Npc npc, Player player, boolean isPet)
 	{
-		L2PcInstance partyMember = getRandomPartyMemberState(player, npc, STATE_STARTED);
+		Player partyMember = getRandomPartyMemberState(player, npc, STATE_STARTED);
 		if (partyMember == null)
 			return null;
 		
@@ -414,7 +403,7 @@ public class Q384_WarehouseKeepersPastime extends Quest
 		final String[] board = st.get("board").split("");
 		
 		for (int i = 1; i < 10; i++)
-			htmltext = htmltext.replace("<?Cell" + i + "?>", (Util.contains(playerArray, board[i])) ? board[i] : "?");
+			htmltext = htmltext.replace("<?Cell" + i + "?>", (ArraysUtil.contains(playerArray, board[i])) ? board[i] : "?");
 		
 		return htmltext;
 	}

@@ -1,43 +1,31 @@
-/*
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- *
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package net.sf.l2j.gameserver.model;
 
 import java.util.concurrent.ScheduledFuture;
 
-import net.sf.l2j.gameserver.ThreadPoolManager;
+import net.sf.l2j.commons.concurrent.ThreadPool;
+
+import net.sf.l2j.gameserver.model.actor.instance.Player;
+import net.sf.l2j.gameserver.network.clientpackets.Say2;
+import net.sf.l2j.gameserver.network.serverpackets.CreatureSay;
 import net.sf.l2j.gameserver.util.Broadcast;
 
 /**
- * Model of an announcement
- * @see net.sf.l2j.gameserver.datatables.AnnouncementTable
- * @author Sikken, Tryskell
+ * A datatype used to retain informations for announcements. It notably holds a {@link ScheduledFuture}.
  */
 public class Announcement implements Runnable
 {
 	protected final String _message;
 	
-	protected boolean _critical = false;
-	protected boolean _auto = false;
-	protected boolean _unlimited = false;
+	protected boolean _critical;
+	protected boolean _auto;
+	protected boolean _unlimited;
 	
 	protected int _initialDelay;
 	protected int _delay;
 	protected int _limit;
 	protected int _tempLimit; // Temporary limit, used by current timer.
 	
-	protected ScheduledFuture<?> _task = null;
+	protected ScheduledFuture<?> _task;
 	
 	public Announcement(String message, boolean critical)
 	{
@@ -59,12 +47,12 @@ public class Announcement implements Runnable
 			switch (_limit)
 			{
 				case 0: // unlimited
-					_task = ThreadPoolManager.getInstance().scheduleGeneralAtFixedRate(this, _initialDelay * 1000, _delay * 1000); // self schedule at fixed rate
+					_task = ThreadPool.scheduleAtFixedRate(this, _initialDelay * 1000, _delay * 1000); // self schedule at fixed rate
 					_unlimited = true;
 					break;
 				
 				default:
-					_task = ThreadPoolManager.getInstance().scheduleGeneral(this, _initialDelay * 1000); // self schedule (initial)
+					_task = ThreadPool.schedule(this, _initialDelay * 1000); // self schedule (initial)
 					_tempLimit = _limit;
 					break;
 			}
@@ -79,7 +67,7 @@ public class Announcement implements Runnable
 			if (_tempLimit == 0)
 				return;
 			
-			_task = ThreadPoolManager.getInstance().scheduleGeneral(this, _delay * 1000); // self schedule (worker)
+			_task = ThreadPool.schedule(this, _delay * 1000); // self schedule (worker)
 			_tempLimit--;
 		}
 		Broadcast.announceToOnlinePlayers(_message, _critical);
@@ -124,6 +112,19 @@ public class Announcement implements Runnable
 		}
 	}
 	
+	public static void VoteAnnouncements(String text)
+	{
+		CreatureSay cs = new CreatureSay(0, Say2.HERO_VOICE, "Vote System", "" + text);
+		for (Player player : World.getInstance().getPlayers())
+		{
+			if (player != null)
+				if (player.isOnlineInt() != 0)
+					player.sendPacket(cs);
+		}
+		
+		cs = null;
+	}
+	
 	public void reloadTask()
 	{
 		stopTask();
@@ -133,12 +134,12 @@ public class Announcement implements Runnable
 			switch (_limit)
 			{
 				case 0: // unlimited
-					_task = ThreadPoolManager.getInstance().scheduleGeneralAtFixedRate(this, _initialDelay * 1000, _delay * 1000); // self schedule at fixed rate
+					_task = ThreadPool.scheduleAtFixedRate(this, _initialDelay * 1000, _delay * 1000); // self schedule at fixed rate
 					_unlimited = true;
 					break;
 				
 				default:
-					_task = ThreadPoolManager.getInstance().scheduleGeneral(this, _initialDelay * 1000); // self schedule (initial)
+					_task = ThreadPool.schedule(this, _initialDelay * 1000); // self schedule (initial)
 					_tempLimit = _limit;
 					break;
 			}

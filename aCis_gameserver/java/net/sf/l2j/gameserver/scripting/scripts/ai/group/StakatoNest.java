@@ -1,27 +1,15 @@
-/*
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- *
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package net.sf.l2j.gameserver.scripting.scripts.ai.group;
 
+import net.sf.l2j.commons.concurrent.ThreadPool;
 import net.sf.l2j.commons.random.Rnd;
-import net.sf.l2j.gameserver.ThreadPoolManager;
-import net.sf.l2j.gameserver.model.actor.L2Attackable;
-import net.sf.l2j.gameserver.model.actor.L2Npc;
-import net.sf.l2j.gameserver.model.actor.instance.L2MonsterInstance;
-import net.sf.l2j.gameserver.model.actor.instance.L2PcInstance;
+
+import net.sf.l2j.gameserver.model.L2Skill;
+import net.sf.l2j.gameserver.model.actor.Attackable;
+import net.sf.l2j.gameserver.model.actor.Npc;
+import net.sf.l2j.gameserver.model.actor.instance.Monster;
+import net.sf.l2j.gameserver.model.actor.instance.Player;
 import net.sf.l2j.gameserver.network.serverpackets.MagicSkillUse;
-import net.sf.l2j.gameserver.scripting.scripts.ai.AbstractNpcAI;
+import net.sf.l2j.gameserver.scripting.scripts.ai.L2AttackableAIScript;
 
 /**
  * This AI handles following behaviors :
@@ -34,102 +22,106 @@ import net.sf.l2j.gameserver.scripting.scripts.ai.AbstractNpcAI;
  * </ul>
  * As NCSoft implemented it on postIL, but skills exist since IL, I decided to implemented that script to "honor" the idea (which is kinda funny).
  */
-public class StakatoNest extends AbstractNpcAI
+public class StakatoNest extends L2AttackableAIScript
 {
-	private static final int SpikedStakatoGuard = 22107;
-	private static final int FemaleSpikedStakato = 22108;
-	private static final int MaleSpikedStakato1 = 22109;
-	private static final int MaleSpikedStakato2 = 22110;
+	private static final int SPIKED_STAKATO_GUARD = 22107;
+	private static final int FEMALE_SPIKED_STAKATO = 22108;
+	private static final int MALE_SPIKED_STAKATO_1 = 22109;
+	private static final int MALE_SPIKED_STAKATO_2 = 22110;
 	
-	private static final int StakatoFollower = 22112;
-	private static final int CannibalisticStakatoLeader1 = 22113;
-	private static final int CannibalisticStakatoLeader2 = 22114;
+	private static final int STAKATO_FOLLOWER = 22112;
+	private static final int CANNIBALISTIC_STAKATO_LEADER_1 = 22113;
+	private static final int CANNIBALISTIC_STAKATO_LEADER_2 = 22114;
 	
-	private static final int SpikedStakatoCaptain = 22117;
-	private static final int SpikedStakatoNurse1 = 22118;
-	private static final int SpikedStakatoNurse2 = 22119;
-	private static final int SpikedStakatoBaby = 22120;
+	private static final int SPIKED_STAKATO_CAPTAIN = 22117;
+	private static final int SPIKED_STAKATO_NURSE_1 = 22118;
+	private static final int SPIKED_STAKATO_NURSE_2 = 22119;
+	private static final int SPIKED_STAKATO_BABY = 22120;
 	
 	public StakatoNest()
 	{
 		super("ai/group");
-		
-		addAttackId(CannibalisticStakatoLeader1, CannibalisticStakatoLeader2);
-		addKillId(MaleSpikedStakato1, FemaleSpikedStakato, SpikedStakatoNurse1, SpikedStakatoBaby);
 	}
 	
 	@Override
-	public String onAttack(L2Npc npc, L2PcInstance player, int damage, boolean isPet)
+	protected void registerNpcs()
+	{
+		addAttackId(CANNIBALISTIC_STAKATO_LEADER_1, CANNIBALISTIC_STAKATO_LEADER_2);
+		addKillId(MALE_SPIKED_STAKATO_1, FEMALE_SPIKED_STAKATO, SPIKED_STAKATO_NURSE_1, SPIKED_STAKATO_BABY);
+	}
+	
+	@Override
+	public String onAttack(Npc npc, Player player, int damage, boolean isPet, L2Skill skill)
 	{
 		if (npc.getCurrentHp() / npc.getMaxHp() < 0.3 && Rnd.get(100) < 5)
 		{
-			for (L2MonsterInstance follower : npc.getKnownList().getKnownTypeInRadius(L2MonsterInstance.class, 400))
+			for (Monster follower : npc.getKnownTypeInRadius(Monster.class, 400))
 			{
-				if (follower.getNpcId() == StakatoFollower && !follower.isDead())
+				if (follower.getNpcId() == STAKATO_FOLLOWER && !follower.isDead())
 				{
 					npc.setIsCastingNow(true);
-					npc.broadcastPacket(new MagicSkillUse(npc, follower, (npc.getNpcId() == CannibalisticStakatoLeader2) ? 4072 : 4073, 1, 3000, 0));
-					ThreadPoolManager.getInstance().scheduleGeneral(new EatTask(npc, follower), 3000L);
+					npc.broadcastPacket(new MagicSkillUse(npc, follower, (npc.getNpcId() == CANNIBALISTIC_STAKATO_LEADER_2) ? 4072 : 4073, 1, 3000, 0));
+					ThreadPool.schedule(new EatTask(npc, follower), 3000L);
 					break;
 				}
 			}
 		}
-		return super.onAttack(npc, player, damage, isPet);
+		return super.onAttack(npc, player, damage, isPet, skill);
 	}
 	
 	@Override
-	public String onKill(L2Npc npc, L2PcInstance killer, boolean isPet)
+	public String onKill(Npc npc, Player killer, boolean isPet)
 	{
 		switch (npc.getNpcId())
 		{
-			case MaleSpikedStakato1:
-				for (L2MonsterInstance angryFemale : npc.getKnownList().getKnownTypeInRadius(L2MonsterInstance.class, 400))
+			case MALE_SPIKED_STAKATO_1:
+				for (Monster angryFemale : npc.getKnownTypeInRadius(Monster.class, 400))
 				{
-					if (angryFemale.getNpcId() == FemaleSpikedStakato && !angryFemale.isDead())
+					if (angryFemale.getNpcId() == FEMALE_SPIKED_STAKATO && !angryFemale.isDead())
 					{
 						for (int i = 0; i < 3; i++)
 						{
-							final L2Npc guard = addSpawn(SpikedStakatoGuard, angryFemale, true, 0, false);
-							attack(((L2Attackable) guard), killer);
+							final Npc guard = addSpawn(SPIKED_STAKATO_GUARD, angryFemale, true, 0, false);
+							attack(((Attackable) guard), killer);
 						}
 					}
 				}
 				break;
 			
-			case FemaleSpikedStakato:
-				for (L2MonsterInstance morphingMale : npc.getKnownList().getKnownTypeInRadius(L2MonsterInstance.class, 400))
+			case FEMALE_SPIKED_STAKATO:
+				for (Monster morphingMale : npc.getKnownTypeInRadius(Monster.class, 400))
 				{
-					if (morphingMale.getNpcId() == MaleSpikedStakato1 && !morphingMale.isDead())
+					if (morphingMale.getNpcId() == MALE_SPIKED_STAKATO_1 && !morphingMale.isDead())
 					{
-						final L2Npc newForm = addSpawn(MaleSpikedStakato2, morphingMale, true, 0, false);
-						attack(((L2Attackable) newForm), killer);
+						final Npc newForm = addSpawn(MALE_SPIKED_STAKATO_2, morphingMale, true, 0, false);
+						attack(((Attackable) newForm), killer);
 						
 						morphingMale.deleteMe();
 					}
 				}
 				break;
 			
-			case SpikedStakatoNurse1:
-				for (L2MonsterInstance baby : npc.getKnownList().getKnownTypeInRadius(L2MonsterInstance.class, 400))
+			case SPIKED_STAKATO_NURSE_1:
+				for (Monster baby : npc.getKnownTypeInRadius(Monster.class, 400))
 				{
-					if (baby.getNpcId() == SpikedStakatoBaby && !baby.isDead())
+					if (baby.getNpcId() == SPIKED_STAKATO_BABY && !baby.isDead())
 					{
 						for (int i = 0; i < 3; i++)
 						{
-							final L2Npc captain = addSpawn(SpikedStakatoCaptain, baby, true, 0, false);
-							attack(((L2Attackable) captain), killer);
+							final Npc captain = addSpawn(SPIKED_STAKATO_CAPTAIN, baby, true, 0, false);
+							attack(((Attackable) captain), killer);
 						}
 					}
 				}
 				break;
 			
-			case SpikedStakatoBaby:
-				for (L2MonsterInstance morphingNurse : npc.getKnownList().getKnownTypeInRadius(L2MonsterInstance.class, 400))
+			case SPIKED_STAKATO_BABY:
+				for (Monster morphingNurse : npc.getKnownTypeInRadius(Monster.class, 400))
 				{
-					if (morphingNurse.getNpcId() == SpikedStakatoNurse1 && !morphingNurse.isDead())
+					if (morphingNurse.getNpcId() == SPIKED_STAKATO_NURSE_1 && !morphingNurse.isDead())
 					{
-						final L2Npc newForm = addSpawn(SpikedStakatoNurse2, morphingNurse, true, 0, false);
-						attack(((L2Attackable) newForm), killer);
+						final Npc newForm = addSpawn(SPIKED_STAKATO_NURSE_2, morphingNurse, true, 0, false);
+						attack(((Attackable) newForm), killer);
 						
 						morphingNurse.deleteMe();
 					}
@@ -141,10 +133,10 @@ public class StakatoNest extends AbstractNpcAI
 	
 	private class EatTask implements Runnable
 	{
-		private final L2Npc _npc;
-		private final L2Npc _follower;
+		private final Npc _npc;
+		private final Npc _follower;
 		
-		public EatTask(L2Npc npc, L2Npc follower)
+		public EatTask(Npc npc, Npc follower)
 		{
 			_npc = npc;
 			_follower = follower;

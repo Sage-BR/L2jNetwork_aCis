@@ -1,46 +1,50 @@
-/*
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package net.sf.l2j.gameserver.network.clientpackets;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import net.sf.l2j.commons.concurrent.ThreadPool;
 
 import net.sf.l2j.Config;
+import net.sf.l2j.L2DatabaseFactory;
+import net.sf.l2j.gameserver.cache.HtmCache;
 import net.sf.l2j.gameserver.communitybbs.CommunityBoard;
-import net.sf.l2j.gameserver.datatables.AdminCommandAccessRights;
+import net.sf.l2j.gameserver.data.ItemTable;
+import net.sf.l2j.gameserver.data.xml.AdminData;
+import net.sf.l2j.gameserver.events.phoenixevents.EventBuffer;
+import net.sf.l2j.gameserver.events.phoenixevents.EventManager;
+import net.sf.l2j.gameserver.events.phoenixevents.EventStats;
 import net.sf.l2j.gameserver.handler.AdminCommandHandler;
 import net.sf.l2j.gameserver.handler.IAdminCommandHandler;
 import net.sf.l2j.gameserver.handler.IVoicedCommandHandler;
 import net.sf.l2j.gameserver.handler.VoicedCommandHandler;
+import net.sf.l2j.gameserver.handler.voicedcommandhandlers.AioMenu;
+import net.sf.l2j.gameserver.handler.voicedcommandhandlers.Menu;
+import net.sf.l2j.gameserver.handler.voicedcommandhandlers.Repair;
 import net.sf.l2j.gameserver.instancemanager.BotsPreventionManager;
-import net.sf.l2j.gameserver.model.L2Object;
-import net.sf.l2j.gameserver.model.L2World;
-import net.sf.l2j.gameserver.model.actor.L2Npc;
-import net.sf.l2j.gameserver.model.actor.instance.L2OlympiadManagerInstance;
-import net.sf.l2j.gameserver.model.actor.instance.L2PcInstance;
+import net.sf.l2j.gameserver.instancemanager.StartupManager;
+import net.sf.l2j.gameserver.model.World;
+import net.sf.l2j.gameserver.model.WorldObject;
+import net.sf.l2j.gameserver.model.actor.Npc;
+import net.sf.l2j.gameserver.model.actor.instance.MultiNpc;
+import net.sf.l2j.gameserver.model.actor.instance.OlympiadManagerNpc;
+import net.sf.l2j.gameserver.model.actor.instance.Player;
 import net.sf.l2j.gameserver.model.entity.Hero;
 import net.sf.l2j.gameserver.model.olympiad.OlympiadManager;
+import net.sf.l2j.gameserver.network.FloodProtectors;
+import net.sf.l2j.gameserver.network.FloodProtectors.Action;
 import net.sf.l2j.gameserver.network.SystemMessageId;
 import net.sf.l2j.gameserver.network.serverpackets.ActionFailed;
 import net.sf.l2j.gameserver.network.serverpackets.NpcHtmlMessage;
-import net.sf.l2j.gameserver.util.FloodProtectors;
-import net.sf.l2j.gameserver.util.FloodProtectors.Action;
-import net.sf.l2j.gameserver.util.GMAudit;
 
 public final class RequestBypassToServer extends L2GameClientPacket
 {
+	private static final Logger GMAUDIT_LOG = Logger.getLogger("gmaudit");
+	
 	private String _command;
 	
 	@Override
@@ -55,7 +59,7 @@ public final class RequestBypassToServer extends L2GameClientPacket
 		if (!FloodProtectors.performAction(getClient(), Action.SERVER_BYPASS))
 			return;
 		
-		final L2PcInstance activeChar = getClient().getActiveChar();
+		final Player activeChar = getClient().getActiveChar();
 		if (activeChar == null)
 			return;
 		
@@ -82,7 +86,7 @@ public final class RequestBypassToServer extends L2GameClientPacket
 					return;
 				}
 				
-				if (!AdminCommandAccessRights.getInstance().hasAccess(command, activeChar.getAccessLevel()))
+				if (!AdminData.getInstance().hasAccess(command, activeChar.getAccessLevel()))
 				{
 					activeChar.sendMessage("You don't have the access rights to use this command.");
 					_log.warning(activeChar.getName() + " tried to use admin command " + command + " without proper Access Level.");
@@ -90,9 +94,82 @@ public final class RequestBypassToServer extends L2GameClientPacket
 				}
 				
 				if (Config.GMAUDIT)
-					GMAudit.auditGMAction(activeChar.getName() + " [" + activeChar.getObjectId() + "]", _command, (activeChar.getTarget() != null ? activeChar.getTarget().getName() : "no-target"));
+					GMAUDIT_LOG.info(activeChar.getName() + " [" + activeChar.getObjectId() + "] used '" + _command + "' command on: " + ((activeChar.getTarget() != null) ? activeChar.getTarget().getName() : "none"));
 				
 				ach.useAdminCommand(_command, activeChar);
+			}
+			else if (_command.startsWith("event_vote"))
+			{
+				EventManager.getInstance().addVote(activeChar, Integer.parseInt(_command.substring(11)));
+			}
+			else if (_command.equals("event_register"))
+			{
+				EventManager.getInstance().registerPlayer(activeChar);
+			}
+			else if (_command.equals("event_unregister"))
+			{
+				EventManager.getInstance().unregisterPlayer(activeChar);
+			}
+			else if (_command.startsWith("eventvote "))
+			{
+				EventManager.getInstance().addVote(activeChar, Integer.parseInt(_command.substring(10)));
+			}
+			else if (_command.startsWith("eventstats "))
+			{
+				try
+				{
+					EventStats.getInstance().showHtml(Integer.parseInt(_command.substring(11)), activeChar);
+				}
+				catch (Exception e)
+				{
+					activeChar.sendMessage("Currently there are no statistics to show.");
+				}
+			}
+			else if (_command.startsWith("eventstats_show "))
+			{
+				EventStats.getInstance().showPlayerStats(Integer.parseInt(_command.substring(16)), activeChar);
+			}
+			else if (_command.equals("eventbuffershow"))
+			{
+				EventBuffer.getInstance().showHtml(activeChar);
+			}
+			else if (_command.startsWith("eventbuffer "))
+			{
+				EventBuffer.getInstance().changeList(activeChar, Integer.parseInt(_command.substring(12, _command.length() - 2)), (Integer.parseInt(_command.substring(_command.length() - 1)) == 0 ? false : true));
+				EventBuffer.getInstance().showHtml(activeChar);
+			}
+			else if (_command.startsWith("eventinfo "))
+			{
+				int eventId = Integer.valueOf(_command.substring(10));
+				
+				NpcHtmlMessage html = new NpcHtmlMessage(0);
+				html.setFile("data/html/eventinfo/" + eventId + ".htm");
+				html.replace("%amount%", String.valueOf(EventManager.getInstance().getInt(eventId, "rewardAmmount")));
+				html.replace("%item%", ItemTable.getInstance().createDummyItem(EventManager.getInstance().getInt(eventId, "rewardId")).getItemName());
+				html.replace("%minlvl%", String.valueOf(EventManager.getInstance().getInt(eventId, "minLvl")));
+				html.replace("%maxlvl%", String.valueOf(EventManager.getInstance().getInt(eventId, "maxLvl")));
+				html.replace("%time%", String.valueOf(EventManager.getInstance().getInt(eventId, "matchTime") / 60));
+				html.replace("%players%", String.valueOf(EventManager.getInstance().getInt(eventId, "minPlayers")));
+				html.replace("%url%", EventManager.getInstance().getString("siteUrl"));
+				html.replace("%buffs%", EventManager.getInstance().getBoolean(eventId, "removeBuffs") ? "Self" : "Full");
+				activeChar.sendPacket(html);
+				activeChar.sendPacket(ActionFailed.STATIC_PACKET);
+			}
+			else if (_command.startsWith("menu_commands"))
+			{
+				String value = _command.substring(13);
+				StringTokenizer st = new StringTokenizer(value);
+				String command = st.nextToken();
+				
+				Menu.bypass(activeChar, command, st);
+			}
+			else if (_command.startsWith("aiopanel"))
+			{
+				String value = _command.substring(8);
+				StringTokenizer st = new StringTokenizer(value);
+				String command = st.nextToken();
+				
+				AioMenu.bypass(activeChar, command, st);
 			}
 			else if (_command.startsWith("player_help "))
 			{
@@ -113,6 +190,28 @@ public final class RequestBypassToServer extends L2GameClientPacket
 				
 				ach.useVoicedCommand(_command.substring(7), activeChar, null);
 			}
+			else if (_command.startsWith("voice_"))
+			{
+				String params = "";
+				String command;
+				if (_command.indexOf(" ") != -1)
+				{
+					command = _command.substring(6, _command.indexOf(" "));
+					params = _command.substring(_command.indexOf(" ") + 1);
+				}
+				else
+				{
+					command = _command.substring(6);
+				}
+				
+				IVoicedCommandHandler vc = VoicedCommandHandler.getInstance().getHandler(command);
+				
+				if (vc == null)
+				{
+					return;
+				}
+				vc.useVoicedCommand(command, activeChar, params);
+			}
 			else if (_command.startsWith("npc_"))
 			{
 				if (!activeChar.validateBypass(_command))
@@ -127,10 +226,10 @@ public final class RequestBypassToServer extends L2GameClientPacket
 				
 				try
 				{
-					final L2Object object = L2World.getInstance().getObject(Integer.parseInt(id));
+					final WorldObject object = World.getInstance().getObject(Integer.parseInt(id));
 					
-					if (object != null && object instanceof L2Npc && endOfId > 0 && ((L2Npc) object).canInteract(activeChar))
-						((L2Npc) object).onBypassFeedback(activeChar, _command.substring(endOfId + 1));
+					if (object != null && object instanceof Npc && endOfId > 0 && ((Npc) object).canInteract(activeChar))
+						((Npc) object).onBypassFeedback(activeChar, _command.substring(endOfId + 1));
 					
 					activeChar.sendPacket(ActionFailed.STATIC_PACKET);
 				}
@@ -141,9 +240,9 @@ public final class RequestBypassToServer extends L2GameClientPacket
 			// Navigate throught Manor windows
 			else if (_command.startsWith("manor_menu_select?"))
 			{
-				L2Object object = activeChar.getTarget();
-				if (object instanceof L2Npc)
-					((L2Npc) object).onBypassFeedback(activeChar, _command);
+				WorldObject object = activeChar.getTarget();
+				if (object instanceof Npc)
+					((Npc) object).onBypassFeedback(activeChar, _command);
 			}
 			else if (_command.startsWith("bbs_") || _command.startsWith("_bbs") || _command.startsWith("_friend") || _command.startsWith("_mail") || _command.startsWith("_block"))
 			{
@@ -160,6 +259,67 @@ public final class RequestBypassToServer extends L2GameClientPacket
 				else
 					activeChar.processQuestEvent(str[0], str[1]);
 			}
+			else if (_command.startsWith("repairchar "))
+			{
+				String value = _command.substring(11);
+				StringTokenizer st = new StringTokenizer(value);
+				String repairChar = null;
+				
+				try
+				{
+					if (st.hasMoreTokens())
+						repairChar = st.nextToken();
+				}
+				catch (Exception e)
+				{
+					activeChar.sendMessage("You can't put empty box.");
+					return;
+				}
+				
+				if (repairChar == null || repairChar.equals(""))
+					return;
+				
+				if (Repair.checkAcc(activeChar, repairChar))
+				{
+					if (Repair.checkChar(activeChar, repairChar))
+					{
+						String htmContent = HtmCache.getInstance().getHtm("data/html/mods/repair/repair-self.htm");
+						NpcHtmlMessage npcHtmlMessage = new NpcHtmlMessage(5);
+						npcHtmlMessage.setHtml(htmContent);
+						activeChar.sendPacket(npcHtmlMessage);
+						return;
+					}
+					else if (Repair.checkPunish(activeChar, repairChar))
+					{
+						String htmContent = HtmCache.getInstance().getHtm("data/html/mods/repair/repair-jail.htm");
+						NpcHtmlMessage npcHtmlMessage = new NpcHtmlMessage(5);
+						npcHtmlMessage.setHtml(htmContent);
+						activeChar.sendPacket(npcHtmlMessage);
+						return;
+					}
+					else if (Repair.checkKarma(activeChar, repairChar))
+					{
+						activeChar.sendMessage("Selected Char has Karma,Cannot be repaired!");
+						return;
+					}
+					else
+					{
+						Repair.repairBadCharacter(repairChar);
+						String htmContent = HtmCache.getInstance().getHtm("data/html/mods/repair/repair-done.htm");
+						NpcHtmlMessage npcHtmlMessage = new NpcHtmlMessage(5);
+						npcHtmlMessage.setHtml(htmContent);
+						activeChar.sendPacket(npcHtmlMessage);
+						return;
+					}
+				}
+				
+				String htmContent = HtmCache.getInstance().getHtm("data/html/mods/repair/repair-error.htm");
+				NpcHtmlMessage npcHtmlMessage = new NpcHtmlMessage(5);
+				npcHtmlMessage.setHtml(htmContent);
+				npcHtmlMessage.replace("%acc_chars%", Repair.getCharList(activeChar));
+				activeChar.sendPacket(npcHtmlMessage);
+			}
+			
 			else if (_command.startsWith("_match"))
 			{
 				String params = _command.substring(_command.indexOf("?") + 1);
@@ -180,9 +340,159 @@ public final class RequestBypassToServer extends L2GameClientPacket
 				if (heroid > 0)
 					Hero.getInstance().showHeroDiary(activeChar, heroclass, heroid, heropage);
 			}
+			else if (_command.startsWith("submitpin"))
+			{
+				try
+				{
+					String value = _command.substring(9);
+					StringTokenizer s = new StringTokenizer(value, " ");
+					int _pin = activeChar.getPin();
+					
+					try
+					{
+						if (activeChar.getPincheck())
+						{
+							_pin = Integer.parseInt(s.nextToken());
+							if (Integer.toString(_pin).length() < 5)
+							{
+								activeChar.sendMessage("You should type more than 5 numbers. ");
+								return;
+							}
+							
+							try (Connection con = L2DatabaseFactory.getInstance().getConnection(); PreparedStatement statement = con.prepareStatement("UPDATE characters SET pin=? WHERE obj_id=?");)
+							{
+								statement.setInt(1, _pin);
+								statement.setInt(2, activeChar.getObjectId());
+								statement.execute();
+								statement.close();
+								activeChar.setPincheck(false);
+								activeChar.updatePincheck();
+								activeChar.sendMessage("You successfully secure your character. Your code is: " + _pin);
+							}
+							catch (Exception e)
+							{
+								e.printStackTrace();
+								_log.warning("could not set char first login:" + e);
+							}
+						}
+					}
+					catch (Exception e)
+					{
+						activeChar.sendMessage("Your code must be more than 5 numbers.");
+					}
+				}
+				catch (Exception e)
+				{
+					activeChar.sendMessage("Your code must be more than 5 numbers.");
+				}
+				
+			}
+			else if (_command.startsWith("removepin"))
+			{
+				try
+				{
+					String value = _command.substring(9);
+					StringTokenizer s = new StringTokenizer(value, " ");
+					int dapin = 0;
+					int pin = 0;
+					dapin = Integer.parseInt(s.nextToken());
+					
+					PreparedStatement statement = null;
+					
+					try (Connection con = L2DatabaseFactory.getInstance().getConnection())
+					{
+						statement = con.prepareStatement("SELECT pin FROM characters WHERE obj_Id=?");
+						statement.setInt(1, activeChar.getObjectId());
+						ResultSet rset = statement.executeQuery();
+						
+						while (rset.next())
+						{
+							pin = rset.getInt("pin");
+						}
+						
+						if (pin == dapin)
+						{
+							activeChar.setPincheck(true);
+							activeChar.setPin(0);
+							activeChar.updatePincheck();
+							activeChar.sendMessage("You successfully remove your pin.");
+						}
+						else
+							activeChar.sendMessage("Code is wrong..");
+					}
+					catch (Exception e)
+					{
+						
+					}
+				}
+				catch (Exception e)
+				{
+					// e.printStackTrace();
+					activeChar.sendMessage("Your code must be more than 5 numbers.");
+				}
+			}
+			else if (_command.startsWith("enterpin"))
+			{
+				try
+				{
+					String value = _command.substring(8);
+					StringTokenizer s = new StringTokenizer(value, " ");
+					int dapin = 0;
+					int pin = 0;
+					dapin = Integer.parseInt(s.nextToken());
+					
+					PreparedStatement statement = null;
+					
+					try (Connection con = L2DatabaseFactory.getInstance().getConnection())
+					{
+						statement = con.prepareStatement("SELECT pin FROM characters WHERE obj_Id=?");
+						statement.setInt(1, activeChar.getObjectId());
+						ResultSet rset = statement.executeQuery();
+						
+						while (rset.next())
+						{
+							pin = rset.getInt("pin");
+						}
+						
+						if (pin == dapin)
+						{
+							activeChar.sendMessage("Code Authenticated!");
+							activeChar.setIsImmobilized(false);
+							activeChar.setIsSubmitingPin(false);
+						}
+						else
+						{
+							activeChar.sendMessage("Code is wrong.. You will now get disconnected!");
+							ThreadPool.schedule(() -> activeChar.logout(false), 3000);
+						}
+					}
+					catch (Exception e)
+					{
+						
+					}
+				}
+				catch (Exception e)
+				{
+					// e.printStackTrace();
+					activeChar.sendMessage("Your code must be more than 5 numbers.");
+				}
+			}
+			else if (_command.startsWith("mageclass"))
+				StartupManager.getInstance().MageClasses(_command, activeChar);
+			else if (_command.startsWith("fighterclass"))
+				StartupManager.getInstance().FighterClasses(_command, activeChar);
+			else if (_command.startsWith("lightclass"))
+				StartupManager.getInstance().LightClasses(_command, activeChar);
+			else if (_command.startsWith("class"))
+				StartupManager.getInstance().Classes(_command, activeChar);
+			else if (_command.startsWith("base"))
+				MultiNpc.Classes(_command, activeChar);
+			else if (_command.startsWith("report"))
+				BotsPreventionManager.getInstance().AnalyseBypass(_command, activeChar);
+			
 			else if (_command.startsWith("arenachange")) // change
 			{
-				final boolean isManager = activeChar.getCurrentFolkNPC() instanceof L2OlympiadManagerInstance;
+				final boolean isManager = activeChar.getCurrentFolkNPC() instanceof OlympiadManagerNpc;
 				if (!isManager)
 				{
 					// Without npc, command can be used only in observer mode on arena
@@ -196,22 +506,23 @@ public final class RequestBypassToServer extends L2GameClientPacket
 					return;
 				}
 				
+				if (EventManager.getInstance().players.contains(activeChar))
+				{
+					activeChar.sendMessage("You can not observe games while registered for an event!");
+					return;
+				}
+				
 				final int arenaId = Integer.parseInt(_command.substring(12).trim());
 				activeChar.enterOlympiadObserverMode(arenaId);
 			}
-			else if (_command.startsWith("report"))
-			{
-				BotsPreventionManager.getInstance().AnalyseBypass(_command, activeChar);
-			}
-			
 		}
 		catch (Exception e)
 		{
-			_log.log(Level.WARNING, "Bad RequestBypassToServer: ", e);
+			_log.log(Level.WARNING, "Bad RequestBypassToServer: " + e, e);
 		}
 	}
 	
-	private static void playerHelp(L2PcInstance activeChar, String path)
+	private static void playerHelp(Player activeChar, String path)
 	{
 		if (path.indexOf("..") != -1)
 			return;

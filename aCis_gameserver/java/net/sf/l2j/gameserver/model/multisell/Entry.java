@@ -1,42 +1,50 @@
-/*
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package net.sf.l2j.gameserver.model.multisell;
 
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * A datatype which is part of multisell system. A multisell list can hold multiple Products.<br>
+ * Each Product owns a List of "required part(s)" and "result(s)" known both as {@link Ingredient}s.
+ */
 public class Entry
 {
-	private int _entryId;
+	protected int _id;
+	protected boolean _stackable = true;
 	
-	private final List<Ingredient> _products = new ArrayList<>();
-	private final List<Ingredient> _ingredients = new ArrayList<>();
+	protected List<Ingredient> _products;
+	protected List<Ingredient> _ingredients;
 	
-	public void setEntryId(int entryId)
+	public Entry(int id)
 	{
-		_entryId = entryId;
+		_id = id;
+		_products = new ArrayList<>();
+		_ingredients = new ArrayList<>();
 	}
 	
-	public int getEntryId()
+	/**
+	 * This constructor used in PreparedEntry only, ArrayLists not created.
+	 */
+	protected Entry()
 	{
-		return _entryId;
+	}
+	
+	public int getId()
+	{
+		return _id;
+	}
+	
+	public void setId(int id)
+	{
+		_id = id;
 	}
 	
 	public void addProduct(Ingredient product)
 	{
 		_products.add(product);
+		
+		if (!product.isStackable())
+			_stackable = false;
 	}
 	
 	public List<Ingredient> getProducts()
@@ -52,5 +60,15 @@ public class Entry
 	public List<Ingredient> getIngredients()
 	{
 		return _ingredients;
+	}
+	
+	public boolean isStackable()
+	{
+		return _stackable;
+	}
+	
+	public int getTaxAmount()
+	{
+		return 0;
 	}
 }

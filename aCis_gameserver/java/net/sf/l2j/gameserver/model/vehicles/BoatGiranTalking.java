@@ -1,93 +1,81 @@
-/*
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package net.sf.l2j.gameserver.model.vehicles;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import net.sf.l2j.gameserver.ThreadPoolManager;
+import net.sf.l2j.commons.concurrent.ThreadPool;
+
 import net.sf.l2j.gameserver.instancemanager.BoatManager;
-import net.sf.l2j.gameserver.model.VehiclePathPoint;
-import net.sf.l2j.gameserver.model.actor.instance.L2BoatInstance;
+import net.sf.l2j.gameserver.model.actor.Vehicle;
+import net.sf.l2j.gameserver.model.location.Location;
+import net.sf.l2j.gameserver.model.location.VehicleLocation;
 import net.sf.l2j.gameserver.network.SystemMessageId;
 import net.sf.l2j.gameserver.network.clientpackets.Say2;
 import net.sf.l2j.gameserver.network.serverpackets.CreatureSay;
 import net.sf.l2j.gameserver.network.serverpackets.PlaySound;
 
-/**
- * @author DS
- */
 public class BoatGiranTalking implements Runnable
 {
 	private static final Logger _log = Logger.getLogger(BoatGiranTalking.class.getName());
 	
+	private static final Location OUST_LOC_1 = new Location(46763, 187041, -3451);
+	private static final Location OUST_LOC_2 = new Location(-96777, 258970, -3623);
+	
 	// Time: 868s
-	private static final VehiclePathPoint[] GIRAN_TO_TALKING =
+	private static final VehicleLocation[] GIRAN_TO_TALKING =
 	{
-		new VehiclePathPoint(51914, 189023, -3610, 150, 800),
-		new VehiclePathPoint(60567, 189789, -3610, 150, 800),
-		new VehiclePathPoint(63732, 197457, -3610, 200, 800),
-		new VehiclePathPoint(63732, 219946, -3610, 250, 800),
-		new VehiclePathPoint(62008, 222240, -3610, 250, 1200),
-		new VehiclePathPoint(56115, 226791, -3610, 250, 1200),
-		new VehiclePathPoint(40384, 226432, -3610, 300, 800),
-		new VehiclePathPoint(37760, 226432, -3610, 300, 800),
-		new VehiclePathPoint(27153, 226791, -3610, 300, 800),
-		new VehiclePathPoint(12672, 227535, -3610, 300, 800),
-		new VehiclePathPoint(-1808, 228280, -3610, 300, 800),
-		new VehiclePathPoint(-22165, 230542, -3610, 300, 800),
-		new VehiclePathPoint(-42523, 235205, -3610, 300, 800),
-		new VehiclePathPoint(-68451, 259560, -3610, 250, 800),
-		new VehiclePathPoint(-70848, 261696, -3610, 200, 800),
-		new VehiclePathPoint(-83344, 261610, -3610, 200, 800),
-		new VehiclePathPoint(-88344, 261660, -3610, 180, 800),
-		new VehiclePathPoint(-92344, 261660, -3610, 180, 800),
-		new VehiclePathPoint(-94242, 261659, -3610, 150, 800)
+		new VehicleLocation(51914, 189023, -3610, 150, 800),
+		new VehicleLocation(60567, 189789, -3610, 150, 800),
+		new VehicleLocation(63732, 197457, -3610, 200, 800),
+		new VehicleLocation(63732, 219946, -3610, 250, 800),
+		new VehicleLocation(62008, 222240, -3610, 250, 1200),
+		new VehicleLocation(56115, 226791, -3610, 250, 1200),
+		new VehicleLocation(40384, 226432, -3610, 300, 800),
+		new VehicleLocation(37760, 226432, -3610, 300, 800),
+		new VehicleLocation(27153, 226791, -3610, 300, 800),
+		new VehicleLocation(12672, 227535, -3610, 300, 800),
+		new VehicleLocation(-1808, 228280, -3610, 300, 800),
+		new VehicleLocation(-22165, 230542, -3610, 300, 800),
+		new VehicleLocation(-42523, 235205, -3610, 300, 800),
+		new VehicleLocation(-68451, 259560, -3610, 250, 800),
+		new VehicleLocation(-70848, 261696, -3610, 200, 800),
+		new VehicleLocation(-83344, 261610, -3610, 200, 800),
+		new VehicleLocation(-88344, 261660, -3610, 180, 800),
+		new VehicleLocation(-92344, 261660, -3610, 180, 800),
+		new VehicleLocation(-94242, 261659, -3610, 150, 800)
 	};
 	
-	private static final VehiclePathPoint[] TALKING_DOCK =
+	private static final VehicleLocation[] TALKING_DOCK =
 	{
-		new VehiclePathPoint(-96622, 261660, -3610, 150, 800)
+		new VehicleLocation(-96622, 261660, -3610, 150, 800)
 	};
 	
 	// Time: 1398s
-	private static final VehiclePathPoint[] TALKING_TO_GIRAN =
+	private static final VehicleLocation[] TALKING_TO_GIRAN =
 	{
-		new VehiclePathPoint(-113925, 261660, -3610, 150, 800),
-		new VehiclePathPoint(-126107, 249116, -3610, 180, 800),
-		new VehiclePathPoint(-126107, 234499, -3610, 180, 800),
-		new VehiclePathPoint(-126107, 219882, -3610, 180, 800),
-		new VehiclePathPoint(-109414, 204914, -3610, 180, 800),
-		new VehiclePathPoint(-92807, 204914, -3610, 180, 800),
-		new VehiclePathPoint(-80425, 216450, -3610, 250, 800),
-		new VehiclePathPoint(-68043, 227987, -3610, 250, 800),
-		new VehiclePathPoint(-63744, 231168, -3610, 250, 800),
-		new VehiclePathPoint(-60844, 231369, -3610, 250, 1800),
-		new VehiclePathPoint(-44915, 231369, -3610, 200, 800),
-		new VehiclePathPoint(-28986, 231369, -3610, 200, 800),
-		new VehiclePathPoint(8233, 207624, -3610, 200, 800),
-		new VehiclePathPoint(21470, 201503, -3610, 180, 800),
-		new VehiclePathPoint(40058, 195383, -3610, 180, 800),
-		new VehiclePathPoint(43022, 193793, -3610, 150, 800),
-		new VehiclePathPoint(45986, 192203, -3610, 150, 800),
-		new VehiclePathPoint(48950, 190613, -3610, 150, 800)
+		new VehicleLocation(-113925, 261660, -3610, 150, 800),
+		new VehicleLocation(-126107, 249116, -3610, 180, 800),
+		new VehicleLocation(-126107, 234499, -3610, 180, 800),
+		new VehicleLocation(-126107, 219882, -3610, 180, 800),
+		new VehicleLocation(-109414, 204914, -3610, 180, 800),
+		new VehicleLocation(-92807, 204914, -3610, 180, 800),
+		new VehicleLocation(-80425, 216450, -3610, 250, 800),
+		new VehicleLocation(-68043, 227987, -3610, 250, 800),
+		new VehicleLocation(-63744, 231168, -3610, 250, 800),
+		new VehicleLocation(-60844, 231369, -3610, 250, 1800),
+		new VehicleLocation(-44915, 231369, -3610, 200, 800),
+		new VehicleLocation(-28986, 231369, -3610, 200, 800),
+		new VehicleLocation(8233, 207624, -3610, 200, 800),
+		new VehicleLocation(21470, 201503, -3610, 180, 800),
+		new VehicleLocation(40058, 195383, -3610, 180, 800),
+		new VehicleLocation(43022, 193793, -3610, 150, 800),
+		new VehicleLocation(45986, 192203, -3610, 150, 800),
+		new VehicleLocation(48950, 190613, -3610, 150, 800)
 	};
 	
-	private static final VehiclePathPoint GIRAN_DOCK = TALKING_TO_GIRAN[TALKING_TO_GIRAN.length - 1];
+	private static final VehicleLocation GIRAN_DOCK = TALKING_TO_GIRAN[TALKING_TO_GIRAN.length - 1];
 	
-	private final L2BoatInstance _boat;
+	private final Vehicle _boat;
 	private int _cycle = 0;
 	private int _shoutCount = 0;
 	
@@ -124,7 +112,7 @@ public class BoatGiranTalking implements Runnable
 	private final PlaySound TALKING_SOUND_LEAVE_5MIN;
 	private final PlaySound TALKING_SOUND_LEAVE_1MIN;
 	
-	public BoatGiranTalking(L2BoatInstance boat)
+	public BoatGiranTalking(Vehicle boat)
 	{
 		_boat = boat;
 		
@@ -152,14 +140,14 @@ public class BoatGiranTalking implements Runnable
 		ARRIVAL_GIRAN5 = new CreatureSay(0, Say2.BOAT, 801, SystemMessageId.FERRY_FROM_TALKING_ARRIVE_AT_GIRAN_5_MINUTES);
 		ARRIVAL_GIRAN1 = new CreatureSay(0, Say2.BOAT, 801, SystemMessageId.FERRY_FROM_TALKING_ARRIVE_AT_GIRAN_1_MINUTE);
 		
-		GIRAN_SOUND = new PlaySound(0, "itemsound.ship_arrival_departure", 1, _boat.getObjectId(), GIRAN_DOCK.x, GIRAN_DOCK.y, GIRAN_DOCK.z);
-		TALKING_SOUND = new PlaySound(0, "itemsound.ship_arrival_departure", 1, _boat.getObjectId(), TALKING_DOCK[0].x, TALKING_DOCK[0].y, TALKING_DOCK[0].z);
+		GIRAN_SOUND = new PlaySound(0, "itemsound.ship_arrival_departure", _boat);
+		TALKING_SOUND = new PlaySound(0, "itemsound.ship_arrival_departure", _boat);
 		
-		GIRAN_SOUND_LEAVE_5MIN = new PlaySound(0, "itemsound.ship_5min", 1, _boat.getObjectId(), GIRAN_DOCK.x, GIRAN_DOCK.y, GIRAN_DOCK.z);
-		GIRAN_SOUND_LEAVE_1MIN = new PlaySound(0, "itemsound.ship_1min", 1, _boat.getObjectId(), GIRAN_DOCK.x, GIRAN_DOCK.y, GIRAN_DOCK.z);
+		GIRAN_SOUND_LEAVE_5MIN = new PlaySound(0, "itemsound.ship_5min", _boat);
+		GIRAN_SOUND_LEAVE_1MIN = new PlaySound(0, "itemsound.ship_1min", _boat);
 		
-		TALKING_SOUND_LEAVE_5MIN = new PlaySound(0, "itemsound.ship_5min", 1, _boat.getObjectId(), TALKING_DOCK[0].x, TALKING_DOCK[0].y, TALKING_DOCK[0].z);
-		TALKING_SOUND_LEAVE_1MIN = new PlaySound(0, "itemsound.ship_1min", 1, _boat.getObjectId(), TALKING_DOCK[0].x, TALKING_DOCK[0].y, TALKING_DOCK[0].z);
+		TALKING_SOUND_LEAVE_5MIN = new PlaySound(0, "itemsound.ship_5min", _boat);
+		TALKING_SOUND_LEAVE_1MIN = new PlaySound(0, "itemsound.ship_1min", _boat);
 	}
 	
 	@Override
@@ -172,32 +160,32 @@ public class BoatGiranTalking implements Runnable
 				case 0:
 					BoatManager.getInstance().broadcastPacket(GIRAN_DOCK, TALKING_DOCK[0], LEAVE_GIRAN5);
 					_boat.broadcastPacket(GIRAN_SOUND_LEAVE_5MIN);
-					ThreadPoolManager.getInstance().scheduleGeneral(this, 240000);
+					ThreadPool.schedule(this, 240000);
 					break;
 				case 1:
 					BoatManager.getInstance().broadcastPacket(GIRAN_DOCK, TALKING_DOCK[0], LEAVE_GIRAN1);
 					_boat.broadcastPacket(GIRAN_SOUND_LEAVE_1MIN);
-					ThreadPoolManager.getInstance().scheduleGeneral(this, 40000);
+					ThreadPool.schedule(this, 40000);
 					break;
 				case 2:
 					BoatManager.getInstance().broadcastPacket(GIRAN_DOCK, TALKING_DOCK[0], LEAVE_GIRAN0);
 					_boat.broadcastPacket(GIRAN_SOUND_LEAVE_1MIN);
-					ThreadPoolManager.getInstance().scheduleGeneral(this, 20000);
+					ThreadPool.schedule(this, 20000);
 					break;
 				case 3:
 					BoatManager.getInstance().broadcastPackets(GIRAN_DOCK, TALKING_DOCK[0], LEAVING_GIRAN, ARRIVAL_TALKING15);
 					_boat.broadcastPacket(GIRAN_SOUND);
-					_boat.payForRide(3946, 1, 46763, 187041, -3451);
+					_boat.payForRide(3946, 1, OUST_LOC_1);
 					_boat.executePath(GIRAN_TO_TALKING);
-					ThreadPoolManager.getInstance().scheduleGeneral(this, 250000);
+					ThreadPool.schedule(this, 250000);
 					break;
 				case 4:
 					BoatManager.getInstance().broadcastPacket(TALKING_DOCK[0], GIRAN_DOCK, ARRIVAL_TALKING10);
-					ThreadPoolManager.getInstance().scheduleGeneral(this, 300000);
+					ThreadPool.schedule(this, 300000);
 					break;
 				case 5:
 					BoatManager.getInstance().broadcastPacket(TALKING_DOCK[0], GIRAN_DOCK, ARRIVAL_TALKING5);
-					ThreadPoolManager.getInstance().scheduleGeneral(this, 240000);
+					ThreadPool.schedule(this, 240000);
 					break;
 				case 6:
 					BoatManager.getInstance().broadcastPacket(TALKING_DOCK[0], GIRAN_DOCK, ARRIVAL_TALKING1);
@@ -212,7 +200,7 @@ public class BoatGiranTalking implements Runnable
 						if (_shoutCount > 35)
 							_shoutCount = 0;
 						
-						ThreadPoolManager.getInstance().scheduleGeneral(this, 5000);
+						ThreadPool.schedule(this, 5000);
 						return;
 					}
 					BoatManager.getInstance().dockShip(BoatManager.TALKING_ISLAND, true);
@@ -221,46 +209,46 @@ public class BoatGiranTalking implements Runnable
 				case 8:
 					BoatManager.getInstance().broadcastPackets(TALKING_DOCK[0], GIRAN_DOCK, ARRIVED_AT_TALKING, ARRIVED_AT_TALKING_2);
 					_boat.broadcastPacket(TALKING_SOUND);
-					ThreadPoolManager.getInstance().scheduleGeneral(this, 300000);
+					ThreadPool.schedule(this, 300000);
 					break;
 				case 9:
 					BoatManager.getInstance().broadcastPacket(TALKING_DOCK[0], GIRAN_DOCK, LEAVE_TALKING5);
 					_boat.broadcastPacket(TALKING_SOUND_LEAVE_5MIN);
-					ThreadPoolManager.getInstance().scheduleGeneral(this, 240000);
+					ThreadPool.schedule(this, 240000);
 					break;
 				case 10:
 					BoatManager.getInstance().broadcastPacket(TALKING_DOCK[0], GIRAN_DOCK, LEAVE_TALKING1);
 					_boat.broadcastPacket(TALKING_SOUND_LEAVE_1MIN);
-					ThreadPoolManager.getInstance().scheduleGeneral(this, 40000);
+					ThreadPool.schedule(this, 40000);
 					break;
 				case 11:
 					BoatManager.getInstance().broadcastPacket(TALKING_DOCK[0], GIRAN_DOCK, LEAVE_TALKING0);
 					_boat.broadcastPacket(TALKING_SOUND_LEAVE_1MIN);
-					ThreadPoolManager.getInstance().scheduleGeneral(this, 20000);
+					ThreadPool.schedule(this, 20000);
 					break;
 				case 12:
 					BoatManager.getInstance().dockShip(BoatManager.TALKING_ISLAND, false);
 					BoatManager.getInstance().broadcastPackets(TALKING_DOCK[0], GIRAN_DOCK, LEAVING_TALKING);
 					_boat.broadcastPacket(TALKING_SOUND);
-					_boat.payForRide(3945, 1, -96777, 258970, -3623);
+					_boat.payForRide(3945, 1, OUST_LOC_2);
 					_boat.executePath(TALKING_TO_GIRAN);
-					ThreadPoolManager.getInstance().scheduleGeneral(this, 200000);
+					ThreadPool.schedule(this, 200000);
 					break;
 				case 13:
 					BoatManager.getInstance().broadcastPacket(GIRAN_DOCK, TALKING_DOCK[0], ARRIVAL_GIRAN20);
-					ThreadPoolManager.getInstance().scheduleGeneral(this, 300000);
+					ThreadPool.schedule(this, 300000);
 					break;
 				case 14:
 					BoatManager.getInstance().broadcastPacket(GIRAN_DOCK, TALKING_DOCK[0], ARRIVAL_GIRAN15);
-					ThreadPoolManager.getInstance().scheduleGeneral(this, 300000);
+					ThreadPool.schedule(this, 300000);
 					break;
 				case 15:
 					BoatManager.getInstance().broadcastPacket(GIRAN_DOCK, TALKING_DOCK[0], ARRIVAL_GIRAN10);
-					ThreadPoolManager.getInstance().scheduleGeneral(this, 300000);
+					ThreadPool.schedule(this, 300000);
 					break;
 				case 16:
 					BoatManager.getInstance().broadcastPacket(GIRAN_DOCK, TALKING_DOCK[0], ARRIVAL_GIRAN5);
-					ThreadPoolManager.getInstance().scheduleGeneral(this, 240000);
+					ThreadPool.schedule(this, 240000);
 					break;
 				case 17:
 					BoatManager.getInstance().broadcastPacket(GIRAN_DOCK, TALKING_DOCK[0], ARRIVAL_GIRAN1);
@@ -268,7 +256,7 @@ public class BoatGiranTalking implements Runnable
 				case 18:
 					BoatManager.getInstance().broadcastPackets(GIRAN_DOCK, TALKING_DOCK[0], ARRIVED_AT_GIRAN, ARRIVED_AT_GIRAN_2);
 					_boat.broadcastPacket(GIRAN_SOUND);
-					ThreadPoolManager.getInstance().scheduleGeneral(this, 300000);
+					ThreadPool.schedule(this, 300000);
 					break;
 			}
 			_shoutCount = 0;
@@ -284,7 +272,7 @@ public class BoatGiranTalking implements Runnable
 	
 	public static void load()
 	{
-		final L2BoatInstance boat = BoatManager.getInstance().getNewBoat(2, 48950, 190613, -3610, 60800);
+		final Vehicle boat = BoatManager.getInstance().getNewBoat(2, 48950, 190613, -3610, 60800);
 		if (boat != null)
 		{
 			boat.registerEngine(new BoatGiranTalking(boat));

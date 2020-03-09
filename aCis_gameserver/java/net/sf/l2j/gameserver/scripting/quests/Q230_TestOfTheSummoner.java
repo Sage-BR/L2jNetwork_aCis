@@ -1,27 +1,17 @@
-/*
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package net.sf.l2j.gameserver.scripting.quests;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import net.sf.l2j.commons.random.Rnd;
-import net.sf.l2j.gameserver.datatables.SkillTable;
-import net.sf.l2j.gameserver.model.actor.L2Attackable;
-import net.sf.l2j.gameserver.model.actor.L2Character;
-import net.sf.l2j.gameserver.model.actor.L2Npc;
-import net.sf.l2j.gameserver.model.actor.L2Summon;
-import net.sf.l2j.gameserver.model.actor.instance.L2PcInstance;
+
+import net.sf.l2j.gameserver.data.SkillTable;
+import net.sf.l2j.gameserver.model.L2Skill;
+import net.sf.l2j.gameserver.model.actor.Attackable;
+import net.sf.l2j.gameserver.model.actor.Creature;
+import net.sf.l2j.gameserver.model.actor.Npc;
+import net.sf.l2j.gameserver.model.actor.Summon;
+import net.sf.l2j.gameserver.model.actor.instance.Player;
 import net.sf.l2j.gameserver.model.base.ClassId;
 import net.sf.l2j.gameserver.network.serverpackets.SocialAction;
 import net.sf.l2j.gameserver.scripting.Quest;
@@ -176,7 +166,7 @@ public class Q230_TestOfTheSummoner extends Quest
 	}
 	
 	@Override
-	public String onAdvEvent(String event, L2Npc npc, L2PcInstance player)
+	public String onAdvEvent(String event, Npc npc, Player player)
 	{
 		String htmltext = event;
 		QuestState st = player.getQuestState(qn);
@@ -184,7 +174,7 @@ public class Q230_TestOfTheSummoner extends Quest
 			return null;
 		
 		// GALATEA
-		if (event.equals("30634-08a.htm"))
+		if (event.equals("30634-08.htm"))
 		{
 			st.setState(STATE_STARTED);
 			st.set("cond", "1");
@@ -196,7 +186,13 @@ public class Q230_TestOfTheSummoner extends Quest
 			st.set("Almors", "1");
 			st.playSound(QuestState.SOUND_ACCEPT);
 			st.giveItems(GALATEA_LETTER, 1);
-			st.giveItems(DIMENSIONAL_DIAMOND, 122);
+			
+			if (!player.getMemos().getBool("secondClassChange39", false))
+			{
+				htmltext = "30634-08a.htm";
+				st.giveItems(DIMENSIONAL_DIAMOND, DF_REWARD_39.get(player.getClassId().getId()));
+				player.getMemos().set("secondClassChange39", true);
+			}
 		}
 		// LARA
 		else if (event.equals("30063-02.htm")) // Lara first time to give a list out
@@ -214,6 +210,7 @@ public class Q230_TestOfTheSummoner extends Quest
 		{
 			final int random = Rnd.get(5);
 			
+			st.playSound(QuestState.SOUND_ITEMGET);
 			st.giveItems(LARA_LISTS[random][0], 1);
 			st.set("Lara", String.valueOf(random + 1));
 		}
@@ -226,6 +223,7 @@ public class Q230_TestOfTheSummoner extends Quest
 		else if (event.equals("30635-04.htm"))
 		{
 			st.set("Almors", "2"); // set state ready to fight
+			st.playSound(QuestState.SOUND_ITEMGET);
 			st.takeItems(CRYSTAL_OF_FOUL_1, -1); // just in case he cheated or lost
 			st.takeItems(CRYSTAL_OF_DEFEAT_1, -1);
 			st.takeItems(BEGINNER_ARCANA, 1);
@@ -243,6 +241,7 @@ public class Q230_TestOfTheSummoner extends Quest
 		else if (event.equals("30636-04.htm"))
 		{
 			st.set("Camoniell", "2");
+			st.playSound(QuestState.SOUND_ITEMGET);
 			st.takeItems(CRYSTAL_OF_FOUL_2, -1);
 			st.takeItems(CRYSTAL_OF_DEFEAT_2, -1);
 			st.takeItems(BEGINNER_ARCANA, 1);
@@ -260,6 +259,7 @@ public class Q230_TestOfTheSummoner extends Quest
 		else if (event.equals("30637-04.htm"))
 		{
 			st.set("Belthus", "2");
+			st.playSound(QuestState.SOUND_ITEMGET);
 			st.takeItems(CRYSTAL_OF_FOUL_3, -1);
 			st.takeItems(CRYSTAL_OF_DEFEAT_3, -1);
 			st.takeItems(BEGINNER_ARCANA, 1);
@@ -277,6 +277,7 @@ public class Q230_TestOfTheSummoner extends Quest
 		else if (event.equals("30638-04.htm"))
 		{
 			st.set("Basilla", "2");
+			st.playSound(QuestState.SOUND_ITEMGET);
 			st.takeItems(CRYSTAL_OF_FOUL_4, -1);
 			st.takeItems(CRYSTAL_OF_DEFEAT_4, -1);
 			st.takeItems(BEGINNER_ARCANA, 1);
@@ -294,6 +295,7 @@ public class Q230_TestOfTheSummoner extends Quest
 		else if (event.equals("30639-04.htm"))
 		{
 			st.set("Celestiel", "2");
+			st.playSound(QuestState.SOUND_ITEMGET);
 			st.takeItems(CRYSTAL_OF_FOUL_5, -1);
 			st.takeItems(CRYSTAL_OF_DEFEAT_5, -1);
 			st.takeItems(BEGINNER_ARCANA, 1);
@@ -311,6 +313,7 @@ public class Q230_TestOfTheSummoner extends Quest
 		else if (event.equals("30640-04.htm"))
 		{
 			st.set("Brynthea", "2");
+			st.playSound(QuestState.SOUND_ITEMGET);
 			st.takeItems(CRYSTAL_OF_FOUL_6, -1);
 			st.takeItems(CRYSTAL_OF_DEFEAT_6, -1);
 			st.takeItems(BEGINNER_ARCANA, 1);
@@ -324,7 +327,7 @@ public class Q230_TestOfTheSummoner extends Quest
 	}
 	
 	@Override
-	public String onTalk(L2Npc npc, L2PcInstance player)
+	public String onTalk(Npc npc, Player player)
 	{
 		String htmltext = getNoQuestMsg();
 		QuestState st = player.getQuestState(qn);
@@ -337,7 +340,7 @@ public class Q230_TestOfTheSummoner extends Quest
 		switch (st.getState())
 		{
 			case STATE_CREATED:
-				if (player.getClassId() != ClassId.wizard && player.getClassId() != ClassId.elvenWizard && player.getClassId() != ClassId.darkWizard) // wizard, elven wizard, dark wizard
+				if (player.getClassId() != ClassId.HUMAN_WIZARD && player.getClassId() != ClassId.ELVEN_WIZARD && player.getClassId() != ClassId.DARK_WIZARD) // wizard, elven wizard, dark wizard
 					htmltext = "30634-01.htm";
 				else if (player.getLevel() < 39)
 					htmltext = "30634-02.htm";
@@ -427,6 +430,8 @@ public class Q230_TestOfTheSummoner extends Quest
 								st.set("cond", "4");
 								st.playSound(QuestState.SOUND_MIDDLE);
 							}
+							else
+								st.playSound(QuestState.SOUND_ITEMGET);
 						}
 						else if (almorsStat == 7)
 							htmltext = "30635-10.htm";
@@ -456,6 +461,8 @@ public class Q230_TestOfTheSummoner extends Quest
 								st.set("cond", "4");
 								st.playSound(QuestState.SOUND_MIDDLE);
 							}
+							else
+								st.playSound(QuestState.SOUND_ITEMGET);
 						}
 						else if (camoniellStat == 7)
 							htmltext = "30636-10.htm";
@@ -485,6 +492,8 @@ public class Q230_TestOfTheSummoner extends Quest
 								st.set("cond", "4");
 								st.playSound(QuestState.SOUND_MIDDLE);
 							}
+							else
+								st.playSound(QuestState.SOUND_ITEMGET);
 						}
 						else if (belthusStat == 7)
 							htmltext = "30637-10.htm";
@@ -514,6 +523,8 @@ public class Q230_TestOfTheSummoner extends Quest
 								st.set("cond", "4");
 								st.playSound(QuestState.SOUND_MIDDLE);
 							}
+							else
+								st.playSound(QuestState.SOUND_ITEMGET);
 						}
 						else if (basillaStat == 7)
 							htmltext = "30638-10.htm";
@@ -543,6 +554,8 @@ public class Q230_TestOfTheSummoner extends Quest
 								st.set("cond", "4");
 								st.playSound(QuestState.SOUND_MIDDLE);
 							}
+							else
+								st.playSound(QuestState.SOUND_ITEMGET);
 						}
 						else if (celestielStat == 7)
 							htmltext = "30639-10.htm";
@@ -572,6 +585,8 @@ public class Q230_TestOfTheSummoner extends Quest
 								st.set("cond", "4");
 								st.playSound(QuestState.SOUND_MIDDLE);
 							}
+							else
+								st.playSound(QuestState.SOUND_ITEMGET);
 						}
 						else if (bryntheaStat == 7)
 							htmltext = "30640-10.htm";
@@ -588,21 +603,22 @@ public class Q230_TestOfTheSummoner extends Quest
 	}
 	
 	@Override
-	public String onDeath(L2Character killer, L2PcInstance player)
+	public String onDeath(Creature killer, Player player)
 	{
-		if (!(killer instanceof L2Attackable))
+		if (!(killer instanceof Attackable))
 			return null;
 		
-		QuestState st = checkPlayerState(player, (L2Npc) killer, STATE_STARTED);
+		QuestState st = checkPlayerState(player, (Npc) killer, STATE_STARTED);
 		if (st == null)
 			return null;
 		
-		switch (((L2Npc) killer).getNpcId())
+		switch (((Npc) killer).getNpcId())
 		{
 			case PAKO_THE_CAT:
 				if (st.getInt("Almors") == 3)
 				{
 					st.set("Almors", "4");
+					st.playSound(QuestState.SOUND_ITEMGET);
 					st.giveItems(CRYSTAL_OF_DEFEAT_1, 1);
 				}
 				break;
@@ -611,6 +627,7 @@ public class Q230_TestOfTheSummoner extends Quest
 				if (st.getInt("Camoniell") == 3)
 				{
 					st.set("Camoniell", "4");
+					st.playSound(QuestState.SOUND_ITEMGET);
 					st.giveItems(CRYSTAL_OF_DEFEAT_2, 1);
 				}
 				break;
@@ -619,6 +636,7 @@ public class Q230_TestOfTheSummoner extends Quest
 				if (st.getInt("Belthus") == 3)
 				{
 					st.set("Belthus", "4");
+					st.playSound(QuestState.SOUND_ITEMGET);
 					st.giveItems(CRYSTAL_OF_DEFEAT_3, 1);
 				}
 				break;
@@ -627,6 +645,7 @@ public class Q230_TestOfTheSummoner extends Quest
 				if (st.getInt("Basilla") == 3)
 				{
 					st.set("Basilla", "4");
+					st.playSound(QuestState.SOUND_ITEMGET);
 					st.giveItems(CRYSTAL_OF_DEFEAT_4, 1);
 				}
 				break;
@@ -635,6 +654,7 @@ public class Q230_TestOfTheSummoner extends Quest
 				if (st.getInt("Celestiel") == 3)
 				{
 					st.set("Celestiel", "4");
+					st.playSound(QuestState.SOUND_ITEMGET);
 					st.giveItems(CRYSTAL_OF_DEFEAT_5, 1);
 				}
 				break;
@@ -643,6 +663,7 @@ public class Q230_TestOfTheSummoner extends Quest
 				if (st.getInt("Brynthea") == 3)
 				{
 					st.set("Brynthea", "4");
+					st.playSound(QuestState.SOUND_ITEMGET);
 					st.giveItems(CRYSTAL_OF_DEFEAT_6, 1);
 				}
 				break;
@@ -652,7 +673,7 @@ public class Q230_TestOfTheSummoner extends Quest
 	}
 	
 	@Override
-	public String onKill(L2Npc npc, L2PcInstance player, boolean isPet)
+	public String onKill(Npc npc, Player player, boolean isPet)
 	{
 		QuestState st = checkPlayerState(player, npc, STATE_STARTED);
 		if (st == null)
@@ -818,7 +839,7 @@ public class Q230_TestOfTheSummoner extends Quest
 	}
 	
 	@Override
-	public String onAttack(L2Npc npc, L2PcInstance attacker, int damage, boolean isPet)
+	public String onAttack(Npc npc, Player attacker, int damage, boolean isPet, L2Skill skill)
 	{
 		QuestState st = checkPlayerState(attacker, npc, STATE_STARTED);
 		if (st == null)
@@ -846,7 +867,7 @@ public class Q230_TestOfTheSummoner extends Quest
 					// check if the attacker is the same pet as the one that attacked before.
 					if (!isPet || attacker.getPet() != duel.getPet()) // if a foul occured find the player who had the duel in progress and give a foul crystal
 					{
-						L2PcInstance foulPlayer = duel.getAttacker();
+						Player foulPlayer = duel.getAttacker();
 						if (foulPlayer != null)
 						{
 							st = foulPlayer.getQuestState(qn);
@@ -880,7 +901,7 @@ public class Q230_TestOfTheSummoner extends Quest
 					ProgressDuelMob duel = _duelsInProgress.get(npcId);
 					if (!isPet || attacker.getPet() != duel.getPet())
 					{
-						L2PcInstance foulPlayer = duel.getAttacker();
+						Player foulPlayer = duel.getAttacker();
 						if (foulPlayer != null)
 						{
 							st = foulPlayer.getQuestState(qn);
@@ -914,7 +935,7 @@ public class Q230_TestOfTheSummoner extends Quest
 					ProgressDuelMob duel = _duelsInProgress.get(npcId);
 					if (!isPet || attacker.getPet() != duel.getPet())
 					{
-						L2PcInstance foulPlayer = duel.getAttacker();
+						Player foulPlayer = duel.getAttacker();
 						if (foulPlayer != null)
 						{
 							st = foulPlayer.getQuestState(qn);
@@ -948,7 +969,7 @@ public class Q230_TestOfTheSummoner extends Quest
 					ProgressDuelMob duel = _duelsInProgress.get(npcId);
 					if (!isPet || attacker.getPet() != duel.getPet())
 					{
-						L2PcInstance foulPlayer = duel.getAttacker();
+						Player foulPlayer = duel.getAttacker();
 						if (foulPlayer != null)
 						{
 							st = foulPlayer.getQuestState(qn);
@@ -982,7 +1003,7 @@ public class Q230_TestOfTheSummoner extends Quest
 					ProgressDuelMob duel = _duelsInProgress.get(npcId);
 					if (!isPet || attacker.getPet() != duel.getPet())
 					{
-						L2PcInstance foulPlayer = duel.getAttacker();
+						Player foulPlayer = duel.getAttacker();
 						if (foulPlayer != null)
 						{
 							st = foulPlayer.getQuestState(qn);
@@ -1016,7 +1037,7 @@ public class Q230_TestOfTheSummoner extends Quest
 					ProgressDuelMob duel = _duelsInProgress.get(npcId);
 					if (!isPet || attacker.getPet() != duel.getPet())
 					{
-						L2PcInstance foulPlayer = duel.getAttacker();
+						Player foulPlayer = duel.getAttacker();
 						if (foulPlayer != null)
 						{
 							st = foulPlayer.getQuestState(qn);
@@ -1041,21 +1062,21 @@ public class Q230_TestOfTheSummoner extends Quest
 	
 	private final class ProgressDuelMob
 	{
-		private final L2PcInstance _attacker;
-		private final L2Summon _pet;
+		private final Player _attacker;
+		private final Summon _pet;
 		
-		public ProgressDuelMob(L2PcInstance attacker, L2Summon pet)
+		public ProgressDuelMob(Player attacker, Summon pet)
 		{
 			_attacker = attacker;
 			_pet = pet;
 		}
 		
-		public L2PcInstance getAttacker()
+		public Player getAttacker()
 		{
 			return _attacker;
 		}
 		
-		public L2Summon getPet()
+		public Summon getPet()
 		{
 			return _pet;
 		}

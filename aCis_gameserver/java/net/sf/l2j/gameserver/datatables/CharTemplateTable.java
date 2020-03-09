@@ -1,17 +1,3 @@
-/*
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package net.sf.l2j.gameserver.datatables;
 
 import java.io.File;
@@ -23,7 +9,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import net.sf.l2j.gameserver.model.L2SkillLearn;
-import net.sf.l2j.gameserver.model.actor.template.PcTemplate;
+import net.sf.l2j.gameserver.model.actor.template.PlayerTemplate;
 import net.sf.l2j.gameserver.model.base.ClassId;
 import net.sf.l2j.gameserver.templates.StatsSet;
 import net.sf.l2j.gameserver.xmlfactory.XMLDocumentFactory;
@@ -39,7 +25,7 @@ public class CharTemplateTable
 {
 	private static final Logger _log = Logger.getLogger(CharTemplateTable.class.getName());
 	
-	private final Map<Integer, PcTemplate> _templates = new HashMap<>();
+	private final Map<Integer, PlayerTemplate> _templates = new HashMap<>();
 	
 	public static CharTemplateTable getInstance()
 	{
@@ -79,11 +65,8 @@ public class CharTemplateTable
 					NamedNodeMap attrs = d.getAttributes();
 					StatsSet set = new StatsSet();
 					
-					final int classId = Integer.parseInt(attrs.getNamedItem("id").getNodeValue());
-					final int parentId = Integer.parseInt(attrs.getNamedItem("parentId").getNodeValue());
+					final ClassId classId = ClassId.VALUES[Integer.parseInt(attrs.getNamedItem("id").getNodeValue())];
 					String items = null;
-					
-					set.set("classId", classId);
 					
 					for (Node cd = d.getFirstChild(); cd != null; cd = cd.getNextSibling())
 					{
@@ -111,7 +94,7 @@ public class CharTemplateTable
 									skills.add(skillLearn);
 								}
 							}
-							SkillTreeTable.getInstance().addSkillsToSkillTrees(skills, classId, parentId);
+							SkillTreeTable.getInstance().addSkillsToSkillTrees(classId, skills);
 						}
 						else if ("items".equalsIgnoreCase(cd.getNodeName()))
 						{
@@ -119,7 +102,7 @@ public class CharTemplateTable
 							items = attrs.getNamedItem("val").getNodeValue().trim();
 						}
 					}
-					PcTemplate pcT = new PcTemplate(set);
+					PlayerTemplate pcT = new PlayerTemplate(classId, set);
 					
 					// Add items listed in "items" if class possess a filled "items" string.
 					if (items != null)
@@ -139,19 +122,19 @@ public class CharTemplateTable
 		}
 	}
 	
-	public PcTemplate getTemplate(ClassId classId)
+	public PlayerTemplate getTemplate(ClassId classId)
 	{
 		return _templates.get(classId.getId());
 	}
 	
-	public PcTemplate getTemplate(int classId)
+	public PlayerTemplate getTemplate(int classId)
 	{
 		return _templates.get(classId);
 	}
 	
 	public final String getClassNameById(int classId)
 	{
-		PcTemplate pcTemplate = _templates.get(classId);
+		PlayerTemplate pcTemplate = _templates.get(classId);
 		if (pcTemplate == null)
 			throw new IllegalArgumentException("No template for classId: " + classId);
 		

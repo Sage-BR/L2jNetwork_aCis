@@ -1,31 +1,19 @@
-/*
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package net.sf.l2j.gameserver.network.clientpackets;
 
-import net.sf.l2j.Config;
 import net.sf.l2j.commons.random.Rnd;
-import net.sf.l2j.gameserver.datatables.ArmorSetsTable;
-import net.sf.l2j.gameserver.datatables.SkillTable;
+
+import net.sf.l2j.gameserver.data.SkillTable;
+import net.sf.l2j.gameserver.data.xml.ArmorSetData;
+import net.sf.l2j.gameserver.data.xml.EnchantData;
+import net.sf.l2j.gameserver.model.L2EnchantScroll;
 import net.sf.l2j.gameserver.model.L2Skill;
-import net.sf.l2j.gameserver.model.L2World;
-import net.sf.l2j.gameserver.model.actor.instance.L2PcInstance;
+import net.sf.l2j.gameserver.model.actor.instance.Player;
 import net.sf.l2j.gameserver.model.item.ArmorSet;
 import net.sf.l2j.gameserver.model.item.instance.ItemInstance;
 import net.sf.l2j.gameserver.model.item.kind.Armor;
 import net.sf.l2j.gameserver.model.item.kind.Item;
 import net.sf.l2j.gameserver.model.item.kind.Weapon;
+import net.sf.l2j.gameserver.model.item.type.WeaponType;
 import net.sf.l2j.gameserver.model.itemcontainer.Inventory;
 import net.sf.l2j.gameserver.network.SystemMessageId;
 import net.sf.l2j.gameserver.network.serverpackets.EnchantResult;
@@ -33,9 +21,8 @@ import net.sf.l2j.gameserver.network.serverpackets.InventoryUpdate;
 import net.sf.l2j.gameserver.network.serverpackets.ItemList;
 import net.sf.l2j.gameserver.network.serverpackets.StatusUpdate;
 import net.sf.l2j.gameserver.network.serverpackets.SystemMessage;
-import net.sf.l2j.gameserver.util.Util;
 
-public final class RequestEnchantItem extends AbstractEnchantPacket
+public final class RequestEnchantItem extends L2GameClientPacket
 {
 	private int _objectId = 0;
 	
@@ -48,13 +35,21 @@ public final class RequestEnchantItem extends AbstractEnchantPacket
 	@Override
 	protected void runImpl()
 	{
-		final L2PcInstance activeChar = getClient().getActiveChar();
+		// get player
+		final Player activeChar = getClient().getActiveChar();
 		if (activeChar == null || _objectId == 0)
 			return;
 		
+		// player online and active
 		if (!activeChar.isOnline() || getClient().isDetached())
 		{
 			activeChar.setActiveEnchantItem(null);
+			return;
+		}
+		
+		if (activeChar.isSubmitingPin())
+		{
+			activeChar.sendMessage("Unable to do any action while PIN is not submitted");
 			return;
 		}
 		
@@ -66,6 +61,17 @@ public final class RequestEnchantItem extends AbstractEnchantPacket
 			return;
 		}
 		
+		// player trading
+		if (activeChar.getActiveTradeList() != null)
+		{
+			activeChar.cancelActiveTrade();
+			activeChar.sendPacket(SystemMessageId.TRADE_ATTEMPT_FAILED);
+			activeChar.setActiveEnchantItem(null);
+			activeChar.sendPacket(EnchantResult.CANCELLED);
+			return;
+		}
+		
+		// get item and enchant scroll
 		ItemInstance item = activeChar.getInventory().getItemByObjectId(_objectId);
 		ItemInstance scroll = activeChar.getActiveEnchantItem();
 		
@@ -77,13 +83,13 @@ public final class RequestEnchantItem extends AbstractEnchantPacket
 			return;
 		}
 		
-		// template for scroll
-		EnchantScroll scrollTemplate = getEnchantScroll(scroll);
-		if (scrollTemplate == null)
+		// get scroll enchant data
+		final L2EnchantScroll enchant = EnchantData.getInstance().getEnchantScroll(scroll);
+		if (enchant == null)
 			return;
 		
-		// first validation check
-		if (!scrollTemplate.isValid(item) || !isEnchantable(item))
+		// validation check
+		if (!isEnchantable(item) || !enchant.isValid(item) || item.getOwnerId() != activeChar.getObjectId())
 		{
 			activeChar.sendPacket(SystemMessageId.INAPPROPRIATE_ENCHANT_CONDITION);
 			activeChar.setActiveEnchantItem(null);
@@ -91,39 +97,20 @@ public final class RequestEnchantItem extends AbstractEnchantPacket
 			return;
 		}
 		
-		// attempting to destroy scroll
+		// destroy enchant scroll
 		scroll = activeChar.getInventory().destroyItem("Enchant", scroll.getObjectId(), 1, activeChar, item);
 		if (scroll == null)
 		{
 			activeChar.sendPacket(SystemMessageId.NOT_ENOUGH_ITEMS);
-			Util.handleIllegalPlayerAction(activeChar, activeChar.getName() + " tried to enchant without scroll.", Config.DEFAULT_PUNISH);
 			activeChar.setActiveEnchantItem(null);
 			activeChar.sendPacket(EnchantResult.CANCELLED);
 			return;
 		}
 		
-		if (activeChar.getActiveTradeList() != null)
-		{
-			activeChar.cancelActiveTrade();
-			activeChar.sendPacket(SystemMessageId.TRADE_ATTEMPT_FAILED);
-			return;
-		}
-		
 		synchronized (item)
 		{
-			double chance = scrollTemplate.getChance(item);
-			
-			// last validation check
-			if (item.getOwnerId() != activeChar.getObjectId() || !isEnchantable(item) || chance < 0)
-			{
-				activeChar.sendPacket(SystemMessageId.INAPPROPRIATE_ENCHANT_CONDITION);
-				activeChar.setActiveEnchantItem(null);
-				activeChar.sendPacket(EnchantResult.CANCELLED);
-				return;
-			}
-			
 			// success
-			if (Rnd.nextDouble() < chance)
+			if (Rnd.get(100) < enchant.getChance(item))
 			{
 				// announce the success
 				SystemMessage sm;
@@ -146,7 +133,7 @@ public final class RequestEnchantItem extends AbstractEnchantPacket
 				item.updateDatabase();
 				
 				// If item is equipped, verify the skill obtention (+4 duals, +6 armorset).
-				if (item.isEquipped())
+				if (item.isEquipped() && (enchant.canBreak() || !enchant.canMaintain()))
 				{
 					final Item it = item.getItem();
 					
@@ -167,7 +154,7 @@ public final class RequestEnchantItem extends AbstractEnchantPacket
 						final ItemInstance chestItem = activeChar.getInventory().getPaperdollItem(Inventory.PAPERDOLL_CHEST);
 						if (chestItem != null)
 						{
-							final ArmorSet armorSet = ArmorSetsTable.getInstance().getSet(chestItem.getItemId());
+							final ArmorSet armorSet = ArmorSetData.getInstance().getSet(chestItem.getItemId());
 							if (armorSet != null && armorSet.isEnchanted6(activeChar)) // has all parts of set enchanted to 6 or more
 							{
 								final int skillId = armorSet.getEnchant6skillId();
@@ -210,7 +197,7 @@ public final class RequestEnchantItem extends AbstractEnchantPacket
 						final ItemInstance chestItem = activeChar.getInventory().getPaperdollItem(Inventory.PAPERDOLL_CHEST);
 						if (chestItem != null)
 						{
-							final ArmorSet armorSet = ArmorSetsTable.getInstance().getSet(chestItem.getItemId());
+							final ArmorSet armorSet = ArmorSetData.getInstance().getSet(chestItem.getItemId());
 							if (armorSet != null && armorSet.isEnchanted6(activeChar)) // has all parts of set enchanted to 6 or more
 							{
 								final int skillId = armorSet.getEnchant6skillId();
@@ -228,37 +215,45 @@ public final class RequestEnchantItem extends AbstractEnchantPacket
 					}
 				}
 				
-				if (scrollTemplate.isBlessed())
+				if (!enchant.canBreak())
 				{
-					// blessed enchant - clear enchant value
+					// keep item
 					activeChar.sendPacket(SystemMessageId.BLESSED_ENCHANT_FAILED);
 					
-					item.setEnchantLevel(0);
-					item.updateDatabase();
+					if (!enchant.canMaintain())
+					{
+						item.setEnchantLevel(0);
+						item.updateDatabase();
+					}
+					
+					// send enchant result
 					activeChar.sendPacket(EnchantResult.UNSUCCESS);
 				}
 				else
 				{
-					// enchant failed, destroy item
-					int crystalId = item.getItem().getCrystalItemId();
-					int count = item.getCrystalCount() - (item.getItem().getCrystalCount() + 1) / 2;
-					if (count < 1)
-						count = 1;
-					
+					// destroy item
 					ItemInstance destroyItem = activeChar.getInventory().destroyItem("Enchant", item, activeChar, null);
 					if (destroyItem == null)
 					{
-						// unable to destroy item, cheater ?
-						Util.handleIllegalPlayerAction(activeChar, "Unable to delete item on enchant failure from player " + activeChar.getName() + ", possible cheater !", Config.DEFAULT_PUNISH);
 						activeChar.setActiveEnchantItem(null);
 						activeChar.sendPacket(EnchantResult.CANCELLED);
 						return;
 					}
 					
+					// add crystals, if item crystalizable
+					int crystalId = item.getItem().getCrystalItemId();
 					if (crystalId != 0)
 					{
-						activeChar.getInventory().addItem("Enchant", crystalId, count, activeChar, destroyItem);
-						activeChar.sendPacket(SystemMessage.getSystemMessage(SystemMessageId.EARNED_S2_S1_S).addItemName(crystalId).addItemNumber(count));
+						// get crystals count
+						int crystalCount = item.getCrystalCount() - (item.getItem().getCrystalCount() + 1) / 2;
+						if (crystalCount < 1)
+							crystalCount = 1;
+						
+						// add crystals to inventory
+						activeChar.getInventory().addItem("Enchant", crystalId, crystalCount, activeChar, destroyItem);
+						
+						// send message
+						activeChar.sendPacket(SystemMessage.getSystemMessage(SystemMessageId.EARNED_S2_S1_S).addItemName(crystalId).addItemNumber(crystalCount));
 					}
 					
 					InventoryUpdate iu = new InventoryUpdate();
@@ -269,21 +264,22 @@ public final class RequestEnchantItem extends AbstractEnchantPacket
 					
 					activeChar.sendPacket(iu);
 					
-					// Messages.
+					// update weight
+					StatusUpdate su = new StatusUpdate(activeChar);
+					su.addAttribute(StatusUpdate.CUR_LOAD, activeChar.getCurrentLoad());
+					activeChar.sendPacket(su);
+					
+					// send message
 					if (item.getEnchantLevel() > 0)
 						activeChar.sendPacket(SystemMessage.getSystemMessage(SystemMessageId.ENCHANTMENT_FAILED_S1_S2_EVAPORATED).addNumber(item.getEnchantLevel()).addItemName(item.getItemId()));
 					else
 						activeChar.sendPacket(SystemMessage.getSystemMessage(SystemMessageId.ENCHANTMENT_FAILED_S1_EVAPORATED).addItemName(item.getItemId()));
 					
-					L2World.getInstance().removeObject(destroyItem);
+					// send enchant result
 					if (crystalId == 0)
 						activeChar.sendPacket(EnchantResult.UNK_RESULT_4);
 					else
 						activeChar.sendPacket(EnchantResult.UNK_RESULT_1);
-					
-					StatusUpdate su = new StatusUpdate(activeChar);
-					su.addAttribute(StatusUpdate.CUR_LOAD, activeChar.getCurrentLoad());
-					activeChar.sendPacket(su);
 				}
 			}
 			
@@ -291,5 +287,21 @@ public final class RequestEnchantItem extends AbstractEnchantPacket
 			activeChar.broadcastUserInfo();
 			activeChar.setActiveEnchantItem(null);
 		}
+	}
+	
+	/**
+	 * @param item The instance of item to make checks on.
+	 * @return true if item can be enchanted.
+	 */
+	private static final boolean isEnchantable(ItemInstance item)
+	{
+		if (item.isHeroItem() || item.isShadowItem() || item.isEtcItem() || item.getItem().getItemType() == WeaponType.FISHINGROD)
+			return false;
+		
+		// only equipped items or in inventory can be enchanted
+		if (item.getLocation() != ItemInstance.ItemLocation.INVENTORY && item.getLocation() != ItemInstance.ItemLocation.PAPERDOLL)
+			return false;
+		
+		return true;
 	}
 }

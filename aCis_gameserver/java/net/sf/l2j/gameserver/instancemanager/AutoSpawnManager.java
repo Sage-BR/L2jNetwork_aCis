@@ -1,17 +1,3 @@
-/*
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package net.sf.l2j.gameserver.instancemanager;
 
 import java.sql.Connection;
@@ -27,17 +13,18 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import net.sf.l2j.L2DatabaseFactory;
+import net.sf.l2j.commons.concurrent.ThreadPool;
 import net.sf.l2j.commons.random.Rnd;
-import net.sf.l2j.gameserver.ThreadPoolManager;
-import net.sf.l2j.gameserver.datatables.MapRegionTable;
-import net.sf.l2j.gameserver.datatables.NpcTable;
-import net.sf.l2j.gameserver.datatables.SpawnTable;
+
+import net.sf.l2j.L2DatabaseFactory;
+import net.sf.l2j.gameserver.data.MapRegionTable;
+import net.sf.l2j.gameserver.data.NpcTable;
+import net.sf.l2j.gameserver.data.SpawnTable;
 import net.sf.l2j.gameserver.idfactory.IdFactory;
 import net.sf.l2j.gameserver.model.L2Spawn;
-import net.sf.l2j.gameserver.model.SpawnLocation;
-import net.sf.l2j.gameserver.model.actor.L2Npc;
+import net.sf.l2j.gameserver.model.actor.Npc;
 import net.sf.l2j.gameserver.model.actor.template.NpcTemplate;
+import net.sf.l2j.gameserver.model.location.SpawnLocation;
 import net.sf.l2j.gameserver.util.Broadcast;
 
 /**
@@ -152,7 +139,7 @@ public class AutoSpawnManager
 		if (spawnPoints != null)
 			for (int[] spawnPoint : spawnPoints)
 				newSpawn.addSpawnLocation(spawnPoint);
-		
+			
 		int newId = IdFactory.getInstance().getNextId();
 		newSpawn._objectId = newId;
 		_registeredSpawns.put(newId, newSpawn);
@@ -227,9 +214,9 @@ public class AutoSpawnManager
 				AutoSpawner rs = new AutoSpawner(objectId);
 				
 				if (spawnInst._desDelay > 0)
-					spawnTask = ThreadPoolManager.getInstance().scheduleEffectAtFixedRate(rs, spawnInst._initDelay, spawnInst._resDelay);
+					spawnTask = ThreadPool.scheduleAtFixedRate(rs, spawnInst._initDelay, spawnInst._resDelay);
 				else
-					spawnTask = ThreadPoolManager.getInstance().scheduleEffect(rs, spawnInst._initDelay);
+					spawnTask = ThreadPool.schedule(rs, spawnInst._initDelay);
 				
 				_runningSpawns.put(objectId, spawnTask);
 			}
@@ -241,7 +228,7 @@ public class AutoSpawnManager
 				if (spawnTask != null)
 					spawnTask.cancel(false);
 				
-				ThreadPoolManager.getInstance().scheduleEffect(rd, 0);
+				ThreadPool.schedule(rd, 0);
 			}
 			
 			spawnInst.setSpawnActive(isActive);
@@ -308,7 +295,7 @@ public class AutoSpawnManager
 		for (AutoSpawnInstance spawnInst : _registeredSpawns.values())
 			if (spawnInst.getNpcId() == npcId)
 				spawnInstList.put(spawnInst.getObjectId(), spawnInst);
-		
+			
 		return spawnInstList;
 	}
 	
@@ -394,26 +381,19 @@ public class AutoSpawnManager
 					_log.warning("Couldnt find npcId: " + spawnInst.getNpcId() + ".");
 					return;
 				}
-				L2Spawn newSpawn = new L2Spawn(npcTemp);
-				
-				newSpawn.setLocx(x);
-				newSpawn.setLocy(y);
-				newSpawn.setLocz(z);
-				
-				if (heading != -1)
-					newSpawn.setHeading(heading);
+				final L2Spawn newSpawn = new L2Spawn(npcTemp);
+				newSpawn.setLoc(x, y, z, heading);
 				
 				if (spawnInst._desDelay == 0)
 					newSpawn.setRespawnDelay(spawnInst._resDelay);
 				
-				// Add the new spawn information to the spawn table, but do not
-				// store it.
+				// Add the new spawn information to the spawn table, but do not store it.
 				SpawnTable.getInstance().addNewSpawn(newSpawn, false);
-				L2Npc npcInst = null;
+				Npc npcInst = null;
 				
 				if (spawnInst._spawnCount == 1)
 				{
-					npcInst = newSpawn.doSpawn();
+					npcInst = newSpawn.doSpawn(false);
 					npcInst.setXYZ(npcInst.getX(), npcInst.getY(), npcInst.getZ());
 					spawnInst.addNpcInstance(npcInst);
 				}
@@ -421,7 +401,7 @@ public class AutoSpawnManager
 				{
 					for (int i = 0; i < spawnInst._spawnCount; i++)
 					{
-						npcInst = newSpawn.doSpawn();
+						npcInst = newSpawn.doSpawn(false);
 						
 						// To prevent spawning of more than one NPC in the exact same spot, move it slightly by a small random offset.
 						npcInst.setXYZ(npcInst.getX() + Rnd.get(50), npcInst.getY() + Rnd.get(50), npcInst.getZ());
@@ -437,7 +417,7 @@ public class AutoSpawnManager
 				
 				// If there is no despawn time, do not create a despawn task.
 				if (spawnInst.getDespawnDelay() > 0)
-					ThreadPoolManager.getInstance().scheduleAi(new AutoDespawner(_objectId), spawnInst.getDespawnDelay() - 1000);
+					ThreadPool.schedule(new AutoDespawner(_objectId), spawnInst.getDespawnDelay() - 1000);
 			}
 			catch (Exception e)
 			{
@@ -474,7 +454,7 @@ public class AutoSpawnManager
 					return;
 				}
 				
-				for (L2Npc npcInst : spawnInst.getNPCInstanceList())
+				for (Npc npcInst : spawnInst.getNPCInstanceList())
 				{
 					if (npcInst == null)
 						continue;
@@ -512,7 +492,7 @@ public class AutoSpawnManager
 		
 		protected int _lastLocIndex = -1;
 		
-		private final List<L2Npc> _npcList = new ArrayList<>();
+		private final List<Npc> _npcList = new ArrayList<>();
 		
 		private final List<SpawnLocation> _locList = new ArrayList<>();
 		
@@ -535,12 +515,12 @@ public class AutoSpawnManager
 			_spawnActive = activeValue;
 		}
 		
-		protected boolean addNpcInstance(L2Npc npcInst)
+		protected boolean addNpcInstance(Npc npcInst)
 		{
 			return _npcList.add(npcInst);
 		}
 		
-		protected boolean removeNpcInstance(L2Npc npcInst)
+		protected boolean removeNpcInstance(Npc npcInst)
 		{
 			return _npcList.remove(npcInst);
 		}
@@ -580,12 +560,12 @@ public class AutoSpawnManager
 			return _locList.toArray(new SpawnLocation[_locList.size()]);
 		}
 		
-		public L2Npc[] getNPCInstanceList()
+		public Npc[] getNPCInstanceList()
 		{
-			L2Npc[] ret;
+			Npc[] ret;
 			synchronized (_npcList)
 			{
-				ret = new L2Npc[_npcList.size()];
+				ret = new Npc[_npcList.size()];
 				_npcList.toArray(ret);
 			}
 			
@@ -596,7 +576,7 @@ public class AutoSpawnManager
 		{
 			List<L2Spawn> npcSpawns = new ArrayList<>();
 			
-			for (L2Npc npcInst : _npcList)
+			for (Npc npcInst : _npcList)
 				npcSpawns.add(npcInst.getSpawn());
 			
 			return npcSpawns.toArray(new L2Spawn[npcSpawns.size()]);

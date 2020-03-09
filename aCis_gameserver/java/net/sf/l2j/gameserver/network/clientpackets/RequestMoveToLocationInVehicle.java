@@ -1,23 +1,8 @@
-/*
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package net.sf.l2j.gameserver.network.clientpackets;
 
 import net.sf.l2j.gameserver.instancemanager.BoatManager;
-import net.sf.l2j.gameserver.model.Location;
-import net.sf.l2j.gameserver.model.actor.instance.L2BoatInstance;
-import net.sf.l2j.gameserver.model.actor.instance.L2PcInstance;
+import net.sf.l2j.gameserver.model.actor.Vehicle;
+import net.sf.l2j.gameserver.model.actor.instance.Player;
 import net.sf.l2j.gameserver.model.item.type.WeaponType;
 import net.sf.l2j.gameserver.network.SystemMessageId;
 import net.sf.l2j.gameserver.network.serverpackets.ActionFailed;
@@ -27,13 +12,17 @@ import net.sf.l2j.gameserver.network.serverpackets.StopMoveInVehicle;
 public final class RequestMoveToLocationInVehicle extends L2GameClientPacket
 {
 	private int _boatId;
-	private int _targetX, _targetY, _targetZ;
-	private int _originX, _originY, _originZ;
+	private int _targetX;
+	private int _targetY;
+	private int _targetZ;
+	private int _originX;
+	private int _originY;
+	private int _originZ;
 	
 	@Override
 	protected void readImpl()
 	{
-		_boatId = readD(); // objectId of boat
+		_boatId = readD();
 		_targetX = readD();
 		_targetY = readD();
 		_targetZ = readD();
@@ -45,7 +34,7 @@ public final class RequestMoveToLocationInVehicle extends L2GameClientPacket
 	@Override
 	protected void runImpl()
 	{
-		final L2PcInstance activeChar = getClient().getActiveChar();
+		final Player activeChar = getClient().getActiveChar();
 		if (activeChar == null)
 			return;
 		
@@ -74,7 +63,7 @@ public final class RequestMoveToLocationInVehicle extends L2GameClientPacket
 			return;
 		}
 		
-		final L2BoatInstance boat;
+		final Vehicle boat;
 		if (activeChar.isInBoat())
 		{
 			boat = activeChar.getBoat();
@@ -95,9 +84,7 @@ public final class RequestMoveToLocationInVehicle extends L2GameClientPacket
 			activeChar.setVehicle(boat);
 		}
 		
-		final Location pos = new Location(_targetX, _targetY, _targetZ);
-		final Location originPos = new Location(_originX, _originY, _originZ);
-		activeChar.setInVehiclePosition(pos);
-		activeChar.broadcastPacket(new MoveToLocationInVehicle(activeChar, pos, originPos));
+		activeChar.getVehiclePosition().set(_targetX, _targetY, _targetZ);
+		activeChar.broadcastPacket(new MoveToLocationInVehicle(activeChar, _targetX, _targetY, _targetZ, _originX, _originY, _originZ));
 	}
 }

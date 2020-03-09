@@ -1,23 +1,8 @@
-/*
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package net.sf.l2j.gameserver.skills.effects;
 
-import net.sf.l2j.Config;
-import net.sf.l2j.gameserver.geoengine.PathFinding;
+import net.sf.l2j.gameserver.geoengine.GeoEngine;
 import net.sf.l2j.gameserver.model.L2Effect;
-import net.sf.l2j.gameserver.model.Location;
+import net.sf.l2j.gameserver.model.location.Location;
 import net.sf.l2j.gameserver.network.serverpackets.FlyToLocation;
 import net.sf.l2j.gameserver.network.serverpackets.FlyToLocation.FlyType;
 import net.sf.l2j.gameserver.network.serverpackets.ValidateLocation;
@@ -43,7 +28,7 @@ public class EffectThrowUp extends L2Effect
 	@Override
 	public boolean onStart()
 	{
-		// Get current position of the L2Character
+		// Get current position of the Creature
 		final int curX = getEffected().getX();
 		final int curY = getEffected().getY();
 		final int curZ = getEffected().getZ();
@@ -76,12 +61,9 @@ public class EffectThrowUp extends L2Effect
 		_y = getEffector().getY() - (int) (offset * sin);
 		_z = getEffected().getZ();
 		
-		if (Config.GEODATA > 0)
-		{
-			Location destiny = PathFinding.getInstance().canMoveToTargetLoc(getEffected().getX(), getEffected().getY(), getEffected().getZ(), _x, _y, _z);
-			_x = destiny.getX();
-			_y = destiny.getY();
-		}
+		Location destiny = GeoEngine.getInstance().canMoveToTargetLoc(getEffected().getX(), getEffected().getY(), getEffected().getZ(), _x, _y, _z);
+		_x = destiny.getX();
+		_y = destiny.getY();
 		
 		getEffected().startStunning();
 		getEffected().broadcastPacket(new FlyToLocation(getEffected(), _x, _y, _z, FlyType.THROW_UP));

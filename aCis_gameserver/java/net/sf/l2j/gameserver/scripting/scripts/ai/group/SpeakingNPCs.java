@@ -1,23 +1,10 @@
-/*
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package net.sf.l2j.gameserver.scripting.scripts.ai.group;
 
-import net.sf.l2j.gameserver.model.actor.L2Npc;
-import net.sf.l2j.gameserver.model.actor.instance.L2PcInstance;
+import net.sf.l2j.gameserver.model.L2Skill;
+import net.sf.l2j.gameserver.model.actor.Npc;
+import net.sf.l2j.gameserver.model.actor.instance.Player;
 import net.sf.l2j.gameserver.scripting.EventType;
-import net.sf.l2j.gameserver.scripting.scripts.ai.AbstractNpcAI;
+import net.sf.l2j.gameserver.scripting.scripts.ai.L2AttackableAIScript;
 
 /**
  * Speaking NPCs implementation.<br>
@@ -26,9 +13,8 @@ import net.sf.l2j.gameserver.scripting.scripts.ai.AbstractNpcAI;
  * It sends back the good string following the action and the npcId.<br>
  * <br>
  * <font color="red"><b><u>TODO:</b></u> Replace the system of switch by an XML, once a decent amount of NPCs is mapped.</font>
- * @author Tryskell
  */
-public class SpeakingNPCs extends AbstractNpcAI
+public class SpeakingNPCs extends L2AttackableAIScript
 {
 	private static final int[] NPC_IDS =
 	{
@@ -80,15 +66,19 @@ public class SpeakingNPCs extends AbstractNpcAI
 	public SpeakingNPCs()
 	{
 		super("ai/group");
-		
-		registerMobs(NPC_IDS, EventType.ON_ATTACK, EventType.ON_KILL);
 	}
 	
 	@Override
-	public String onAttack(L2Npc npc, L2PcInstance attacker, int damage, boolean isPet)
+	protected void registerNpcs()
+	{
+		addEventIds(NPC_IDS, EventType.ON_ATTACK, EventType.ON_KILL);
+	}
+	
+	@Override
+	public String onAttack(Npc npc, Player attacker, int damage, boolean isPet, L2Skill skill)
 	{
 		if (npc.isScriptValue(1))
-			return super.onAttack(npc, attacker, damage, isPet);
+			return super.onAttack(npc, attacker, damage, isPet, skill);
 		
 		String message = "";
 		
@@ -151,11 +141,11 @@ public class SpeakingNPCs extends AbstractNpcAI
 		npc.broadcastNpcSay(message);
 		npc.setScriptValue(1); // Make the mob speaks only once, else he will spam.
 		
-		return super.onAttack(npc, attacker, damage, isPet);
+		return super.onAttack(npc, attacker, damage, isPet, skill);
 	}
 	
 	@Override
-	public String onKill(L2Npc npc, L2PcInstance player, boolean isPet)
+	public String onKill(Npc npc, Player player, boolean isPet)
 	{
 		String message = "";
 		

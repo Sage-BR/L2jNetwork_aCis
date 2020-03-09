@@ -1,45 +1,41 @@
-/*
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package net.sf.l2j.gameserver.network.serverpackets;
 
-import net.sf.l2j.gameserver.model.Location;
+import net.sf.l2j.gameserver.model.location.SpawnLocation;
 
-/**
- * @author Maktakien
- */
 public class GetOnVehicle extends L2GameServerPacket
 {
-	private final int _charObjId;
-	private final int _boatObjId;
-	private final Location _pos;
+	private final int _objectId;
+	private final int _boatId;
+	private final int _x;
+	private final int _y;
+	private final int _z;
 	
-	public GetOnVehicle(int charObjId, int boatObjId, Location pos)
+	public GetOnVehicle(int objectId, int boatId, int x, int y, int z)
 	{
-		_charObjId = charObjId;
-		_boatObjId = boatObjId;
-		_pos = pos;
+		_objectId = objectId;
+		_boatId = boatId;
+		_x = x;
+		_y = y;
+		_z = z;
+	}
+	
+	public GetOnVehicle(int objectId, int boatId, SpawnLocation loc)
+	{
+		_objectId = objectId;
+		_boatId = boatId;
+		_x = loc.getX();
+		_y = loc.getY();
+		_z = loc.getZ();
 	}
 	
 	@Override
 	protected void writeImpl()
 	{
 		writeC(0x5C);
-		writeD(_charObjId);
-		writeD(_boatObjId);
-		writeD(_pos.getX());
-		writeD(_pos.getY());
-		writeD(_pos.getZ());
+		writeD(_objectId);
+		writeD(_boatId);
+		writeD(_x);
+		writeD(_y);
+		writeD(_z);
 	}
 }

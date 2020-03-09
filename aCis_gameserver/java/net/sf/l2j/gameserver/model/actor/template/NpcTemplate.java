@@ -1,72 +1,36 @@
-/*
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package net.sf.l2j.gameserver.model.actor.template;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import net.sf.l2j.gameserver.datatables.HerbDropTable;
-import net.sf.l2j.gameserver.model.L2MinionData;
-import net.sf.l2j.gameserver.model.L2NpcAIData;
+import net.sf.l2j.gameserver.data.xml.HerbDropData;
+import net.sf.l2j.gameserver.instancemanager.CastleManager;
 import net.sf.l2j.gameserver.model.L2Skill;
-import net.sf.l2j.gameserver.model.actor.instance.L2XmassTreeInstance;
+import net.sf.l2j.gameserver.model.MinionData;
 import net.sf.l2j.gameserver.model.base.ClassId;
+import net.sf.l2j.gameserver.model.entity.Castle;
 import net.sf.l2j.gameserver.model.item.DropCategory;
 import net.sf.l2j.gameserver.model.item.DropData;
 import net.sf.l2j.gameserver.scripting.EventType;
 import net.sf.l2j.gameserver.scripting.Quest;
 import net.sf.l2j.gameserver.templates.StatsSet;
 
-/**
- * This class contains the generic data of a L2Spawn object.
- */
-public final class NpcTemplate extends CharTemplate
+public class NpcTemplate extends CreatureTemplate
 {
-	protected static final Logger _log = Logger.getLogger(NpcTemplate.class.getName());
-	
-	private final int _npcId;
-	private final int _idTemplate;
-	private final String _type;
-	private final String _name;
-	private final String _title;
-	private final byte _level;
-	private final int _exp;
-	private final int _sp;
-	private final int _rHand;
-	private final int _lHand;
-	private final int _enchantEffect;
-	private final int _corpseTime;
-	private int _dropHerbGroup;
-	private Race _race;
-	
-	// used for champion option ; avoid to popup champion quest mob.
-	private final boolean _cantBeChampionMonster;
-	
-	// Skills arrays
-	private final List<L2Skill> _buffSkills = new ArrayList<>();
-	private final List<L2Skill> _debuffSkills = new ArrayList<>();
-	private final List<L2Skill> _healSkills = new ArrayList<>();
-	private final List<L2Skill> _longRangeSkills = new ArrayList<>();
-	private final List<L2Skill> _shortRangeSkills = new ArrayList<>();
-	private final List<L2Skill> _suicideSkills = new ArrayList<>();
-	
-	private L2NpcAIData _AIdata = new L2NpcAIData();
+	public static enum SkillType
+	{
+		BUFF,
+		DEBUFF,
+		HEAL,
+		PASSIVE,
+		LONG_RANGE,
+		SHORT_RANGE,
+		SUICIDE
+	}
 	
 	public static enum AIType
 	{
@@ -79,6 +43,7 @@ public final class NpcTemplate extends CharTemplate
 	
 	public static enum Race
 	{
+		UNKNOWN,
 		UNDEAD,
 		MAGICCREATURE,
 		BEAST,
@@ -101,167 +66,287 @@ public final class NpcTemplate extends CharTemplate
 		NONLIVING,
 		SIEGEWEAPON,
 		DEFENDINGARMY,
-		MERCENARIE,
-		UNKNOWN
+		MERCENARIE;
+		
+		public static final Race[] VALUES = values();
 	}
 	
-	private final List<DropCategory> _categories = new LinkedList<>();
-	private final List<L2MinionData> _minions = new ArrayList<>();
-	private final List<ClassId> _teachInfo = new ArrayList<>();
-	private final Map<Integer, L2Skill> _skills = new HashMap<>();
+	protected static final Logger _log = Logger.getLogger(NpcTemplate.class.getName());
+	
+	private final int _npcId;
+	private final int _idTemplate;
+	private final String _type;
+	private final String _name;
+	private boolean _usingServerSideName;
+	private final String _title;
+	private boolean _usingServerSideTitle;
+	private final boolean _cantBeChampionMonster;
+	private final byte _level;
+	private final int _exp;
+	private final int _sp;
+	private final int _rHand;
+	private final int _lHand;
+	private final int _enchantEffect;
+	private final int _corpseTime;
+	
+	private int _dropHerbGroup;
+	private Race _race = Race.UNKNOWN;
+	private AIType _aiType;
+	
+	private final int _ssCount;
+	private final int _ssRate;
+	private final int _spsCount;
+	private final int _spsRate;
+	private final int _aggroRange;
+	
+	private String[] _clans;
+	private int _clanRange;
+	private int[] _ignoredIds;
+	
+	private final boolean _canMove;
+	private final boolean _isSeedable;
+	
+	private List<DropCategory> _categories;
+	private List<MinionData> _minions;
+	private List<ClassId> _teachInfo;
+	
+	private final Map<SkillType, List<L2Skill>> _skills = new HashMap<>();
 	private final Map<EventType, List<Quest>> _questEvents = new HashMap<>();
 	
-	/**
-	 * Constructor of L2NpcTemplate.
-	 * @param set The StatsSet object to transfer data to the method.
-	 */
+	private Castle _castle;
+	
 	public NpcTemplate(StatsSet set)
 	{
 		super(set);
 		
 		_npcId = set.getInteger("id");
 		_idTemplate = set.getInteger("idTemplate", _npcId);
-		
 		_type = set.getString("type");
-		
 		_name = set.getString("name");
+		_usingServerSideName = set.getBool("usingServerSideName", false);
 		_title = set.getString("title", "");
-		
-		_cantBeChampionMonster = (_title.equalsIgnoreCase("Quest Monster") || isType("L2Chest")) ? true : false;
-		
+		_usingServerSideTitle = set.getBool("usingServerSideTitle", false);
+		_cantBeChampionMonster = _title.equalsIgnoreCase("Quest Monster") || isType("Chest");
 		_level = set.getByte("level", (byte) 1);
-		
 		_exp = set.getInteger("exp", 0);
 		_sp = set.getInteger("sp", 0);
-		
 		_rHand = set.getInteger("rHand", 0);
 		_lHand = set.getInteger("lHand", 0);
-		
 		_enchantEffect = set.getInteger("enchant", 0);
 		_corpseTime = set.getInteger("corpseTime", 7);
-		_dropHerbGroup = set.getInteger("dropHerbGroup", 0);
 		
-		if (_dropHerbGroup > 0 && HerbDropTable.getInstance().getHerbDroplist(_dropHerbGroup) == null)
+		_dropHerbGroup = set.getInteger("dropHerbGroup", 0);
+		if (_dropHerbGroup > 0 && HerbDropData.getInstance().getHerbDroplist(_dropHerbGroup) == null)
 		{
 			_log.warning("Missing dropHerbGroup information for npcId: " + _npcId + ", dropHerbGroup: " + _dropHerbGroup);
 			_dropHerbGroup = 0;
 		}
-	}
-	
-	public void addTeachInfo(ClassId classId)
-	{
-		_teachInfo.add(classId);
-	}
-	
-	public List<ClassId> getTeachInfo()
-	{
-		return _teachInfo;
-	}
-	
-	public boolean canTeach(ClassId classId)
-	{
-		// If the player is on a third class, fetch the class teacher information for its parent class.
-		if (classId.level() == 3)
-			return _teachInfo.contains(classId.getParent());
 		
-		return _teachInfo.contains(classId);
-	}
-	
-	// Add a drop to a given category. If the category does not exist, create it.
-	public void addDropData(DropData drop, int categoryType)
-	{
-		// If the category doesn't already exist, create it first
-		synchronized (_categories)
+		if (set.containsKey("raceId"))
+			setRace(set.getInteger("raceId"));
+		
+		_aiType = set.getEnum("aiType", AIType.class, AIType.DEFAULT);
+		
+		_ssCount = set.getInteger("ssCount", 0);
+		_ssRate = set.getInteger("ssRate", 0);
+		_spsCount = set.getInteger("spsCount", 0);
+		_spsRate = set.getInteger("spsRate", 0);
+		_aggroRange = set.getInteger("aggro", 0);
+		
+		if (set.containsKey("clan"))
 		{
-			boolean catExists = false;
-			for (DropCategory cat : _categories)
-			{
-				// If the category exists, add the drop to this category.
-				if (cat.getCategoryType() == categoryType)
-				{
-					cat.addDropData(drop, isType("L2RaidBoss") || isType("L2GrandBoss"));
-					catExists = true;
-					break;
-				}
-			}
+			_clans = set.getStringArray("clan");
+			_clanRange = set.getInteger("clanRange");
 			
-			// If the category doesn't exit, create it and add the drop
-			if (!catExists)
-			{
-				DropCategory cat = new DropCategory(categoryType);
-				cat.addDropData(drop, isType("L2RaidBoss") || isType("L2GrandBoss"));
-				_categories.add(cat);
-			}
+			if (set.containsKey("ignoredIds"))
+				_ignoredIds = set.getIntegerArray("ignoredIds");
 		}
-	}
-	
-	public void addRaidData(L2MinionData minion)
-	{
-		_minions.add(minion);
-	}
-	
-	public void addSkill(L2Skill skill)
-	{
-		if (!skill.isPassive())
+		
+		_canMove = set.getBool("canMove", true);
+		_isSeedable = set.getBool("seedable", false);
+		
+		_categories = set.getList("drops");
+		_minions = set.getList("minions");
+		
+		if (set.containsKey("teachTo"))
 		{
-			if (skill.isSuicideAttack())
-				_suicideSkills.add(skill);
-			else
+			final int[] classIds = set.getIntegerArray("teachTo");
+			
+			_teachInfo = new ArrayList<>(classIds.length);
+			for (int classId : classIds)
+				_teachInfo.add(ClassId.VALUES[classId]);
+		}
+		
+		addSkills(set.getList("skills"));
+		
+		// Set the Castle.
+		for (Castle castle : CastleManager.getInstance().getCastles())
+		{
+			if (castle.getRelatedNpcIds().contains(_npcId))
 			{
-				switch (skill.getSkillType())
-				{
-					case BUFF:
-					case CONT:
-					case REFLECT:
-						_buffSkills.add(skill);
-						break;
-					
-					case HEAL:
-					case HOT:
-					case HEAL_PERCENT:
-					case HEAL_STATIC:
-					case BALANCE_LIFE:
-					case MANARECHARGE:
-					case MANAHEAL_PERCENT:
-						_healSkills.add(skill);
-						break;
-					
-					case DEBUFF:
-					case ROOT:
-					case SLEEP:
-					case STUN:
-					case PARALYZE:
-					case POISON:
-					case DOT:
-					case MDOT:
-					case BLEED:
-					case MUTE:
-					case FEAR:
-					case CANCEL:
-					case NEGATE:
-					case WEAKNESS:
-					case AGGDEBUFF:
-						_debuffSkills.add(skill);
-						break;
-					
-					case PDAM:
-					case MDAM:
-					case BLOW:
-					case DRAIN:
-					case CHARGEDAM:
-					case FATAL:
-					case DEATHLINK:
-					case MANADAM:
-					case CPDAMPERCENT:
-					case GET_PLAYER:
-					case INSTANT_JUMP:
-					case AGGDAMAGE:
-						addShortOrLongRangeSkill(skill);
-						break;
-				}
+				_castle = castle;
+				break;
 			}
 		}
-		_skills.put(skill.getId(), skill);
+	}
+	
+	public int getNpcId()
+	{
+		return _npcId;
+	}
+	
+	public int getIdTemplate()
+	{
+		return _idTemplate;
+	}
+	
+	public String getType()
+	{
+		return _type;
+	}
+	
+	/**
+	 * Checks types, ignore case.
+	 * @param t the type to check.
+	 * @return true if the type are the same, false otherwise.
+	 */
+	public boolean isType(String t)
+	{
+		return _type.equalsIgnoreCase(t);
+	}
+	
+	public String getName()
+	{
+		return _name;
+	}
+	
+	public boolean isUsingServerSideName()
+	{
+		return _usingServerSideName;
+	}
+	
+	public String getTitle()
+	{
+		return _title;
+	}
+	
+	public boolean isUsingServerSideTitle()
+	{
+		return _usingServerSideTitle;
+	}
+	
+	public boolean cantBeChampion()
+	{
+		return _cantBeChampionMonster;
+	}
+	
+	public byte getLevel()
+	{
+		return _level;
+	}
+	
+	public int getRewardExp()
+	{
+		return _exp;
+	}
+	
+	public int getRewardSp()
+	{
+		return _sp;
+	}
+	
+	public int getRightHand()
+	{
+		return _rHand;
+	}
+	
+	public int getLeftHand()
+	{
+		return _lHand;
+	}
+	
+	public int getEnchantEffect()
+	{
+		return _enchantEffect;
+	}
+	
+	public int getCorpseTime()
+	{
+		return _corpseTime;
+	}
+	
+	public int getDropHerbGroup()
+	{
+		return _dropHerbGroup;
+	}
+	
+	public Race getRace()
+	{
+		return _race;
+	}
+	
+	public void setRace(int raceId)
+	{
+		// Race.UNKNOWN is already the default value. No needs to handle it.
+		if (raceId < 1 || raceId > 23)
+			return;
+		
+		_race = Race.VALUES[raceId];
+	}
+	
+	public AIType getAiType()
+	{
+		return _aiType;
+	}
+	
+	public int getSsCount()
+	{
+		return _ssCount;
+	}
+	
+	public int getSsRate()
+	{
+		return _ssRate;
+	}
+	
+	public int getSpsCount()
+	{
+		return _spsCount;
+	}
+	
+	public int getSpsRate()
+	{
+		return _spsRate;
+	}
+	
+	public int getAggroRange()
+	{
+		return _aggroRange;
+	}
+	
+	public String[] getClans()
+	{
+		return _clans;
+	}
+	
+	public int getClanRange()
+	{
+		return _clanRange;
+	}
+	
+	public int[] getIgnoredIds()
+	{
+		return _ignoredIds;
+	}
+	
+	public boolean canMove()
+	{
+		return _canMove;
+	}
+	
+	public boolean isSeedable()
+	{
+		return _isSeedable;
 	}
 	
 	/**
@@ -270,6 +355,11 @@ public final class NpcTemplate extends CharTemplate
 	public List<DropCategory> getDropData()
 	{
 		return _categories;
+	}
+	
+	public Castle getCastle()
+	{
+		return _castle;
 	}
 	
 	/**
@@ -285,41 +375,140 @@ public final class NpcTemplate extends CharTemplate
 	}
 	
 	/**
+	 * Add a drop to a given category. If the category does not exist, create it.
+	 * @param drop
+	 * @param categoryType
+	 */
+	public void addDropData(DropData drop, int categoryType)
+	{
+		final boolean isBossType = isType("RaidBoss") || isType("GrandBoss");
+		
+		synchronized (_categories)
+		{
+			// Category exists, stores the drop and return.
+			for (DropCategory cat : _categories)
+			{
+				if (cat.getCategoryType() == categoryType)
+				{
+					cat.addDropData(drop, isBossType);
+					return;
+				}
+			}
+			
+			// Category doesn't exist, create and store it.
+			final DropCategory cat = new DropCategory(categoryType);
+			cat.addDropData(drop, isBossType);
+			
+			_categories.add(cat);
+		}
+	}
+	
+	/**
 	 * @return the list of all Minions that must be spawn with the L2Npc using this L2NpcTemplate.
 	 */
-	public List<L2MinionData> getMinionData()
+	public List<MinionData> getMinionData()
 	{
 		return _minions;
 	}
 	
-	public Map<Integer, L2Skill> getSkills()
+	public boolean canTeach(ClassId classId)
+	{
+		return _teachInfo != null && _teachInfo.contains((classId.level() == 3) ? classId.getParent() : classId);
+	}
+	
+	public Map<SkillType, List<L2Skill>> getSkills()
 	{
 		return _skills;
 	}
 	
-	public L2Skill[] getSkillsArray()
+	public List<L2Skill> getSkills(SkillType type)
 	{
-		return _skills.values().toArray(new L2Skill[_skills.values().size()]);
+		return _skills.getOrDefault(type, Collections.emptyList());
 	}
 	
-	public void addQuestEvent(EventType eventType, Quest quest)
+	public void addSkills(List<L2Skill> skills)
 	{
-		List<Quest> eventList = _questEvents.get(eventType);
-		if (eventList == null)
+		for (L2Skill skill : skills)
 		{
-			eventList = new ArrayList<>();
-			eventList.add(quest);
-			_questEvents.put(eventType, eventList);
+			if (skill.isPassive())
+			{
+				addSkill(SkillType.PASSIVE, skill);
+				continue;
+			}
+			
+			if (skill.isSuicideAttack())
+			{
+				addSkill(SkillType.SUICIDE, skill);
+				continue;
+			}
+			
+			switch (skill.getSkillType())
+			{
+				case BUFF:
+				case CONT:
+				case REFLECT:
+					addSkill(SkillType.BUFF, skill);
+					continue;
+				
+				case HEAL:
+				case HOT:
+				case HEAL_PERCENT:
+				case HEAL_STATIC:
+				case BALANCE_LIFE:
+				case MANARECHARGE:
+				case MANAHEAL_PERCENT:
+					addSkill(SkillType.HEAL, skill);
+					continue;
+				
+				case DEBUFF:
+				case ROOT:
+				case SLEEP:
+				case STUN:
+				case PARALYZE:
+				case POISON:
+				case DOT:
+				case MDOT:
+				case BLEED:
+				case MUTE:
+				case FEAR:
+				case CANCEL:
+				case NEGATE:
+				case WEAKNESS:
+				case AGGDEBUFF:
+					addSkill(SkillType.DEBUFF, skill);
+					continue;
+				
+				case PDAM:
+				case MDAM:
+				case BLOW:
+				case DRAIN:
+				case CHARGEDAM:
+				case FATAL:
+				case DEATHLINK:
+				case MANADAM:
+				case CPDAMPERCENT:
+				case GET_PLAYER:
+				case INSTANT_JUMP:
+				case AGGDAMAGE:
+					addSkill((skill.getCastRange() > 150) ? SkillType.LONG_RANGE : SkillType.SHORT_RANGE, skill);
+					continue;
+			}
+			// _log.warning(skill.getName() + " skill wasn't added due to specific logic."); TODO
+		}
+	}
+	
+	public void addSkill(SkillType type, L2Skill skill)
+	{
+		List<L2Skill> list = _skills.get(type);
+		if (list == null)
+		{
+			list = new ArrayList<>(5);
+			list.add(skill);
+			
+			_skills.put(type, list);
 		}
 		else
-		{
-			eventList.remove(quest);
-			
-			if (eventType.isMultipleRegistrationAllowed() || eventList.isEmpty())
-				eventList.add(quest);
-			else
-				_log.warning("Quest event not allow multiple quest registrations. Skipped addition of EventType \"" + eventType + "\" for NPC \"" + getName() + "\" and quest \"" + quest.getName() + "\".");
-		}
+			list.add(skill);
 	}
 	
 	public Map<EventType, List<Quest>> getEventQuests()
@@ -332,281 +521,24 @@ public final class NpcTemplate extends CharTemplate
 		return _questEvents.get(EventType);
 	}
 	
-	public void setRace(int raceId)
+	public void addQuestEvent(EventType type, Quest quest)
 	{
-		switch (raceId)
+		List<Quest> list = _questEvents.get(type);
+		if (list == null)
 		{
-			case 1:
-				_race = Race.UNDEAD;
-				break;
-			case 2:
-				_race = Race.MAGICCREATURE;
-				break;
-			case 3:
-				_race = Race.BEAST;
-				break;
-			case 4:
-				_race = Race.ANIMAL;
-				break;
-			case 5:
-				_race = Race.PLANT;
-				break;
-			case 6:
-				_race = Race.HUMANOID;
-				break;
-			case 7:
-				_race = Race.SPIRIT;
-				break;
-			case 8:
-				_race = Race.ANGEL;
-				break;
-			case 9:
-				_race = Race.DEMON;
-				break;
-			case 10:
-				_race = Race.DRAGON;
-				break;
-			case 11:
-				_race = Race.GIANT;
-				break;
-			case 12:
-				_race = Race.BUG;
-				break;
-			case 13:
-				_race = Race.FAIRIE;
-				break;
-			case 14:
-				_race = Race.HUMAN;
-				break;
-			case 15:
-				_race = Race.ELVE;
-				break;
-			case 16:
-				_race = Race.DARKELVE;
-				break;
-			case 17:
-				_race = Race.ORC;
-				break;
-			case 18:
-				_race = Race.DWARVE;
-				break;
-			case 19:
-				_race = Race.OTHER;
-				break;
-			case 20:
-				_race = Race.NONLIVING;
-				break;
-			case 21:
-				_race = Race.SIEGEWEAPON;
-				break;
-			case 22:
-				_race = Race.DEFENDINGARMY;
-				break;
-			case 23:
-				_race = Race.MERCENARIE;
-				break;
-			default:
-				_race = Race.UNKNOWN;
-				break;
+			list = new ArrayList<>(5);
+			list.add(quest);
+			
+			_questEvents.put(type, list);
 		}
-	}
-	
-	// -----------------------------------------------------------------------
-	// Getters
-	
-	/**
-	 * @return the npc id.
-	 */
-	public int getNpcId()
-	{
-		return _npcId;
-	}
-	
-	/**
-	 * @return the npc name.
-	 */
-	public String getName()
-	{
-		return _name;
-	}
-	
-	/**
-	 * @return the npc name.
-	 */
-	public String getTitle()
-	{
-		return _title;
-	}
-	
-	/**
-	 * @return the npc race.
-	 */
-	public Race getRace()
-	{
-		if (_race == null)
-			_race = Race.UNKNOWN;
-		
-		return _race;
-	}
-	
-	public String getType()
-	{
-		return _type;
-	}
-	
-	/**
-	 * @return the reward Exp.
-	 */
-	public int getRewardExp()
-	{
-		return _exp;
-	}
-	
-	/**
-	 * @return the reward SP.
-	 */
-	public int getRewardSp()
-	{
-		return _sp;
-	}
-	
-	/**
-	 * @return the right hand weapon.
-	 */
-	public int getRightHand()
-	{
-		return _rHand;
-	}
-	
-	/**
-	 * @return the right hand weapon.
-	 */
-	public int getLeftHand()
-	{
-		return _lHand;
-	}
-	
-	/**
-	 * @return the NPC level.
-	 */
-	public byte getLevel()
-	{
-		return _level;
-	}
-	
-	/**
-	 * @return the drop herb group.
-	 */
-	public int getDropHerbGroup()
-	{
-		return _dropHerbGroup;
-	}
-	
-	/**
-	 * @return the enchant effect.
-	 */
-	public int getEnchantEffect()
-	{
-		return _enchantEffect;
-	}
-	
-	/**
-	 * @return the Id template.
-	 */
-	public int getIdTemplate()
-	{
-		return _idTemplate;
-	}
-	
-	/**
-	 * @return the corpse decay time of the template.
-	 */
-	public int getCorpseTime()
-	{
-		return _corpseTime;
-	}
-	
-	// -----------------------------------------------------------------------
-	// Npc AI Data By ShanSoft
-	
-	public void setAIData(L2NpcAIData aidata)
-	{
-		_AIdata = aidata;
-	}
-	
-	public L2NpcAIData getAIData()
-	{
-		return _AIdata;
-	}
-	
-	public void addShortOrLongRangeSkill(L2Skill skill)
-	{
-		if (skill.getCastRange() > 150)
-			_longRangeSkills.add(skill);
-		else if (skill.getCastRange() > 0)
-			_shortRangeSkills.add(skill);
-	}
-	
-	public List<L2Skill> getSuicideSkills()
-	{
-		return _suicideSkills;
-	}
-	
-	public List<L2Skill> getHealSkills()
-	{
-		return _healSkills;
-	}
-	
-	public List<L2Skill> getDebuffSkills()
-	{
-		return _debuffSkills;
-	}
-	
-	public List<L2Skill> getBuffSkills()
-	{
-		return _buffSkills;
-	}
-	
-	public List<L2Skill> getLongRangeSkills()
-	{
-		return _longRangeSkills;
-	}
-	
-	public List<L2Skill> getShortRangeSkills()
-	{
-		return _shortRangeSkills;
-	}
-	
-	// -----------------------------------------------------------------------
-	// Misc
-	
-	public boolean isSpecialTree()
-	{
-		return _npcId == L2XmassTreeInstance.SPECIAL_TREE_ID;
-	}
-	
-	public boolean isUndead()
-	{
-		return _race == Race.UNDEAD;
-	}
-	
-	public boolean cantBeChampion()
-	{
-		return _cantBeChampionMonster;
-	}
-	
-	public boolean isCustomNpc()
-	{
-		return getNpcId() != getIdTemplate();
-	}
-	
-	/**
-	 * Checks types, ignore case.
-	 * @param t the type to check.
-	 * @return true if the type are the same, false otherwise.
-	 */
-	public boolean isType(String t)
-	{
-		return _type.equalsIgnoreCase(t);
+		else
+		{
+			list.remove(quest);
+			
+			if (type.isMultipleRegistrationAllowed() || list.isEmpty())
+				list.add(quest);
+			else
+				_log.warning("Quest event not allow multiple quest registrations. Skipped addition of EventType \"" + type + "\" for NPC \"" + getName() + "\" and quest \"" + quest.getName() + "\".");
+		}
 	}
 }

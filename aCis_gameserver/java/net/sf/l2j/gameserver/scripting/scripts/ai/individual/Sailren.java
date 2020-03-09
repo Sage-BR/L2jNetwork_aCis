@@ -1,40 +1,29 @@
-/*
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package net.sf.l2j.gameserver.scripting.scripts.ai.individual;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import net.sf.l2j.Config;
 import net.sf.l2j.commons.random.Rnd;
-import net.sf.l2j.gameserver.ai.CtrlIntention;
+
+import net.sf.l2j.Config;
 import net.sf.l2j.gameserver.instancemanager.GrandBossManager;
-import net.sf.l2j.gameserver.model.SpawnLocation;
-import net.sf.l2j.gameserver.model.actor.L2Npc;
-import net.sf.l2j.gameserver.model.actor.instance.L2GrandBossInstance;
-import net.sf.l2j.gameserver.model.actor.instance.L2PcInstance;
+import net.sf.l2j.gameserver.instancemanager.ZoneManager;
+import net.sf.l2j.gameserver.model.L2Skill;
+import net.sf.l2j.gameserver.model.actor.Npc;
+import net.sf.l2j.gameserver.model.actor.ai.CtrlIntention;
+import net.sf.l2j.gameserver.model.actor.instance.GrandBoss;
+import net.sf.l2j.gameserver.model.actor.instance.Player;
+import net.sf.l2j.gameserver.model.location.SpawnLocation;
 import net.sf.l2j.gameserver.model.zone.type.L2BossZone;
 import net.sf.l2j.gameserver.network.serverpackets.MagicSkillUse;
 import net.sf.l2j.gameserver.network.serverpackets.SocialAction;
 import net.sf.l2j.gameserver.network.serverpackets.SpecialCamera;
-import net.sf.l2j.gameserver.scripting.scripts.ai.AbstractNpcAI;
+import net.sf.l2j.gameserver.scripting.scripts.ai.L2AttackableAIScript;
 import net.sf.l2j.gameserver.templates.StatsSet;
 
-public class Sailren extends AbstractNpcAI
+public class Sailren extends L2AttackableAIScript
 {
-	private static final L2BossZone SAILREN_LAIR = GrandBossManager.getInstance().getZoneById(110015);
+	private static final L2BossZone SAILREN_LAIR = ZoneManager.getInstance().getZoneById(110015, L2BossZone.class);
 	
 	public static final int SAILREN = 29065;
 	
@@ -53,15 +42,12 @@ public class Sailren extends AbstractNpcAI
 	
 	private static final SpawnLocation SAILREN_LOC = new SpawnLocation(27549, -6638, -2008, 0);
 	
-	private final List<L2Npc> _mobs = new CopyOnWriteArrayList<>();
+	private final List<Npc> _mobs = new CopyOnWriteArrayList<>();
 	private static long _lastAttackTime = 0;
 	
 	public Sailren()
 	{
 		super("ai/individual");
-		
-		addAttackId(VELOCIRAPTOR, PTEROSAUR, TREX, SAILREN);
-		addKillId(VELOCIRAPTOR, PTEROSAUR, TREX, SAILREN);
 		
 		final StatsSet info = GrandBossManager.getInstance().getStatsSet(SAILREN);
 		
@@ -83,8 +69,8 @@ public class Sailren extends AbstractNpcAI
 				final int hp = info.getInteger("currentHP");
 				final int mp = info.getInteger("currentMP");
 				
-				final L2Npc sailren = addSpawn(SAILREN, loc_x, loc_y, loc_z, heading, false, 0, false);
-				GrandBossManager.getInstance().addBoss((L2GrandBossInstance) sailren);
+				final Npc sailren = addSpawn(SAILREN, loc_x, loc_y, loc_z, heading, false, 0, false);
+				GrandBossManager.getInstance().addBoss((GrandBoss) sailren);
 				_mobs.add(sailren);
 				
 				sailren.setCurrentHpMp(hp, mp);
@@ -97,7 +83,14 @@ public class Sailren extends AbstractNpcAI
 	}
 	
 	@Override
-	public String onAdvEvent(String event, L2Npc npc, L2PcInstance player)
+	protected void registerNpcs()
+	{
+		addAttackId(VELOCIRAPTOR, PTEROSAUR, TREX, SAILREN);
+		addKillId(VELOCIRAPTOR, PTEROSAUR, TREX, SAILREN);
+	}
+	
+	@Override
+	public String onAdvEvent(String event, Npc npc, Player player)
 	{
 		if (event.equalsIgnoreCase("beginning"))
 		{
@@ -105,7 +98,7 @@ public class Sailren extends AbstractNpcAI
 			
 			for (int i = 0; i < 3; i++)
 			{
-				final L2Npc temp = addSpawn(VELOCIRAPTOR, SAILREN_LOC, true, 0, false);
+				final Npc temp = addSpawn(VELOCIRAPTOR, SAILREN_LOC, true, 0, false);
 				temp.getAI().setIntention(CtrlIntention.ACTIVE);
 				temp.setRunning();
 				_mobs.add(temp);
@@ -115,7 +108,7 @@ public class Sailren extends AbstractNpcAI
 		else if (event.equalsIgnoreCase("spawn"))
 		{
 			// Dummy spawn used to cast the skill. Despawned after 26sec.
-			final L2Npc temp = addSpawn(DUMMY, SAILREN_LOC, false, 26000, false);
+			final Npc temp = addSpawn(DUMMY, SAILREN_LOC, false, 26000, false);
 			
 			// Cast skill every 2,5sec.
 			SAILREN_LAIR.broadcastPacket(new MagicSkillUse(npc, npc, 5090, 1, 2500, 0));
@@ -145,8 +138,8 @@ public class Sailren extends AbstractNpcAI
 		{
 			SAILREN_LAIR.broadcastPacket(new SpecialCamera(npc.getObjectId(), 160, 560, 0, 3000, 3000, 0, 10, 1, 0));
 			
-			final L2Npc temp = addSpawn(SAILREN, SAILREN_LOC, false, 0, false);
-			GrandBossManager.getInstance().addBoss((L2GrandBossInstance) temp);
+			final Npc temp = addSpawn(SAILREN, SAILREN_LOC, false, 0, false);
+			GrandBossManager.getInstance().addBoss((GrandBoss) temp);
 			_mobs.add(temp);
 			
 			// Stop skill task.
@@ -170,7 +163,7 @@ public class Sailren extends AbstractNpcAI
 				// Delete all monsters and clean the list.
 				if (!_mobs.isEmpty())
 				{
-					for (L2Npc mob : _mobs)
+					for (Npc mob : _mobs)
 						mob.deleteMe();
 					
 					_mobs.clear();
@@ -193,7 +186,7 @@ public class Sailren extends AbstractNpcAI
 	}
 	
 	@Override
-	public String onKill(L2Npc npc, L2PcInstance killer, boolean isPet)
+	public String onKill(Npc npc, Player killer, boolean isPet)
 	{
 		if (!_mobs.contains(npc) || !SAILREN_LAIR.getAllowedPlayers().contains(killer.getObjectId()))
 			return null;
@@ -204,7 +197,7 @@ public class Sailren extends AbstractNpcAI
 				// Once the 3 Velociraptors are dead, spawn a Pterosaur.
 				if (_mobs.remove(npc) && _mobs.isEmpty())
 				{
-					final L2Npc temp = addSpawn(PTEROSAUR, SAILREN_LOC, false, 0, false);
+					final Npc temp = addSpawn(PTEROSAUR, SAILREN_LOC, false, 0, false);
 					temp.setRunning();
 					temp.getAI().setIntention(CtrlIntention.ATTACK, killer);
 					_mobs.add(temp);
@@ -215,7 +208,7 @@ public class Sailren extends AbstractNpcAI
 				// Pterosaur is dead, spawn a Trex.
 				if (_mobs.remove(npc))
 				{
-					final L2Npc temp = addSpawn(TREX, SAILREN_LOC, false, 0, false);
+					final Npc temp = addSpawn(TREX, SAILREN_LOC, false, 0, false);
 					temp.setRunning();
 					temp.getAI().setIntention(CtrlIntention.ATTACK, killer);
 					temp.broadcastNpcSay("?");
@@ -255,11 +248,11 @@ public class Sailren extends AbstractNpcAI
 				break;
 		}
 		
-		return null;
+		return super.onKill(npc, killer, isPet);
 	}
 	
 	@Override
-	public String onAttack(L2Npc npc, L2PcInstance attacker, int damage, boolean isPet)
+	public String onAttack(Npc npc, Player attacker, int damage, boolean isPet, L2Skill skill)
 	{
 		if (!_mobs.contains(npc) || !SAILREN_LAIR.getAllowedPlayers().contains(attacker.getObjectId()))
 			return null;
@@ -267,6 +260,6 @@ public class Sailren extends AbstractNpcAI
 		// Actualize _timeTracker.
 		_lastAttackTime = System.currentTimeMillis();
 		
-		return null;
+		return super.onAttack(npc, attacker, damage, isPet, skill);
 	}
 }

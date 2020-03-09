@@ -1,25 +1,12 @@
-/*
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package net.sf.l2j.gameserver.scripting.quests;
 
-import net.sf.l2j.gameserver.datatables.SkillTable;
-import net.sf.l2j.gameserver.model.actor.L2Npc;
-import net.sf.l2j.gameserver.model.actor.instance.L2PcInstance;
+import net.sf.l2j.commons.util.ArraysUtil;
+
+import net.sf.l2j.gameserver.data.SkillTable;
+import net.sf.l2j.gameserver.model.actor.Npc;
+import net.sf.l2j.gameserver.model.actor.instance.Player;
 import net.sf.l2j.gameserver.scripting.Quest;
 import net.sf.l2j.gameserver.scripting.QuestState;
-import net.sf.l2j.gameserver.util.Util;
 
 public final class Q125_TheNameOfEvil_1 extends Quest
 {
@@ -76,7 +63,7 @@ public final class Q125_TheNameOfEvil_1 extends Quest
 	}
 	
 	@Override
-	public String onAdvEvent(String event, L2Npc npc, L2PcInstance player)
+	public String onAdvEvent(String event, Npc npc, Player player)
 	{
 		String htmltext = event;
 		QuestState st = player.getQuestState(qn);
@@ -127,7 +114,7 @@ public final class Q125_TheNameOfEvil_1 extends Quest
 	}
 	
 	@Override
-	public String onTalk(L2Npc npc, L2PcInstance player)
+	public String onTalk(Npc npc, Player player)
 	{
 		QuestState st = player.getQuestState(qn);
 		String htmltext = getNoQuestMsg();
@@ -233,20 +220,20 @@ public final class Q125_TheNameOfEvil_1 extends Quest
 	}
 	
 	@Override
-	public final String onKill(L2Npc npc, L2PcInstance player, boolean isPet)
+	public final String onKill(Npc npc, Player player, boolean isPet)
 	{
 		QuestState st = checkPlayerCondition(player, npc, "cond", "3");
 		if (st == null)
 			return null;
 		
 		final int npcId = npc.getNpcId();
-		if (Util.contains(ORNITHOMIMUS, npcId))
+		if (ArraysUtil.contains(ORNITHOMIMUS, npcId))
 		{
 			if (st.dropItems(ORNITHOMIMUS_CLAW, 1, 2, 50000))
 				if (st.getQuestItemsCount(DEINONYCHUS_BONE) == 2)
 					st.set("cond", "4");
 		}
-		else if (Util.contains(DEINONYCHUS, npcId))
+		else if (ArraysUtil.contains(DEINONYCHUS, npcId))
 		{
 			if (st.dropItems(DEINONYCHUS_BONE, 1, 2, 50000))
 				if (st.getQuestItemsCount(ORNITHOMIMUS_CLAW) == 2)

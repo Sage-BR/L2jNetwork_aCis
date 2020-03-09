@@ -1,27 +1,13 @@
-/*
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package net.sf.l2j.gameserver.network.serverpackets;
 
-import net.sf.l2j.gameserver.model.actor.instance.L2PcInstance;
+import net.sf.l2j.gameserver.model.actor.instance.Player;
 import net.sf.l2j.gameserver.model.itemcontainer.Inventory;
 
 public class GMViewCharacterInfo extends L2GameServerPacket
 {
-	private final L2PcInstance _activeChar;
+	private final Player _activeChar;
 	
-	public GMViewCharacterInfo(L2PcInstance character)
+	public GMViewCharacterInfo(Player character)
 	{
 		_activeChar = character;
 	}
@@ -29,10 +15,6 @@ public class GMViewCharacterInfo extends L2GameServerPacket
 	@Override
 	protected final void writeImpl()
 	{
-		float moveMultiplier = _activeChar.getMovementSpeedMultiplier();
-		int _runSpd = (int) (_activeChar.getRunSpeed() / moveMultiplier);
-		int _walkSpd = (int) (_activeChar.getWalkSpeed() / moveMultiplier);
-		
 		writeC(0x8f);
 		
 		writeD(_activeChar.getX());
@@ -42,7 +24,7 @@ public class GMViewCharacterInfo extends L2GameServerPacket
 		writeD(_activeChar.getObjectId());
 		writeS(_activeChar.getName());
 		writeD(_activeChar.getRace().ordinal());
-		writeD(_activeChar.getAppearance().getSex() ? 1 : 0);
+		writeD(_activeChar.getAppearance().getSex().ordinal());
 		writeD(_activeChar.getClassId().getId());
 		writeD(_activeChar.getLevel());
 		writeQ(_activeChar.getExp());
@@ -151,18 +133,22 @@ public class GMViewCharacterInfo extends L2GameServerPacket
 		writeD(_activeChar.getPvpFlag()); // 0-non-pvp 1-pvp = violett name
 		writeD(_activeChar.getKarma());
 		
-		writeD(_runSpd);
-		writeD(_walkSpd);
-		writeD(_runSpd); // swimspeed
-		writeD(_walkSpd); // swimspeed
-		writeD(_runSpd);
-		writeD(_walkSpd);
-		writeD(_runSpd);
-		writeD(_walkSpd);
-		writeF(moveMultiplier);
-		writeF(_activeChar.getAttackSpeedMultiplier()); // 2.9);//
-		writeF(_activeChar.getTemplate().getCollisionRadius()); // scale
-		writeF(_activeChar.getTemplate().getCollisionHeight()); // y offset ??!? fem dwarf 4033
+		int _runSpd = _activeChar.getStat().getBaseRunSpeed();
+		int _walkSpd = _activeChar.getStat().getBaseWalkSpeed();
+		int _swimSpd = _activeChar.getStat().getBaseSwimSpeed();
+		writeD(_runSpd); // base run speed
+		writeD(_walkSpd); // base walk speed
+		writeD(_swimSpd); // swim run speed
+		writeD(_swimSpd); // swim walk speed
+		writeD(0);
+		writeD(0);
+		writeD(_activeChar.isFlying() ? _runSpd : 0); // fly run speed
+		writeD(_activeChar.isFlying() ? _walkSpd : 0); // fly walk speed
+		writeF(_activeChar.getStat().getMovementSpeedMultiplier()); // run speed multiplier
+		writeF(_activeChar.getStat().getAttackSpeedMultiplier()); // attack speed multiplier
+		
+		writeF(_activeChar.getCollisionRadius()); // scale
+		writeF(_activeChar.getCollisionHeight()); // y offset ??!? fem dwarf 4033
 		writeD(_activeChar.getAppearance().getHairStyle());
 		writeD(_activeChar.getAppearance().getHairColor());
 		writeD(_activeChar.getAppearance().getFace());
@@ -173,7 +159,7 @@ public class GMViewCharacterInfo extends L2GameServerPacket
 		writeD(_activeChar.getClanCrestId()); // pledge crest id
 		writeD(_activeChar.getAllyId()); // ally id
 		writeC(_activeChar.getMountType()); // mount type
-		writeC(_activeChar.getPrivateStoreType().getId());
+		writeC(_activeChar.getStoreType().getId());
 		writeC(_activeChar.hasDwarvenCraft() ? 1 : 0);
 		writeD(_activeChar.getPkKills());
 		writeD(_activeChar.getPvpKills());

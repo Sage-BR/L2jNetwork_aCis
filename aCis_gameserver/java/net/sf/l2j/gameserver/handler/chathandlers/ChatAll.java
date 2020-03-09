@@ -1,29 +1,17 @@
-/*
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package net.sf.l2j.gameserver.handler.chathandlers;
 
 import java.util.StringTokenizer;
 
+import net.sf.l2j.Config;
 import net.sf.l2j.gameserver.handler.IChatHandler;
 import net.sf.l2j.gameserver.handler.IVoicedCommandHandler;
 import net.sf.l2j.gameserver.handler.VoicedCommandHandler;
 import net.sf.l2j.gameserver.model.BlockList;
-import net.sf.l2j.gameserver.model.actor.instance.L2PcInstance;
+import net.sf.l2j.gameserver.model.actor.instance.Player;
+import net.sf.l2j.gameserver.network.FloodProtectors;
+import net.sf.l2j.gameserver.network.FloodProtectors.Action;
 import net.sf.l2j.gameserver.network.serverpackets.CreatureSay;
-import net.sf.l2j.gameserver.util.FloodProtectors;
-import net.sf.l2j.gameserver.util.FloodProtectors.Action;
+import net.sf.l2j.gameserver.network.serverpackets.SocialAction;
 
 public class ChatAll implements IChatHandler
 {
@@ -33,7 +21,7 @@ public class ChatAll implements IChatHandler
 	};
 	
 	@Override
-	public void handleChat(int type, L2PcInstance activeChar, String params, String text)
+	public void handleChat(int type, Player activeChar, String params, String text)
 	{
 		if (!FloodProtectors.performAction(activeChar.getClient(), Action.GLOBAL_CHAT))
 			return;
@@ -63,16 +51,22 @@ public class ChatAll implements IChatHandler
 			}
 		}
 		if (!vcd_used)
-		
 		{
+			if (Config.EMOTION_CHAT_SYSTEM && Config.EMOTION_CHAT_LIST.get(text) != null && !activeChar.isAlikeDead() && !activeChar.isAttackingNow() && !activeChar.isCastingNow())
+				activeChar.broadcastPacket(new SocialAction(activeChar, Config.EMOTION_CHAT_LIST.get(text)));
+			
 			CreatureSay cs = new CreatureSay(activeChar.getObjectId(), type, activeChar.getName(), text);
 			
-			for (L2PcInstance player : activeChar.getKnownList().getKnownTypeInRadius(L2PcInstance.class, 1250))
+			for (Player player : activeChar.getKnownTypeInRadius(Player.class, 1250))
 			{
-				if (!BlockList.isBlocked(player, activeChar))
+				if (!BlockList.isBlocked(player, activeChar) && activeChar.getLevel() >= Config.CHAT_LEVEL)
 					player.sendPacket(cs);
 			}
-			
+			if (!(activeChar.getLevel() >= Config.CHAT_LEVEL))
+			{
+				activeChar.sendMessage("Your level must be more than " + Config.CHAT_LEVEL + " to use this chat!");
+				return;
+			}
 			activeChar.sendPacket(cs);
 		}
 	}

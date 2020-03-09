@@ -1,21 +1,3 @@
-/*
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
-
-/**
- * @author godson
- */
 package net.sf.l2j.gameserver.model.olympiad;
 
 import java.sql.Connection;
@@ -31,14 +13,20 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import net.sf.l2j.commons.concurrent.ThreadPool;
+
 import net.sf.l2j.Config;
 import net.sf.l2j.L2DatabaseFactory;
-import net.sf.l2j.gameserver.ThreadPoolManager;
 import net.sf.l2j.gameserver.instancemanager.ZoneManager;
-import net.sf.l2j.gameserver.model.actor.instance.L2PcInstance;
+import net.sf.l2j.gameserver.model.actor.instance.OlympiadManagerNpc;
+import net.sf.l2j.gameserver.model.actor.instance.Player;
 import net.sf.l2j.gameserver.model.base.ClassId;
 import net.sf.l2j.gameserver.model.entity.Hero;
+import net.sf.l2j.gameserver.model.zone.type.L2OlympiadStadiumZone;
 import net.sf.l2j.gameserver.network.SystemMessageId;
+import net.sf.l2j.gameserver.network.clientpackets.Say2;
+import net.sf.l2j.gameserver.network.serverpackets.CreatureSay;
+import net.sf.l2j.gameserver.network.serverpackets.NpcSay;
 import net.sf.l2j.gameserver.network.serverpackets.SystemMessage;
 import net.sf.l2j.gameserver.templates.StatsSet;
 import net.sf.l2j.gameserver.util.Broadcast;
@@ -94,7 +82,7 @@ public class Olympiad
 	 * <b>0 -</b> Competition period<br>
 	 * <b>1 -</b> Validation Period
 	 */
-	protected int _period;
+	public static int _period;
 	protected long _nextWeeklyChange;
 	protected int _currentCycle;
 	private long _compEnd;
@@ -172,7 +160,7 @@ public class Olympiad
 				if (_validationEnd > Calendar.getInstance().getTimeInMillis())
 				{
 					loadNoblesRank();
-					_scheduledValdationTask = ThreadPoolManager.getInstance().scheduleGeneral(new ValidationEndTask(), getMillisToValidationEnd());
+					_scheduledValdationTask = ThreadPool.schedule(new ValidationEndTask(), getMillisToValidationEnd());
 				}
 				else
 				{
@@ -229,15 +217,29 @@ public class Olympiad
 			else
 				milliToEnd = getMillisToValidationEnd();
 			
-			_log.info("Olympiad: " + Math.round(milliToEnd / 60000) + " minutes until period ends.");
+			double numSecs = (milliToEnd / 1000) % 60;
+			double countDown = ((milliToEnd / 1000) - numSecs) / 60;
+			final int numMins = (int) Math.floor(countDown % 60);
+			countDown = (countDown - numMins) / 60;
+			int numHours = (int) Math.floor(countDown % 24);
+			int numDays = (int) Math.floor((countDown - numHours) / 24);
+			
+			_log.info("Olympiad System: " + numDays + " days, " + numHours + " hours and " + numMins + " mins. until period ends");
 			
 			if (_period == 0)
 			{
-				milliToEnd = getMillisToWeekChange();
-				_log.info("Olympiad: Next weekly change is in " + Math.round(milliToEnd / 60000) + " minutes.");
+				long milliToEnd2 = getMillisToWeekChange();
+				
+				double numSecs1 = (milliToEnd2 / 1000) % 60;
+				double countDown1 = ((milliToEnd2 / 1000) - numSecs1) / 60;
+				final int numMins1 = (int) Math.floor(countDown1 % 60);
+				countDown1 = (countDown - numMins1) / 60;
+				int numHours1 = (int) Math.floor(countDown1 % 24);
+				int numDays1 = (int) Math.floor((countDown1 - numHours1) / 24);
+				
+				_log.info("Olympiad System: Next weekly change in " + numDays1 + " days, " + numHours1 + " hours and " + numMins1 + " mins.");
 			}
 		}
-		
 		_log.info("Olympiad: Loaded " + _nobles.size() + " nobles.");
 	}
 	
@@ -305,7 +307,7 @@ public class Olympiad
 		if (_scheduledOlympiadEnd != null)
 			_scheduledOlympiadEnd.cancel(true);
 		
-		_scheduledOlympiadEnd = ThreadPoolManager.getInstance().scheduleGeneral(new OlympiadEndTask(), getMillisToOlympiadEnd());
+		_scheduledOlympiadEnd = ThreadPool.schedule(new OlympiadEndTask(), getMillisToOlympiadEnd());
 		
 		updateCompStatus();
 	}
@@ -334,7 +336,7 @@ public class Olympiad
 			_validationEnd = validationEnd.getTimeInMillis() + VALIDATION_PERIOD;
 			
 			loadNoblesRank();
-			_scheduledValdationTask = ThreadPoolManager.getInstance().scheduleGeneral(new ValidationEndTask(), getMillisToValidationEnd());
+			_scheduledValdationTask = ThreadPool.schedule(new ValidationEndTask(), getMillisToValidationEnd());
 		}
 	}
 	
@@ -379,7 +381,7 @@ public class Olympiad
 			_log.info("Olympiad: Event starts/started : " + _compStart.getTime());
 		}
 		
-		_scheduledCompStart = ThreadPoolManager.getInstance().scheduleGeneral(new Runnable()
+		_scheduledCompStart = ThreadPool.schedule(new Runnable()
 		{
 			@Override
 			public void run()
@@ -392,14 +394,14 @@ public class Olympiad
 				Broadcast.toAllOnlinePlayers(SystemMessage.getSystemMessage(SystemMessageId.THE_OLYMPIAD_GAME_HAS_STARTED));
 				_log.info("Olympiad: Olympiad game started.");
 				
-				_gameManager = ThreadPoolManager.getInstance().scheduleGeneralAtFixedRate(OlympiadGameManager.getInstance(), 30000, 30000);
+				_gameManager = ThreadPool.scheduleAtFixedRate(OlympiadGameManager.getInstance(), 30000, 30000);
 				if (Config.ALT_OLY_ANNOUNCE_GAMES)
-					_gameAnnouncer = ThreadPoolManager.getInstance().scheduleGeneralAtFixedRate(new OlympiadAnnouncer(), 30000, 500);
+					_gameAnnouncer = ThreadPool.scheduleAtFixedRate(new OlympiadAnnouncer(), 30000, 500);
 				
 				long regEnd = getMillisToCompEnd() - 600000;
 				if (regEnd > 0)
 				{
-					ThreadPoolManager.getInstance().scheduleGeneral(new Runnable()
+					ThreadPool.schedule(new Runnable()
 					{
 						@Override
 						public void run()
@@ -409,7 +411,7 @@ public class Olympiad
 					}, regEnd);
 				}
 				
-				_scheduledCompEnd = ThreadPoolManager.getInstance().scheduleGeneral(new Runnable()
+				_scheduledCompEnd = ThreadPool.schedule(new Runnable()
 				{
 					@Override
 					public void run()
@@ -451,6 +453,7 @@ public class Olympiad
 					}
 				}, getMillisToCompEnd());
 			}
+			
 		}, getMillisToCompBegin());
 	}
 	
@@ -464,7 +467,7 @@ public class Olympiad
 		if (_scheduledOlympiadEnd != null)
 			_scheduledOlympiadEnd.cancel(true);
 		
-		_scheduledOlympiadEnd = ThreadPoolManager.getInstance().scheduleGeneral(new OlympiadEndTask(), 0);
+		_scheduledOlympiadEnd = ThreadPool.schedule(new OlympiadEndTask(), 0);
 	}
 	
 	public static long getMillisToValidationEnd()
@@ -480,18 +483,48 @@ public class Olympiad
 		return (_period != 0);
 	}
 	
+	public void olympiadEnd(Player player)
+	{
+		long endtime;
+		if (_period == 0)
+			endtime = getMillisToOlympiadEnd();
+		else
+			endtime = getMillisToValidationEnd();
+		
+		double seconds = endtime / 1000 % 60;
+		double countdown = (endtime / 1000 - seconds) / 60;
+		int minutes = (int) Math.floor(countdown % 60);
+		countdown = (countdown - minutes) / 60;
+		int hours = (int) Math.floor(countdown % 24);
+		int days = (int) Math.floor((countdown - hours) / 24);
+		
+		player.sendPacket(new CreatureSay(0, Say2.PARTYROOM_COMMANDER, "  Olympiad", "Date of new heroes at: " + days + " days, " + hours + " hours, " + minutes + " minutes."));
+	}
+	
 	protected void setNewOlympiadEnd()
 	{
 		Broadcast.toAllOnlinePlayers(SystemMessage.getSystemMessage(SystemMessageId.OLYMPIAD_PERIOD_S1_HAS_STARTED).addNumber(_currentCycle));
 		
 		Calendar currentTime = Calendar.getInstance();
-		currentTime.add(Calendar.WEEK_OF_MONTH, Config.OLY_WEEKS_PERIOD);
-		currentTime.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY);
-		currentTime.set(Calendar.AM_PM, Calendar.AM);
-		currentTime.set(Calendar.HOUR, 12);
-		currentTime.set(Calendar.MINUTE, 0);
-		currentTime.set(Calendar.SECOND, 0);
-		_olympiadEnd = currentTime.getTimeInMillis();
+		int nearest = 0;
+		Calendar[] cals = new Calendar[Config.OLY_PERIOD.length];
+		for (int i = 0; i < cals.length; i++)
+		{
+			cals[i] = Calendar.getInstance();
+			cals[i].set(Calendar.DAY_OF_MONTH, Config.OLY_PERIOD[i]);
+			if (cals[i].before(currentTime))
+			{
+				cals[i].add(Calendar.MONTH, 1);
+			}
+			if (cals[i].before(cals[nearest]))
+			{
+				nearest = i;
+			}
+		}
+		cals[nearest].set(Calendar.HOUR_OF_DAY, 12);
+		cals[nearest].set(Calendar.MINUTE, 0);
+		cals[nearest].set(Calendar.SECOND, 0);
+		_olympiadEnd = cals[nearest].getTimeInMillis();
 		
 		Calendar nextChange = Calendar.getInstance();
 		_nextWeeklyChange = nextChange.getTimeInMillis() + WEEKLY_PERIOD;
@@ -542,7 +575,7 @@ public class Olympiad
 	
 	private void scheduleWeeklyChange()
 	{
-		_scheduledWeeklyTask = ThreadPoolManager.getInstance().scheduleGeneralAtFixedRate(new Runnable()
+		_scheduledWeeklyTask = ThreadPool.scheduleAtFixedRate(new Runnable()
 		{
 			@Override
 			public void run()
@@ -575,9 +608,9 @@ public class Olympiad
 		return _currentCycle;
 	}
 	
-	public boolean playerInStadia(L2PcInstance player)
+	public boolean playerInStadia(Player player)
 	{
-		return ZoneManager.getOlympiadStadium(player) != null;
+		return ZoneManager.getInstance().getZone(player, L2OlympiadStadiumZone.class) != null;
 	}
 	
 	/**
@@ -694,7 +727,7 @@ public class Olympiad
 		try (Connection con = L2DatabaseFactory.getInstance().getConnection())
 		{
 			final PreparedStatement statement = con.prepareStatement(OLYMPIAD_GET_HEROS);
-			for (ClassId id : ClassId.values())
+			for (ClassId id : ClassId.VALUES)
 			{
 				if (id.level() != 3)
 					continue;
@@ -744,7 +777,7 @@ public class Olympiad
 		return names;
 	}
 	
-	public int getNoblessePasses(L2PcInstance player, boolean clear)
+	public int getNoblessePasses(Player player, boolean clear)
 	{
 		if ((player == null) || (_period != 1) || _noblesRank.isEmpty())
 			return 0;
@@ -864,5 +897,38 @@ public class Olympiad
 	private static class SingletonHolder
 	{
 		protected static final Olympiad _instance = new Olympiad();
+	}
+	
+	private final class OlympiadAnnouncer implements Runnable
+	{
+		private final OlympiadGameTask[] _tasks;
+		
+		public OlympiadAnnouncer()
+		{
+			_tasks = OlympiadGameManager.getInstance().getOlympiadTasks();
+		}
+		
+		@Override
+		public void run()
+		{
+			for (OlympiadGameTask task : _tasks)
+			{
+				if (!task.needAnnounce())
+					continue;
+				
+				final AbstractOlympiadGame game = task.getGame();
+				if (game == null)
+					continue;
+				
+				String announcement;
+				if (game.getType() == CompetitionType.NON_CLASSED)
+					announcement = "Olympiad class-free individual match is going to begin in Arena " + (game.getStadiumId() + 1) + " in a moment.";
+				else
+					announcement = "Olympiad class individual match is going to begin in Arena " + (game.getStadiumId() + 1) + " in a moment.";
+				
+				for (OlympiadManagerNpc manager : OlympiadManagerNpc.getInstances())
+					manager.broadcastPacket(new NpcSay(manager.getObjectId(), Say2.SHOUT, manager.getNpcId(), announcement));
+			}
+		}
 	}
 }

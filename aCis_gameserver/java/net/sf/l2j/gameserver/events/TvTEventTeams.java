@@ -18,7 +18,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
 
-import net.sf.l2j.gameserver.model.actor.instance.L2PcInstance;
+import net.sf.l2j.gameserver.model.actor.instance.Player;
 
 /**
  * @author FBIagent
@@ -40,7 +40,7 @@ public class TvTEventTeams
 	/**
 	 * Name and instance of all participated players in FastMap<br>
 	 */
-	private Map<String, L2PcInstance> _participatedPlayers = new HashMap<>();
+	private Map<String, Player> _participatedPlayers = new HashMap<>();
 	/**
 	 * Name of all participated players in Vector<br>
 	 */
@@ -63,7 +63,7 @@ public class TvTEventTeams
 	 * @param playerInstance
 	 * @return boolean
 	 */
-	public boolean addPlayer(L2PcInstance playerInstance)
+	public boolean addPlayer(Player playerInstance)
 	{
 		if (playerInstance == null)
 			return false;
@@ -160,11 +160,11 @@ public class TvTEventTeams
 	
 	/**
 	 * Returns name and instance of all participated players in FastMap
-	 * @return Map<String, L2PcInstance>
+	 * @return Map<String, Player>
 	 */
-	public Map<String, L2PcInstance> getParticipatedPlayers()
+	public Map<String, Player> getParticipatedPlayers()
 	{
-		Map<String, L2PcInstance> participatedPlayers = null;
+		Map<String, Player> participatedPlayers = null;
 		
 		synchronized (_participatedPlayers)
 		{

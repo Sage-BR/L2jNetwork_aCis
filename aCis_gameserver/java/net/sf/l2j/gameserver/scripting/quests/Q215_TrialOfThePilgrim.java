@@ -1,22 +1,9 @@
-/*
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package net.sf.l2j.gameserver.scripting.quests;
 
 import net.sf.l2j.commons.random.Rnd;
-import net.sf.l2j.gameserver.model.actor.L2Npc;
-import net.sf.l2j.gameserver.model.actor.instance.L2PcInstance;
+
+import net.sf.l2j.gameserver.model.actor.Npc;
+import net.sf.l2j.gameserver.model.actor.instance.Player;
 import net.sf.l2j.gameserver.model.base.ClassId;
 import net.sf.l2j.gameserver.network.serverpackets.SocialAction;
 import net.sf.l2j.gameserver.scripting.Quest;
@@ -75,7 +62,7 @@ public class Q215_TrialOfThePilgrim extends Quest
 	}
 	
 	@Override
-	public String onAdvEvent(String event, L2Npc npc, L2PcInstance player)
+	public String onAdvEvent(String event, Npc npc, Player player)
 	{
 		String htmltext = event;
 		
@@ -89,7 +76,13 @@ public class Q215_TrialOfThePilgrim extends Quest
 			st.set("cond", "1");
 			st.playSound(QuestState.SOUND_ACCEPT);
 			st.giveItems(VOUCHER_OF_TRIAL, 1);
-			st.giveItems(DIMENSIONAL_DIAMOND, 49);
+			
+			if (!player.getMemos().getBool("secondClassChange35", false))
+			{
+				htmltext = "30648-04a.htm";
+				st.giveItems(DIMENSIONAL_DIAMOND, DF_REWARD_35.get(player.getClassId().getId()));
+				player.getMemos().set("secondClassChange35", true);
+			}
 		}
 		else if (event.equalsIgnoreCase("30649-04.htm"))
 		{
@@ -102,6 +95,7 @@ public class Q215_TrialOfThePilgrim extends Quest
 		{
 			if (st.getQuestItemsCount(57) >= 100000)
 			{
+				st.playSound(QuestState.SOUND_ITEMGET);
 				st.takeItems(57, 100000);
 				st.giveItems(BOOK_OF_GERALD, 1);
 			}
@@ -131,7 +125,7 @@ public class Q215_TrialOfThePilgrim extends Quest
 	}
 	
 	@Override
-	public String onTalk(L2Npc npc, L2PcInstance player)
+	public String onTalk(Npc npc, Player player)
 	{
 		String htmltext = getNoQuestMsg();
 		QuestState st = player.getQuestState(qn);
@@ -141,7 +135,7 @@ public class Q215_TrialOfThePilgrim extends Quest
 		switch (st.getState())
 		{
 			case STATE_CREATED:
-				if (player.getClassId() != ClassId.cleric && player.getClassId() != ClassId.oracle && player.getClassId() != ClassId.shillienOracle && player.getClassId() != ClassId.orcShaman)
+				if (player.getClassId() != ClassId.CLERIC && player.getClassId() != ClassId.ELVEN_ORACLE && player.getClassId() != ClassId.SHILLIEN_ORACLE && player.getClassId() != ClassId.ORC_SHAMAN)
 					htmltext = "30648-02.htm";
 				else if (player.getLevel() < 35)
 					htmltext = "30648-01.htm";
@@ -234,6 +228,7 @@ public class Q215_TrialOfThePilgrim extends Quest
 						else if (cond == 8 && st.hasQuestItems(BOOK_OF_GERALD))
 						{
 							htmltext = "30650-04.htm";
+							st.playSound(QuestState.SOUND_ITEMGET);
 							st.takeItems(BOOK_OF_GERALD, 1);
 							st.giveItems(57, 100000);
 						}
@@ -329,7 +324,7 @@ public class Q215_TrialOfThePilgrim extends Quest
 	}
 	
 	@Override
-	public String onKill(L2Npc npc, L2PcInstance player, boolean isPet)
+	public String onKill(Npc npc, Player player, boolean isPet)
 	{
 		QuestState st = checkPlayerState(player, npc, STATE_STARTED);
 		if (st == null)

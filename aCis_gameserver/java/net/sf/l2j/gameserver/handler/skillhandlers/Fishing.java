@@ -1,34 +1,20 @@
-/*
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package net.sf.l2j.gameserver.handler.skillhandlers;
 
-import net.sf.l2j.Config;
+import net.sf.l2j.commons.math.MathUtil;
 import net.sf.l2j.commons.random.Rnd;
-import net.sf.l2j.gameserver.geoengine.GeoData;
-import net.sf.l2j.gameserver.geoengine.PathFinding;
+
+import net.sf.l2j.gameserver.geoengine.GeoEngine;
 import net.sf.l2j.gameserver.handler.ISkillHandler;
 import net.sf.l2j.gameserver.instancemanager.ZoneManager;
-import net.sf.l2j.gameserver.model.L2Object;
 import net.sf.l2j.gameserver.model.L2Skill;
-import net.sf.l2j.gameserver.model.Location;
-import net.sf.l2j.gameserver.model.actor.L2Character;
-import net.sf.l2j.gameserver.model.actor.instance.L2PcInstance;
+import net.sf.l2j.gameserver.model.WorldObject;
+import net.sf.l2j.gameserver.model.actor.Creature;
+import net.sf.l2j.gameserver.model.actor.instance.Player;
 import net.sf.l2j.gameserver.model.item.instance.ItemInstance;
 import net.sf.l2j.gameserver.model.item.kind.Weapon;
 import net.sf.l2j.gameserver.model.item.type.WeaponType;
 import net.sf.l2j.gameserver.model.itemcontainer.Inventory;
+import net.sf.l2j.gameserver.model.location.Location;
 import net.sf.l2j.gameserver.model.zone.L2ZoneType;
 import net.sf.l2j.gameserver.model.zone.ZoneId;
 import net.sf.l2j.gameserver.model.zone.type.L2FishingZone;
@@ -36,7 +22,6 @@ import net.sf.l2j.gameserver.model.zone.type.L2WaterZone;
 import net.sf.l2j.gameserver.network.SystemMessageId;
 import net.sf.l2j.gameserver.network.serverpackets.InventoryUpdate;
 import net.sf.l2j.gameserver.templates.skills.L2SkillType;
-import net.sf.l2j.gameserver.util.Util;
 
 public class Fishing implements ISkillHandler
 {
@@ -46,21 +31,12 @@ public class Fishing implements ISkillHandler
 	};
 	
 	@Override
-	public void useSkill(L2Character activeChar, L2Skill skill, L2Object[] targets)
+	public void useSkill(Creature activeChar, L2Skill skill, WorldObject[] targets)
 	{
-		if (!(activeChar instanceof L2PcInstance))
+		if (!(activeChar instanceof Player))
 			return;
 		
-		L2PcInstance player = (L2PcInstance) activeChar;
-		
-		/*
-		 * If fishing is disabled, there isn't much point in doing anything else, unless you are GM. so this got moved up here, before anything else.
-		 */
-		if (!Config.ALLOWFISHING)
-		{
-			player.sendMessage("Fishing feature is disabled on this server.");
-			return;
-		}
+		Player player = (Player) activeChar;
 		
 		if (player.isFishing())
 		{
@@ -106,7 +82,7 @@ public class Fishing implements ISkillHandler
 			return;
 		}
 		
-		if (player.isInCraftMode() || player.isInStoreMode())
+		if (player.isCrafting() || player.isInStoreMode())
 		{
 			player.sendPacket(SystemMessageId.CANNOT_FISH_WHILE_USING_RECIPE_BOOK);
 			return;
@@ -123,7 +99,7 @@ public class Fishing implements ISkillHandler
 		 * If fishing is enabled, decide where will the hook be cast...
 		 */
 		int rnd = Rnd.get(150) + 50;
-		double angle = Util.convertHeadingToDegree(player.getHeading());
+		double angle = MathUtil.convertHeadingToDegree(player.getHeading());
 		double radian = Math.toRadians(angle);
 		double sin = Math.sin(radian);
 		double cos = Math.cos(radian);
@@ -150,44 +126,30 @@ public class Fishing implements ISkillHandler
 		
 		if (aimingTo != null)
 		{
-			// fishing zone found, we can fish here
-			if (Config.GEODATA > 0)
+			// geodata enabled, checking if we can see end of the pole
+			if (GeoEngine.getInstance().canSeeTarget(player, new Location(x, y, z)))
 			{
-				// geodata enabled, checking if we can see end of the pole
-				if (PathFinding.getInstance().canSeeTarget(player, new Location(x, y, z)))
+				// finding z level for hook
+				if (water != null)
 				{
-					// finding z level for hook
-					if (water != null)
+					// water zone exist
+					if (GeoEngine.getInstance().getHeight(x, y, z) < water.getWaterZ())
 					{
-						// water zone exist
-						if (GeoData.getInstance().getHeight(x, y, z) < water.getWaterZ())
-						{
-							// water Z is higher than geo Z
-							z = water.getWaterZ() + 10;
-							canFish = true;
-						}
-					}
-					else
-					{
-						// no water zone, using fishing zone
-						if (GeoData.getInstance().getHeight(x, y, z) < aimingTo.getWaterZ())
-						{
-							// fishing Z is higher than geo Z
-							z = aimingTo.getWaterZ() + 10;
-							canFish = true;
-						}
+						// water Z is higher than geo Z
+						z = water.getWaterZ() + 10;
+						canFish = true;
 					}
 				}
-			}
-			// geodata disabled
-			else
-			{
-				// if water zone exist using it, if not - using fishing zone
-				if (water != null)
-					z = water.getWaterZ() + 10;
 				else
-					z = aimingTo.getWaterZ() + 10;
-				canFish = true;
+				{
+					// no water zone, using fishing zone
+					if (GeoEngine.getInstance().getHeight(x, y, z) < aimingTo.getWaterZ())
+					{
+						// fishing Z is higher than geo Z
+						z = aimingTo.getWaterZ() + 10;
+						canFish = true;
+					}
+				}
 			}
 		}
 		

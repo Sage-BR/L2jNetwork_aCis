@@ -14,32 +14,34 @@
  */
 package net.sf.l2j.gameserver.events;
 
-import net.sf.l2j.Config;
+import net.sf.l2j.commons.concurrent.ThreadPool;
 import net.sf.l2j.commons.random.Rnd;
-import net.sf.l2j.gameserver.datatables.DoorTable;
-import net.sf.l2j.gameserver.datatables.ItemTable;
-import net.sf.l2j.gameserver.datatables.NpcTable;
-import net.sf.l2j.gameserver.datatables.SkillTable;
-import net.sf.l2j.gameserver.datatables.SpawnTable;
+
+import net.sf.l2j.Config;
+import net.sf.l2j.gameserver.data.DoorTable;
+import net.sf.l2j.gameserver.data.ItemTable;
+import net.sf.l2j.gameserver.data.NpcTable;
+import net.sf.l2j.gameserver.data.SkillTable;
+import net.sf.l2j.gameserver.data.SpawnTable;
 import net.sf.l2j.gameserver.model.L2Skill;
 import net.sf.l2j.gameserver.model.L2Spawn;
-import net.sf.l2j.gameserver.model.L2World;
-import net.sf.l2j.gameserver.model.actor.L2Character;
-import net.sf.l2j.gameserver.model.actor.L2Summon;
-import net.sf.l2j.gameserver.model.actor.instance.L2DoorInstance;
-import net.sf.l2j.gameserver.model.actor.instance.L2PcInstance;
-import net.sf.l2j.gameserver.model.actor.instance.L2PetInstance;
-import net.sf.l2j.gameserver.model.actor.instance.L2SummonInstance;
+import net.sf.l2j.gameserver.model.World;
+import net.sf.l2j.gameserver.model.actor.Creature;
+import net.sf.l2j.gameserver.model.actor.Npc;
+import net.sf.l2j.gameserver.model.actor.Summon;
+import net.sf.l2j.gameserver.model.actor.instance.Door;
+import net.sf.l2j.gameserver.model.actor.instance.Pet;
+import net.sf.l2j.gameserver.model.actor.instance.Player;
 import net.sf.l2j.gameserver.model.actor.template.NpcTemplate;
+import net.sf.l2j.gameserver.model.group.Party.MessageType;
 import net.sf.l2j.gameserver.model.itemcontainer.PcInventory;
 import net.sf.l2j.gameserver.model.olympiad.OlympiadManager;
 import net.sf.l2j.gameserver.network.SystemMessageId;
-import net.sf.l2j.gameserver.network.clientpackets.Say2;
-import net.sf.l2j.gameserver.network.serverpackets.CreatureSay;
 import net.sf.l2j.gameserver.network.serverpackets.MagicSkillUse;
 import net.sf.l2j.gameserver.network.serverpackets.NpcHtmlMessage;
 import net.sf.l2j.gameserver.network.serverpackets.StatusUpdate;
 import net.sf.l2j.gameserver.network.serverpackets.SystemMessage;
+import net.sf.l2j.gameserver.skills.AbnormalEffect;
 
 /**
  * @author Baggos
@@ -58,6 +60,12 @@ public class TvTEvent
 	
 	/** Gives Noblesse to players */
 	static L2Skill noblesse = SkillTable.getInstance().getInfo(1323, 1);
+	
+	/** Disable skills to avoid hits to team members */
+	static L2Skill AuraFlash = SkillTable.getInstance().getInfo(1417, 5);
+	static L2Skill AquaSplash = SkillTable.getInstance().getInfo(1295, 9);
+	static L2Skill FrostWall = SkillTable.getInstance().getInfo(1174, 22);
+	
 	/**
 	 * The teams of the TvTEvent<br>
 	 */
@@ -93,40 +101,23 @@ public class TvTEvent
 	 */
 	public static boolean startParticipation()
 	{
-		NpcTemplate tmpl = NpcTable.getInstance().getTemplate(Config.TVT_EVENT_PARTICIPATION_NPC_ID);
-		
-		if (tmpl == null)
-		{
-			System.out.println("TvTEventEngine[TvTEvent.startParticipation()]: L2NpcTemplate is a NullPointer -> Invalid npc id in configs?");
-			return false;
-		}
-		
+		final int npcc = Config.TVT_EVENT_PARTICIPATION_TIME * 1000 * 60;
 		try
 		{
-			_npcSpawn = new L2Spawn(tmpl);
+			final NpcTemplate template = NpcTable.getInstance().getTemplate(Config.TVT_EVENT_PARTICIPATION_NPC_ID);
+			final L2Spawn spawn = new L2Spawn(template);
+			spawn.setLoc(Config.TVT_EVENT_BACK_COORDINATES[0], Config.TVT_EVENT_BACK_COORDINATES[1], Config.TVT_EVENT_BACK_COORDINATES[2], 0);
 			
-			_npcSpawn.setLocx(Config.TVT_EVENT_BACK_COORDINATES[0]);
-			_npcSpawn.setLocy(Config.TVT_EVENT_BACK_COORDINATES[1]);
-			_npcSpawn.setLocz(Config.TVT_EVENT_BACK_COORDINATES[2]);
-			_npcSpawn.getAmount();
-			_npcSpawn.getHeading();
-			_npcSpawn.setRespawnDelay(1);
-			
-			SpawnTable.getInstance().addNewSpawn(_npcSpawn, false);
-			
-			_npcSpawn.init();
-			_npcSpawn.getLastSpawn().isAggressive();
-			_npcSpawn.getLastSpawn().decayMe();
-			_npcSpawn.getLastSpawn().spawnMe(_npcSpawn.getLastSpawn().getX(), _npcSpawn.getLastSpawn().getY(), _npcSpawn.getLastSpawn().getZ());
-			
-			_npcSpawn.getLastSpawn().broadcastPacket(new MagicSkillUse(_npcSpawn.getLastSpawn(), _npcSpawn.getLastSpawn(), 1034, 1, 1, 1));
+			SpawnTable.getInstance().addNewSpawn(spawn, false);
+			final Npc npc = spawn.doSpawn(true);
+			npc.scheduleDespawn(npcc);
+			npc.broadcastPacket(new MagicSkillUse(npc, npc, 1034, 1, 1, 1));
 		}
 		catch (Exception e)
 		{
 			System.out.println("TvTEventEngine[TvTEvent.startParticipation()]: exception: " + e);
 			return false;
 		}
-		
 		setState(EventState.PARTICIPATING);
 		return true;
 	}
@@ -136,11 +127,8 @@ public class TvTEvent
 	 */
 	public static void unspawnEventNpc()
 	{
-		if (_npcSpawn == null || _npcSpawn.getLastSpawn() == null)
+		if (_npcSpawn == null)
 			return;
-		
-		_npcSpawn.getLastSpawn().deleteMe();
-		_npcSpawn.stopRespawn();
 		SpawnTable.getInstance().deleteSpawn(_npcSpawn, true);
 	}
 	
@@ -176,19 +164,51 @@ public class TvTEvent
 		{
 			for (String playerName : team.getParticipatedPlayerNames())
 			{
-				L2PcInstance playerInstance = team.getParticipatedPlayers().get(playerName);
+				Player playerInstance = team.getParticipatedPlayers().get(playerName);
 				
 				if (playerInstance == null)
 					continue;
 				
 				// leave party
-				playerInstance.leaveParty();
+				if (playerInstance.getParty() != null)
+					playerInstance.getParty().removePartyMember(playerInstance, MessageType.EXPELLED);
 				
 				// Get Noblesse effect
 				noblesse.getEffects(playerInstance, playerInstance);
 				
+				// disable skills
+				playerInstance.disableSkill(AuraFlash, Config.TVT_EVENT_RUNNING_TIME * 60000);
+				playerInstance.disableSkill(AquaSplash, Config.TVT_EVENT_RUNNING_TIME * 60000);
+				playerInstance.disableSkill(FrostWall, Config.TVT_EVENT_RUNNING_TIME * 60000);
+				
+				ThreadPool.schedule(new Runnable()
+				{
+					@Override
+					public void run()
+					{
+						playerInstance.sitDown();
+						playerInstance.setIsParalyzed(true);
+						playerInstance.startAbnormalEffect(AbnormalEffect.BIG_HEAD);
+						playerInstance.startAbnormalEffect(AbnormalEffect.ROOT);
+						playerInstance.sendMessage("Fight starts in 5 seconds!");
+					}
+				}, 1000 * 13);
+				
+				ThreadPool.schedule(new Runnable()
+				{
+					@Override
+					public void run()
+					{
+						playerInstance.standUp();
+						playerInstance.setIsParalyzed(false);
+						playerInstance.stopAbnormalEffect(AbnormalEffect.ROOT);
+						playerInstance.sendMessage("Fight started!");
+					}
+				}, 1000 * 20);
+				
 				// implements Runnable and starts itself in constructor
 				new TvTEventTeleport(playerInstance, team.getCoordinates(), false, false);
+				
 			}
 		}
 		
@@ -296,10 +316,13 @@ public class TvTEvent
 		{
 			for (String playerName : team.getParticipatedPlayerNames())
 			{
-				L2PcInstance playerInstance = team.getParticipatedPlayers().get(playerName);
+				Player playerInstance = team.getParticipatedPlayers().get(playerName);
 				
 				if (playerInstance == null)
 					continue;
+				
+				playerInstance.sitDown();
+				playerInstance.stopAbnormalEffect(AbnormalEffect.BIG_HEAD);
 				
 				new TvTEventTeleport(playerInstance, Config.TVT_EVENT_BACK_COORDINATES, false, false);
 			}
@@ -319,7 +342,7 @@ public class TvTEvent
 	 * @param playerInstance
 	 * @return boolean
 	 */
-	public static synchronized boolean addParticipant(L2PcInstance playerInstance)
+	public static synchronized boolean addParticipant(Player playerInstance)
 	{
 		if (playerInstance == null)
 			return false;
@@ -360,13 +383,13 @@ public class TvTEvent
 	 */
 	public static void sysMsgToAllParticipants(String message)
 	{
-		for (L2PcInstance playerInstance : _teams[0].getParticipatedPlayers().values())
+		for (Player playerInstance : _teams[0].getParticipatedPlayers().values())
 		{
 			if (playerInstance != null)
 				playerInstance.sendMessage(message);
 		}
 		
-		for (L2PcInstance playerInstance : _teams[1].getParticipatedPlayers().values())
+		for (Player playerInstance : _teams[1].getParticipatedPlayers().values())
 		{
 			if (playerInstance != null)
 				playerInstance.sendMessage(message);
@@ -380,7 +403,7 @@ public class TvTEvent
 	{
 		for (int doorId : Config.TVT_EVENT_DOOR_IDS)
 		{
-			L2DoorInstance doorInstance = DoorTable.getInstance().getDoor(doorId);
+			Door doorInstance = DoorTable.getInstance().getDoor(doorId);
 			
 			if (doorInstance != null)
 				doorInstance.closeMe();
@@ -394,7 +417,7 @@ public class TvTEvent
 	{
 		for (int doorId : Config.TVT_EVENT_DOOR_IDS)
 		{
-			L2DoorInstance doorInstance = DoorTable.getInstance().getDoor(doorId);
+			Door doorInstance = DoorTable.getInstance().getDoor(doorId);
 			
 			if (doorInstance != null)
 				doorInstance.openMe();
@@ -409,7 +432,7 @@ public class TvTEvent
 		}
 		catch (InterruptedException e)
 		{
-			e.printStackTrace();
+			// e.printStackTrace();
 		}
 	}
 	
@@ -418,7 +441,7 @@ public class TvTEvent
 	 * @param playerInstance
 	 * @param player
 	 */
-	public static void onLogin(L2PcInstance playerInstance, L2PcInstance player)
+	public static void onLogin(Player playerInstance, Player player)
 	{
 		if (playerInstance == null || (!isStarting() && !isStarted()))
 			return;
@@ -437,7 +460,7 @@ public class TvTEvent
 	 * @param playerInstance
 	 * @param player
 	 */
-	public static void onLogout(L2PcInstance playerInstance, L2PcInstance player)
+	public static void onLogout(Player playerInstance, Player player)
 	{
 		if (playerInstance == null || (!isStarting() && !isStarted()))
 			return;
@@ -451,10 +474,16 @@ public class TvTEvent
 	 * @param command
 	 * @param playerInstance
 	 */
-	public static synchronized void onBypass(String command, L2PcInstance playerInstance)
+	public static synchronized void onBypass(String command, Player playerInstance)
 	{
 		if (playerInstance == null || !isParticipating())
 			return;
+		
+		if (playerInstance.isAio())
+		{
+			playerInstance.sendMessage("AIO player can not register.");
+			return;
+		}
 		
 		if (command.equals("tvt_event_participation"))
 		{
@@ -502,7 +531,7 @@ public class TvTEvent
 		if (!isStarted())
 			return true;
 		
-		L2PcInstance playerInstance = L2World.getInstance().getPlayer(playerName);
+		Player playerInstance = World.getInstance().getPlayer(playerName);
 		
 		if (playerInstance == null)
 			return false;
@@ -543,48 +572,23 @@ public class TvTEvent
 	 * @param killerCharacter
 	 * @param killedPlayerInstance
 	 */
-	public static void onKill(L2Character killerCharacter, L2PcInstance killedPlayerInstance)
+	public static void onKill(Creature killerCharacter, Player killedPlayerInstance)
 	{
-		if (killerCharacter == null || killedPlayerInstance == null || (!(killerCharacter instanceof L2PcInstance) && !(killerCharacter instanceof L2PetInstance) && !(killerCharacter instanceof L2SummonInstance)) || !isStarted())
+		if (killerCharacter == null || killedPlayerInstance == null || (!(killerCharacter instanceof Player) && !(killerCharacter instanceof Pet) && !(killerCharacter instanceof Summon)) || !isStarted())
 			return;
 		
-		L2PcInstance killerPlayerInstance = null;
+		Player killerPlayerInstance = null;
 		
-		if (killerCharacter instanceof L2PetInstance || killerCharacter instanceof L2SummonInstance)
+		if (killerCharacter instanceof Pet || killerCharacter instanceof Summon)
 		{
-			killerPlayerInstance = ((L2Summon) killerCharacter).getOwner();
+			killerPlayerInstance = ((Summon) killerCharacter).getOwner();
 			
 			if (killerPlayerInstance == null)
 				return;
 		}
 		else
-			killerPlayerInstance = (L2PcInstance) killerCharacter;
-		
-		if (Config.TVT_KILLS_REWARD_ENABLED)
-			for (int[] rewardKills : Config.TVT_KILLS_REWARD)
-			{
-				SystemMessage systemMessage = null;
-				// Count the kill
-				killerPlayerInstance._tvtkills++;
-				switch (killerPlayerInstance._tvtkills)
-				{
-					case 5: // Reward after 5 kills without die
-					case 8: // Reward after 8 kills without die
-					case 12: // Reward after 12 kills without die
-					case 15: // Reward after 15 kills without die
-					case 20: // Reward after 20 kills without die
-						
-						systemMessage = new SystemMessage(SystemMessageId.EARNED_S2_S1_S);
-						systemMessage.addItemName(rewardKills[0]);
-						systemMessage.addNumber(rewardKills[1]);
-						
-						killerPlayerInstance.getInventory().addItem("TvT Event", rewardKills[0], rewardKills[1], killerPlayerInstance, killerPlayerInstance);
-						killerPlayerInstance.sendPacket(new CreatureSay(0, Say2.HERO_VOICE, "Amazing", +killerPlayerInstance._tvtkills + " kills without die. You has been rewarded!"));
-						killerPlayerInstance.sendPacket(systemMessage);
-						break;
-				}
-			}
-		
+			killerPlayerInstance = (Player) killerCharacter;
+				
 		String playerName = killerPlayerInstance.getName();
 		byte killerTeamId = getParticipantTeamId(playerName);
 		

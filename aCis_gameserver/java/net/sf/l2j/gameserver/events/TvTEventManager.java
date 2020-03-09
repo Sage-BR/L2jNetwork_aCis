@@ -14,8 +14,9 @@
  */
 package net.sf.l2j.gameserver.events;
 
+import net.sf.l2j.commons.concurrent.ThreadPool;
+
 import net.sf.l2j.Config;
-import net.sf.l2j.gameserver.ThreadPoolManager;
 import net.sf.l2j.gameserver.util.Broadcast;
 
 /**
@@ -35,8 +36,8 @@ public class TvTEventManager implements Runnable
 	{
 		if (Config.TVT_EVENT_ENABLED)
 		{
-			ThreadPoolManager.getInstance().scheduleGeneral(this, 0);
-			System.out.println("TvTEventEngine[TvTManager.TvTManager()]: Started.");
+			ThreadPool.schedule(this, 0);
+			System.out.println("TVT: Event has enabled.");
 		}
 		else
 			System.out.println("TvTEventEngine[TvTManager.TvTManager()]: Engine is disabled.");
@@ -70,26 +71,29 @@ public class TvTEventManager implements Runnable
 			
 			if (!TvTEvent.startParticipation())
 			{
-				Broadcast.announceToOnlinePlayers("TvT Event: Event was canceled.", true);
-				System.out.println("TvTEventEngine[TvTManager.run()]: Error spawning event npc for participation.");
+				Broadcast.announceToOnlinePlayers("TVT: Event was canceled.", true);
+				System.out.println("TvTEvent: Error spawning event npc for participation.");
 				continue;
 			}
-			Broadcast.announceToOnlinePlayers("TvT Event: Registration opened for " + Config.TVT_EVENT_PARTICIPATION_TIME + " minute(s). Type .tvtjoin or .tvtleave", true);
+			if (Config.TVT_CMD)
+				Broadcast.announceToOnlinePlayers("TVT: Registration opened for " + Config.TVT_EVENT_PARTICIPATION_TIME + " minute(s). Type .tvtjoin or .tvtleave", true);
+			else
+				Broadcast.announceToOnlinePlayers("TVT: Registration opened for " + Config.TVT_EVENT_PARTICIPATION_TIME + " minute(s).", true);
 			
 			waiter(Config.TVT_EVENT_PARTICIPATION_TIME * 60); // in config given as minutes
 			
 			if (!TvTEvent.startFight())
 			{
-				Broadcast.announceToOnlinePlayers("TvT Event: Event canceled due to lack of Participation.", true);
-				System.out.println("TvTEventEngine[TvTManager.run()]: Lack of registration, abort event.");
+				Broadcast.announceToOnlinePlayers("TVT: Event canceled.", true);
+				System.out.println("TvTEvent: Event canceled.");
 				continue;
 			}
-			Broadcast.announceToOnlinePlayers("TvT Event: Registration closed!", true);
-			TvTEvent.sysMsgToAllParticipants("TvT Event: Teleporting participants to an arena in " + Config.TVT_EVENT_START_LEAVE_TELEPORT_DELAY + " second(s).");
+			Broadcast.announceToOnlinePlayers("TVT: Registration closed!", true);
+			Broadcast.announceToOnlinePlayers("TVT: Teleporting participants to an arena in " + Config.TVT_EVENT_START_LEAVE_TELEPORT_DELAY + " second(s).", true);
 			
 			waiter(Config.TVT_EVENT_RUNNING_TIME * 60); // in config given as minutes
 			Broadcast.announceToOnlinePlayers(TvTEvent.calculateRewards(), true);
-			TvTEvent.sysMsgToAllParticipants("TvT Event: Teleporting back to the registration npc in " + Config.TVT_EVENT_START_LEAVE_TELEPORT_DELAY + " second(s).");
+			TvTEvent.sysMsgToAllParticipants("TVT: Teleporting back to the registration npc in " + Config.TVT_EVENT_START_LEAVE_TELEPORT_DELAY + " second(s).");
 			TvTEvent.stopFight();
 		}
 	}
@@ -110,9 +114,9 @@ public class TvTEventManager implements Runnable
 				{
 					case 3600: // 1 hour left
 						if (TvTEvent.isParticipating())
-							Broadcast.announceToOnlinePlayers("TvT Event: " + seconds / 60 / 60 + " hour(s) umtil registration is closed!", true);
+							Broadcast.announceToOnlinePlayers("TVT: " + seconds / 60 / 60 + " hour(s) umtil registration is closed!", true);
 						else if (TvTEvent.isStarted())
-							TvTEvent.sysMsgToAllParticipants("TvT Event: " + seconds / 60 / 60 + " hour(s) until event is finished!");
+							TvTEvent.sysMsgToAllParticipants("TVT: " + seconds / 60 / 60 + " hour(s) until event is finished!");
 						
 						break;
 					case 1800: // 30 minutes left
@@ -124,9 +128,9 @@ public class TvTEventManager implements Runnable
 					case 120: // 2 minutes left
 					case 60: // 1 minute left
 						if (TvTEvent.isParticipating())
-							Broadcast.announceToOnlinePlayers("TvT Event: " + seconds / 60 + " minute(s) until registration is closed!", true);
+							Broadcast.announceToOnlinePlayers("TVT: " + seconds / 60 + " minute(s) until registration is closed!", true);
 						else if (TvTEvent.isStarted())
-							TvTEvent.sysMsgToAllParticipants("TvT Event: " + seconds / 60 + " minute(s) until the event is finished!");
+							TvTEvent.sysMsgToAllParticipants("TVT: " + seconds / 60 + " minute(s) until the event is finished!");
 						
 						break;
 					case 30: // 30 seconds left
@@ -139,9 +143,9 @@ public class TvTEventManager implements Runnable
 						 * case 4: // 4 seconds left case 3: // 3 seconds left case 2: // 2 seconds left case 1: // 1 seconds left
 						 */
 						if (TvTEvent.isParticipating())
-							Broadcast.announceToOnlinePlayers("TvT Event: " + seconds + " second(s) until registration is closed!", true);
+							Broadcast.announceToOnlinePlayers("TVT: " + seconds + " second(s) until registration is closed!", true);
 						else if (TvTEvent.isStarted())
-							TvTEvent.sysMsgToAllParticipants("TvT Event: " + seconds + " second(s) until the event is finished!");
+							TvTEvent.sysMsgToAllParticipants("TVT: " + seconds + " second(s) until the event is finished!");
 						
 						break;
 				}

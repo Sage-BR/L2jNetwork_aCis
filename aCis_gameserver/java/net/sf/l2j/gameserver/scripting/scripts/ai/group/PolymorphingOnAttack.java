@@ -1,37 +1,24 @@
-/*
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package net.sf.l2j.gameserver.scripting.scripts.ai.group;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import net.sf.l2j.commons.random.Rnd;
-import net.sf.l2j.gameserver.model.actor.L2Attackable;
-import net.sf.l2j.gameserver.model.actor.L2Npc;
-import net.sf.l2j.gameserver.model.actor.instance.L2PcInstance;
+
+import net.sf.l2j.gameserver.model.L2Skill;
+import net.sf.l2j.gameserver.model.actor.Attackable;
+import net.sf.l2j.gameserver.model.actor.Npc;
+import net.sf.l2j.gameserver.model.actor.instance.Player;
 import net.sf.l2j.gameserver.network.clientpackets.Say2;
 import net.sf.l2j.gameserver.network.serverpackets.CreatureSay;
 import net.sf.l2j.gameserver.scripting.EventType;
-import net.sf.l2j.gameserver.scripting.scripts.ai.AbstractNpcAI;
+import net.sf.l2j.gameserver.scripting.scripts.ai.L2AttackableAIScript;
 
-/**
- * @author Slyce
- */
-public class PolymorphingOnAttack extends AbstractNpcAI
+public class PolymorphingOnAttack extends L2AttackableAIScript
 {
 	private static final Map<Integer, Integer[]> MOBSPAWNS = new HashMap<>();
+	
+	static
 	{
 		MOBSPAWNS.put(21258, new Integer[]
 		{
@@ -126,7 +113,7 @@ public class PolymorphingOnAttack extends AbstractNpcAI
 		}); // Fang of Splendor
 	}
 	
-	protected static final String[][] MOBTEXTS =
+	private static final String[][] MOBTEXTS =
 	{
 		new String[]
 		{
@@ -151,12 +138,16 @@ public class PolymorphingOnAttack extends AbstractNpcAI
 	public PolymorphingOnAttack()
 	{
 		super("ai/group");
-		
-		registerMobs(MOBSPAWNS.keySet(), EventType.ON_ATTACK);
 	}
 	
 	@Override
-	public String onAttack(L2Npc npc, L2PcInstance attacker, int damage, boolean isPet)
+	protected void registerNpcs()
+	{
+		addEventIds(MOBSPAWNS.keySet(), EventType.ON_ATTACK);
+	}
+	
+	@Override
+	public String onAttack(Npc npc, Player attacker, int damage, boolean isPet, L2Skill skill)
 	{
 		if (npc.isVisible() && !npc.isDead())
 		{
@@ -167,16 +158,16 @@ public class PolymorphingOnAttack extends AbstractNpcAI
 				{
 					if (tmp[3] >= 0)
 					{
-						String text = MOBTEXTS[tmp[3]][Rnd.get(MOBTEXTS[tmp[3]].length)];
+						String text = Rnd.get(MOBTEXTS[tmp[3]]);
 						npc.broadcastPacket(new CreatureSay(npc.getObjectId(), Say2.ALL, npc.getName(), text));
 					}
 					npc.deleteMe();
 					
-					L2Attackable newNpc = (L2Attackable) addSpawn(tmp[0], npc.getX(), npc.getY(), npc.getZ() + 10, npc.getHeading(), false, 0, true);
+					Attackable newNpc = (Attackable) addSpawn(tmp[0], npc.getX(), npc.getY(), npc.getZ() + 10, npc.getHeading(), false, 0, true);
 					attack(newNpc, ((isPet) ? attacker.getPet() : attacker));
 				}
 			}
 		}
-		return super.onAttack(npc, attacker, damage, isPet);
+		return super.onAttack(npc, attacker, damage, isPet, skill);
 	}
 }

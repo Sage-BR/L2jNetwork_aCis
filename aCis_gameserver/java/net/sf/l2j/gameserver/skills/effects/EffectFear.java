@@ -1,30 +1,13 @@
-/*
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package net.sf.l2j.gameserver.skills.effects;
 
-import net.sf.l2j.Config;
-import net.sf.l2j.gameserver.ai.CtrlIntention;
-import net.sf.l2j.gameserver.geoengine.PathFinding;
-import net.sf.l2j.gameserver.model.L2CharPosition;
+import net.sf.l2j.gameserver.geoengine.GeoEngine;
 import net.sf.l2j.gameserver.model.L2Effect;
-import net.sf.l2j.gameserver.model.Location;
-import net.sf.l2j.gameserver.model.actor.instance.L2NpcInstance;
-import net.sf.l2j.gameserver.model.actor.instance.L2PcInstance;
-import net.sf.l2j.gameserver.model.actor.instance.L2PetInstance;
-import net.sf.l2j.gameserver.model.actor.instance.L2SiegeFlagInstance;
-import net.sf.l2j.gameserver.model.actor.instance.L2SiegeSummonInstance;
+import net.sf.l2j.gameserver.model.actor.ai.CtrlIntention;
+import net.sf.l2j.gameserver.model.actor.instance.Folk;
+import net.sf.l2j.gameserver.model.actor.instance.Pet;
+import net.sf.l2j.gameserver.model.actor.instance.Player;
+import net.sf.l2j.gameserver.model.actor.instance.SiegeFlag;
+import net.sf.l2j.gameserver.model.actor.instance.SiegeSummon;
 import net.sf.l2j.gameserver.skills.Env;
 import net.sf.l2j.gameserver.templates.skills.L2EffectFlag;
 import net.sf.l2j.gameserver.templates.skills.L2EffectType;
@@ -51,7 +34,7 @@ public class EffectFear extends L2Effect
 	@Override
 	public boolean onStart()
 	{
-		if (getEffected() instanceof L2PcInstance && getEffector() instanceof L2PcInstance)
+		if (getEffected() instanceof Player && getEffector() instanceof Player)
 		{
 			switch (getSkill().getId())
 			{
@@ -69,7 +52,7 @@ public class EffectFear extends L2Effect
 			}
 		}
 		
-		if (getEffected() instanceof L2NpcInstance || getEffected() instanceof L2SiegeFlagInstance || getEffected() instanceof L2SiegeSummonInstance)
+		if (getEffected() instanceof Folk || getEffected() instanceof SiegeFlag || getEffected() instanceof SiegeSummon)
 			return false;
 		
 		if (getEffected().isAfraid())
@@ -89,22 +72,24 @@ public class EffectFear extends L2Effect
 	@Override
 	public boolean onActionTime()
 	{
-		int posX = getEffected().getX() + (((getEffected().getX() > getEffector().getX()) ? 1 : -1) * FEAR_RANGE);
-		int posY = getEffected().getY() + (((getEffected().getY() > getEffector().getY()) ? 1 : -1) * FEAR_RANGE);
-		int posZ = getEffected().getZ();
-		
-		if (Config.GEODATA > 0)
-		{
-			Location destiny = PathFinding.getInstance().canMoveToTargetLoc(getEffected().getX(), getEffected().getY(), getEffected().getZ(), posX, posY, posZ);
-			posX = destiny.getX();
-			posY = destiny.getY();
-		}
-		
-		if (!(getEffected() instanceof L2PetInstance))
+		if (!(getEffected() instanceof Pet))
 			getEffected().setRunning();
 		
-		getEffected().getAI().setIntention(CtrlIntention.MOVE_TO, new L2CharPosition(posX, posY, posZ, 0));
+		final int victimX = getEffected().getX();
+		final int victimY = getEffected().getY();
+		final int victimZ = getEffected().getZ();
+		
+		final int posX = victimX + (((victimX > getEffector().getX()) ? 1 : -1) * FEAR_RANGE);
+		final int posY = victimY + (((victimY > getEffector().getY()) ? 1 : -1) * FEAR_RANGE);
+		
+		getEffected().getAI().setIntention(CtrlIntention.MOVE_TO, GeoEngine.getInstance().canMoveToTargetLoc(victimX, victimY, victimZ, posX, posY, victimZ));
 		return true;
+	}
+	
+	@Override
+	public boolean onSameEffect(L2Effect effect)
+	{
+		return false;
 	}
 	
 	@Override

@@ -1,23 +1,8 @@
-/*
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package net.sf.l2j.gameserver.model.actor.stat;
 
-import net.sf.l2j.gameserver.datatables.PetDataTable;
 import net.sf.l2j.gameserver.model.L2Skill;
-import net.sf.l2j.gameserver.model.actor.L2Character;
-import net.sf.l2j.gameserver.model.actor.instance.L2PetInstance;
+import net.sf.l2j.gameserver.model.actor.Creature;
+import net.sf.l2j.gameserver.model.actor.instance.Pet;
 import net.sf.l2j.gameserver.model.item.instance.ItemInstance;
 import net.sf.l2j.gameserver.network.SystemMessageId;
 import net.sf.l2j.gameserver.network.serverpackets.InventoryUpdate;
@@ -27,7 +12,7 @@ import net.sf.l2j.gameserver.skills.Stats;
 
 public class PetStat extends SummonStat
 {
-	public PetStat(L2PetInstance activeChar)
+	public PetStat(Pet activeChar)
 	{
 		super(activeChar);
 	}
@@ -67,38 +52,21 @@ public class PetStat extends SummonStat
 	@Override
 	public final long getExpForLevel(int level)
 	{
-		return PetDataTable.getInstance().getPetLevelData(getActiveChar().getNpcId(), level).getPetMaxExp();
+		return getActiveChar().getTemplate().getPetDataEntry(level).getMaxExp();
 	}
 	
 	@Override
-	public L2PetInstance getActiveChar()
+	public Pet getActiveChar()
 	{
-		return (L2PetInstance) super.getActiveChar();
-	}
-	
-	public final int getFeedBattle()
-	{
-		return getActiveChar().getPetLevelData().getPetFeedBattle();
-	}
-	
-	public final int getFeedNormal()
-	{
-		return getActiveChar().getPetLevelData().getPetFeedNormal();
-	}
-	
-	public final int getMaxFeed()
-	{
-		return getActiveChar().getPetLevelData().getPetMaxFeed();
+		return (Pet) super.getActiveChar();
 	}
 	
 	@Override
 	public void setLevel(byte value)
 	{
-		getActiveChar().setPetData(PetDataTable.getInstance().getPetLevelData(getActiveChar().getTemplate().getNpcId(), value));
+		getActiveChar().setPetData(getActiveChar().getTemplate().getPetDataEntry(value));
 		
-		getActiveChar().stopFeed();
 		super.setLevel(value); // Set level.
-		getActiveChar().startFeed();
 		
 		// If a control item exists and its level is different of the new level.
 		final ItemInstance controlItem = getActiveChar().getControlItem();
@@ -118,19 +86,19 @@ public class PetStat extends SummonStat
 	@Override
 	public int getMaxHp()
 	{
-		return (int) calcStat(Stats.MAX_HP, getActiveChar().getPetLevelData().getPetMaxHP(), null, null);
+		return (int) calcStat(Stats.MAX_HP, getActiveChar().getPetData().getMaxHp(), null, null);
 	}
 	
 	@Override
 	public int getMaxMp()
 	{
-		return (int) calcStat(Stats.MAX_MP, getActiveChar().getPetLevelData().getPetMaxMP(), null, null);
+		return (int) calcStat(Stats.MAX_MP, getActiveChar().getPetData().getMaxMp(), null, null);
 	}
 	
 	@Override
-	public int getMAtk(L2Character target, L2Skill skill)
+	public int getMAtk(Creature target, L2Skill skill)
 	{
-		double attack = getActiveChar().getPetLevelData().getPetMAtk();
+		double attack = getActiveChar().getPetData().getMAtk();
 		
 		if (skill != null)
 			attack += skill.getPower();
@@ -139,41 +107,42 @@ public class PetStat extends SummonStat
 	}
 	
 	@Override
-	public int getMDef(L2Character target, L2Skill skill)
+	public int getMAtkSpd()
 	{
-		double defence = getActiveChar().getPetLevelData().getPetMDef();
-		return (int) calcStat(Stats.MAGIC_DEFENCE, defence, target, skill);
+		double base = 333;
+		
+		if (getActiveChar().checkHungryState())
+			base /= 2;
+		
+		return (int) calcStat(Stats.MAGIC_ATTACK_SPEED, base, null, null);
 	}
 	
 	@Override
-	public int getPAtk(L2Character target)
+	public int getMDef(Creature target, L2Skill skill)
 	{
-		return (int) calcStat(Stats.POWER_ATTACK, getActiveChar().getPetLevelData().getPetPAtk(), target, null);
+		return (int) calcStat(Stats.MAGIC_DEFENCE, getActiveChar().getPetData().getMDef(), target, skill);
 	}
 	
 	@Override
-	public int getPDef(L2Character target)
+	public int getPAtk(Creature target)
 	{
-		return (int) calcStat(Stats.POWER_DEFENCE, getActiveChar().getPetLevelData().getPetPDef(), target, null);
+		return (int) calcStat(Stats.POWER_ATTACK, getActiveChar().getPetData().getPAtk(), target, null);
 	}
 	
 	@Override
 	public int getPAtkSpd()
 	{
-		int val = super.getPAtkSpd();
-		if (getActiveChar().isHungry())
-			val = val / 2;
+		double base = getActiveChar().getTemplate().getBasePAtkSpd();
 		
-		return val;
+		if (getActiveChar().checkHungryState())
+			base /= 2;
+		
+		return (int) calcStat(Stats.POWER_ATTACK_SPEED, base, null, null);
 	}
 	
 	@Override
-	public int getMAtkSpd()
+	public int getPDef(Creature target)
 	{
-		int val = super.getMAtkSpd();
-		if (getActiveChar().isHungry())
-			val = val / 2;
-		
-		return val;
+		return (int) calcStat(Stats.POWER_DEFENCE, getActiveChar().getPetData().getPDef(), target, null);
 	}
 }

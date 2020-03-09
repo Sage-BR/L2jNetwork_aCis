@@ -1,23 +1,11 @@
-/*
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package net.sf.l2j.gameserver.scripting.quests;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import net.sf.l2j.gameserver.model.actor.L2Npc;
-import net.sf.l2j.gameserver.model.actor.instance.L2PcInstance;
-import net.sf.l2j.gameserver.model.base.Race;
+import net.sf.l2j.gameserver.model.actor.Npc;
+import net.sf.l2j.gameserver.model.actor.instance.Player;
+import net.sf.l2j.gameserver.model.base.ClassRace;
 import net.sf.l2j.gameserver.network.serverpackets.SocialAction;
 import net.sf.l2j.gameserver.scripting.Quest;
 import net.sf.l2j.gameserver.scripting.QuestState;
@@ -118,7 +106,7 @@ public class Q219_TestimonyOfFate extends Quest
 	}
 	
 	@Override
-	public String onAdvEvent(String event, L2Npc npc, L2PcInstance player)
+	public String onAdvEvent(String event, Npc npc, Player player)
 	{
 		String htmltext = event;
 		QuestState st = player.getQuestState(qn);
@@ -131,7 +119,13 @@ public class Q219_TestimonyOfFate extends Quest
 			st.set("cond", "1");
 			st.playSound(QuestState.SOUND_ACCEPT);
 			st.giveItems(KAIRA_LETTER, 1);
-			st.giveItems(DIMENSIONAL_DIAMOND, 98);
+			
+			if (!player.getMemos().getBool("secondClassChange37", false))
+			{
+				htmltext = "30476-05a.htm";
+				st.giveItems(DIMENSIONAL_DIAMOND, DF_REWARD_37.get(player.getRace().ordinal()));
+				player.getMemos().set("secondClassChange37", true);
+			}
 		}
 		else if (event.equalsIgnoreCase("30114-04.htm"))
 		{
@@ -166,12 +160,12 @@ public class Q219_TestimonyOfFate extends Quest
 		}
 		else if (event.equalsIgnoreCase("31845-02.htm"))
 		{
-			st.playSound(QuestState.SOUND_MIDDLE);
+			st.playSound(QuestState.SOUND_ITEMGET);
 			st.giveItems(PIXY_GARNET, 1);
 		}
 		else if (event.equalsIgnoreCase("31850-02.htm"))
 		{
-			st.playSound(QuestState.SOUND_MIDDLE);
+			st.playSound(QuestState.SOUND_ITEMGET);
 			st.giveItems(BLIGHT_TREANT_SEED, 1);
 		}
 		else if (event.equalsIgnoreCase("30419-05.htm"))
@@ -188,7 +182,7 @@ public class Q219_TestimonyOfFate extends Quest
 	}
 	
 	@Override
-	public String onTalk(L2Npc npc, L2PcInstance player)
+	public String onTalk(Npc npc, Player player)
 	{
 		QuestState st = player.getQuestState(qn);
 		String htmltext = getNoQuestMsg();
@@ -198,7 +192,7 @@ public class Q219_TestimonyOfFate extends Quest
 		switch (st.getState())
 		{
 			case STATE_CREATED:
-				if (player.getRace() != Race.DarkElf)
+				if (player.getRace() != ClassRace.DARK_ELF)
 					htmltext = "30476-02.htm";
 				else if (player.getLevel() < 37 || player.getClassId().level() != 1)
 					htmltext = "30476-01.htm";
@@ -390,7 +384,7 @@ public class Q219_TestimonyOfFate extends Quest
 								if (st.getQuestItemsCount(GRANDIS_SKULL) >= 10 && st.getQuestItemsCount(KARUL_BUGBEAR_SKULL) >= 10 && st.getQuestItemsCount(BREKA_OVERLORD_SKULL) >= 10 && st.getQuestItemsCount(LETO_OVERLORD_SKULL) >= 10)
 								{
 									htmltext = "31845-04.htm";
-									st.playSound(QuestState.SOUND_MIDDLE);
+									st.playSound(QuestState.SOUND_ITEMGET);
 									st.takeItems(BREKA_OVERLORD_SKULL, -1);
 									st.takeItems(GRANDIS_SKULL, -1);
 									st.takeItems(KARUL_BUGBEAR_SKULL, -1);
@@ -418,7 +412,7 @@ public class Q219_TestimonyOfFate extends Quest
 								if (st.hasQuestItems(BLACK_WILLOW_LEAF))
 								{
 									htmltext = "31850-04.htm";
-									st.playSound(QuestState.SOUND_MIDDLE);
+									st.playSound(QuestState.SOUND_ITEMGET);
 									st.takeItems(BLACK_WILLOW_LEAF, 1);
 									st.takeItems(BLIGHT_TREANT_SEED, 1);
 									st.giveItems(BLIGHT_TREANT_SAP, 1);
@@ -446,7 +440,7 @@ public class Q219_TestimonyOfFate extends Quest
 	}
 	
 	@Override
-	public String onKill(L2Npc npc, L2PcInstance player, boolean isPet)
+	public String onKill(Npc npc, Player player, boolean isPet)
 	{
 		QuestState st = checkPlayerState(player, npc, STATE_STARTED);
 		if (st == null)

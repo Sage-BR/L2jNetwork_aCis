@@ -1,17 +1,3 @@
-/*
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package net.sf.l2j.gameserver.instancemanager;
 
 import java.sql.Connection;
@@ -24,13 +10,14 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import net.sf.l2j.commons.concurrent.ThreadPool;
+import net.sf.l2j.commons.random.Rnd;
+
 import net.sf.l2j.Config;
 import net.sf.l2j.L2DatabaseFactory;
-import net.sf.l2j.commons.random.Rnd;
-import net.sf.l2j.gameserver.ThreadPoolManager;
-import net.sf.l2j.gameserver.datatables.ItemTable;
-import net.sf.l2j.gameserver.datatables.ServerMemo;
-import net.sf.l2j.gameserver.model.actor.instance.L2PcInstance;
+import net.sf.l2j.gameserver.data.ItemTable;
+import net.sf.l2j.gameserver.data.sql.ServerMemoTable;
+import net.sf.l2j.gameserver.model.actor.instance.Player;
 import net.sf.l2j.gameserver.network.SystemMessageId;
 import net.sf.l2j.gameserver.network.serverpackets.NpcHtmlMessage;
 import net.sf.l2j.gameserver.network.serverpackets.SystemMessage;
@@ -65,7 +52,7 @@ public class FishingChampionshipManager
 			new finishChamp().run();
 		}
 		else
-			ThreadPoolManager.getInstance().scheduleGeneral(new finishChamp(), _enddate - System.currentTimeMillis());
+			ThreadPool.schedule(new finishChamp(), _enddate - System.currentTimeMillis());
 	}
 	
 	protected void setEndOfChamp()
@@ -82,7 +69,7 @@ public class FishingChampionshipManager
 	
 	private void restoreData()
 	{
-		_enddate = ServerMemo.getInstance().getLong("fishChampionshipEnd", 0);
+		_enddate = ServerMemoTable.getInstance().getLong("fishChampionshipEnd", 0);
 		
 		try (Connection con = L2DatabaseFactory.getInstance().getConnection())
 		{
@@ -105,7 +92,7 @@ public class FishingChampionshipManager
 		}
 	}
 	
-	public synchronized void newFish(L2PcInstance pl, int lureId)
+	public synchronized void newFish(Player pl, int lureId)
 	{
 		if (!Config.ALT_FISH_CHAMPIONSHIP_ENABLED)
 			return;
@@ -226,7 +213,7 @@ public class FishingChampionshipManager
 		return false;
 	}
 	
-	public void getReward(L2PcInstance pl)
+	public void getReward(Player pl)
 	{
 		for (Fisher fisher : _winPlayers)
 		{
@@ -277,7 +264,7 @@ public class FishingChampionshipManager
 		}
 	}
 	
-	public void showMidResult(L2PcInstance pl)
+	public void showMidResult(Player pl)
 	{
 		final NpcHtmlMessage html = new NpcHtmlMessage(0);
 		
@@ -287,7 +274,7 @@ public class FishingChampionshipManager
 			pl.sendPacket(html);
 			
 			refreshResult();
-			ThreadPoolManager.getInstance().scheduleGeneral(new needRefresh(), 60000);
+			ThreadPool.schedule(new needRefresh(), 60000);
 			return;
 		}
 		
@@ -310,7 +297,7 @@ public class FishingChampionshipManager
 		pl.sendPacket(html);
 	}
 	
-	public void showChampScreen(L2PcInstance pl, int objectId)
+	public void showChampScreen(Player pl, int objectId)
 	{
 		final NpcHtmlMessage html = new NpcHtmlMessage(objectId);
 		html.setFile("data/html/fisherman/championship/fish_event001.htm");
@@ -336,7 +323,7 @@ public class FishingChampionshipManager
 	
 	public void shutdown()
 	{
-		ServerMemo.getInstance().set("fishChampionshipEnd", _enddate);
+		ServerMemoTable.getInstance().set("fishChampionshipEnd", _enddate);
 		
 		try (Connection con = L2DatabaseFactory.getInstance().getConnection())
 		{
@@ -453,7 +440,7 @@ public class FishingChampionshipManager
 			shutdown();
 			
 			_log.info("FishingChampionshipManager : new event period start.");
-			ThreadPoolManager.getInstance().scheduleGeneral(new finishChamp(), _enddate - System.currentTimeMillis());
+			ThreadPool.schedule(new finishChamp(), _enddate - System.currentTimeMillis());
 		}
 	}
 	

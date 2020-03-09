@@ -1,30 +1,19 @@
-/*
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package net.sf.l2j.gameserver.communitybbs;
 
 import net.sf.l2j.Config;
 import net.sf.l2j.gameserver.communitybbs.Manager.BaseBBSManager;
+import net.sf.l2j.gameserver.communitybbs.Manager.BossStatusBBSManager;
 import net.sf.l2j.gameserver.communitybbs.Manager.ClanBBSManager;
 import net.sf.l2j.gameserver.communitybbs.Manager.FriendsBBSManager;
 import net.sf.l2j.gameserver.communitybbs.Manager.MailBBSManager;
+import net.sf.l2j.gameserver.communitybbs.Manager.PinCodeBBSManager;
 import net.sf.l2j.gameserver.communitybbs.Manager.PostBBSManager;
 import net.sf.l2j.gameserver.communitybbs.Manager.RegionBBSManager;
 import net.sf.l2j.gameserver.communitybbs.Manager.RepairBBSManager;
+import net.sf.l2j.gameserver.communitybbs.Manager.ServerNewsBBSManager;
 import net.sf.l2j.gameserver.communitybbs.Manager.TopBBSManager;
 import net.sf.l2j.gameserver.communitybbs.Manager.TopicBBSManager;
-import net.sf.l2j.gameserver.model.actor.instance.L2PcInstance;
+import net.sf.l2j.gameserver.model.actor.instance.Player;
 import net.sf.l2j.gameserver.network.L2GameClient;
 import net.sf.l2j.gameserver.network.SystemMessageId;
 
@@ -41,7 +30,7 @@ public class CommunityBoard
 	
 	public void handleCommands(L2GameClient client, String command)
 	{
-		final L2PcInstance activeChar = client.getActiveChar();
+		final Player activeChar = client.getActiveChar();
 		if (activeChar == null)
 			return;
 		
@@ -57,16 +46,12 @@ public class CommunityBoard
 			RegionBBSManager.getInstance().parseCmd(command, activeChar);
 		else if (command.startsWith("_bbsclan"))
 			ClanBBSManager.getInstance().parseCmd(command, activeChar);
-		else if (command.startsWith("_bbsmemo"))
-			TopicBBSManager.getInstance().parseCmd(command, activeChar);
-		else if (command.startsWith("_bbsmail") || command.equals("_maillist_0_1_0_"))
-			MailBBSManager.getInstance().parseCmd(command, activeChar);
-		else if (command.startsWith("_friend") || command.startsWith("_block"))
-			FriendsBBSManager.getInstance().parseCmd(command, activeChar);
-		else if (command.startsWith("_bbstopics"))
-			TopicBBSManager.getInstance().parseCmd(command, activeChar);
-		else if (command.startsWith("_bbsposts"))
-			PostBBSManager.getInstance().parseCmd(command, activeChar);
+		else if (command.startsWith("_bbsShowServerNews"))
+			ServerNewsBBSManager.getInstance().parseCmd(command, activeChar);
+		else if (command.startsWith("_bbsPinCode"))
+			PinCodeBBSManager.getInstance().parseCmd(command, activeChar);
+		else if (command.startsWith("_bbsBoss"))
+			BossStatusBBSManager.getInstance().parseCmd(command, activeChar);
 		else if ((command.equals("_bbsShowRepair")) || (command.startsWith("_bbsRepair")))
 		{
 			RepairBBSManager.getInstance().parseCmd(command, activeChar);
@@ -77,7 +62,7 @@ public class CommunityBoard
 	
 	public void handleWriteCommands(L2GameClient client, String url, String arg1, String arg2, String arg3, String arg4, String arg5)
 	{
-		final L2PcInstance activeChar = client.getActiveChar();
+		final Player activeChar = client.getActiveChar();
 		if (activeChar == null)
 			return;
 		

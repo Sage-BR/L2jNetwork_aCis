@@ -1,27 +1,14 @@
-/*
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package net.sf.l2j.gameserver.network.clientpackets;
 
+import net.sf.l2j.commons.concurrent.ThreadPool;
+
 import net.sf.l2j.Config;
-import net.sf.l2j.gameserver.ThreadPoolManager;
+import net.sf.l2j.gameserver.events.phoenixevents.EventManager;
 import net.sf.l2j.gameserver.handler.IItemHandler;
 import net.sf.l2j.gameserver.handler.ItemHandler;
 import net.sf.l2j.gameserver.model.L2Skill;
-import net.sf.l2j.gameserver.model.actor.instance.L2PcInstance;
-import net.sf.l2j.gameserver.model.actor.instance.L2PetInstance;
-import net.sf.l2j.gameserver.model.base.ClassId;
+import net.sf.l2j.gameserver.model.actor.instance.Pet;
+import net.sf.l2j.gameserver.model.actor.instance.Player;
 import net.sf.l2j.gameserver.model.holder.IntIntHolder;
 import net.sf.l2j.gameserver.model.item.instance.ItemInstance;
 import net.sf.l2j.gameserver.model.item.kind.Item;
@@ -33,6 +20,7 @@ import net.sf.l2j.gameserver.model.itemcontainer.Inventory;
 import net.sf.l2j.gameserver.network.SystemMessageId;
 import net.sf.l2j.gameserver.network.serverpackets.ItemList;
 import net.sf.l2j.gameserver.network.serverpackets.PetItemList;
+import net.sf.l2j.gameserver.network.serverpackets.SystemMessage;
 import net.sf.l2j.gameserver.scripting.Quest;
 import net.sf.l2j.gameserver.scripting.QuestState;
 import net.sf.l2j.gameserver.taskmanager.AfkTaskManager;
@@ -43,27 +31,21 @@ public final class UseItem extends L2GameClientPacket
 	private int _objectId;
 	private boolean _ctrlPressed;
 	
-	/** Weapon Equip Task */
 	public static class WeaponEquipTask implements Runnable
 	{
-		ItemInstance item;
-		L2PcInstance activeChar;
+		ItemInstance _item;
+		Player _activeChar;
 		
-		public WeaponEquipTask(ItemInstance it, L2PcInstance character)
+		public WeaponEquipTask(ItemInstance it, Player character)
 		{
-			item = it;
-			activeChar = character;
+			_item = it;
+			_activeChar = character;
 		}
 		
 		@Override
 		public void run()
 		{
-			// If character is still engaged in strike we should not change weapon
-			if (activeChar.isAttackingNow())
-				return;
-			
-			// Equip or unEquip
-			activeChar.useEquippableItem(item, false);
+			_activeChar.useEquippableItem(_item, false);
 		}
 	}
 	
@@ -77,7 +59,7 @@ public final class UseItem extends L2GameClientPacket
 	@Override
 	protected void runImpl()
 	{
-		final L2PcInstance activeChar = getClient().getActiveChar();
+		final Player activeChar = getClient().getActiveChar();
 		if (activeChar == null)
 			return;
 		
@@ -85,6 +67,12 @@ public final class UseItem extends L2GameClientPacket
 			activeChar.setAfking(false);
 		
 		AfkTaskManager.getInstance().add(activeChar);
+		
+		if (activeChar.isSubmitingPin())
+		{
+			activeChar.sendMessage("Unable to do any action while PIN is not submitted");
+			return;
+		}
 		
 		if (activeChar.isInStoreMode())
 		{
@@ -120,10 +108,21 @@ public final class UseItem extends L2GameClientPacket
 		}
 		if (Config.ANTIBOW_PROTECTION)
 		{
-			if (item.getItemType() == WeaponType.BOW && activeChar.getClassId() == ClassId.titan || item.getItemType() == WeaponType.BOW && activeChar.getClassId() == ClassId.dreadnought || item.getItemType() == WeaponType.BOW && activeChar.getClassId() == ClassId.hellKnight || item.getItemType() == WeaponType.BOW && activeChar.getClassId() == ClassId.phoenixKnight || item.getItemType() == WeaponType.BOW && activeChar.getClassId() == ClassId.evaTemplar || item.getItemType() == WeaponType.BOW && activeChar.getClassId() == ClassId.shillenElder && !activeChar.isInOlympiadMode())
+			int classes = activeChar.getClassId().getId();
+			switch (classes)
 			{
-				activeChar.sendMessage("You Are Allowed To Use This Weapon Only In Olympiad");
-				return;
+				case 89:
+				case 90:
+				case 91:
+				case 99:
+				case 106:
+				case 113:
+					if (item.getItemType() == WeaponType.BOW && !activeChar.isInOlympiadMode())
+					{
+						activeChar.sendMessage("Bow is allowed for your class only for Olympiad Matches!");
+						return;
+					}
+					break;
 			}
 		}
 		if (!Config.KARMA_PLAYER_CAN_TELEPORT && activeChar.getKarma() > 0)
@@ -146,6 +145,9 @@ public final class UseItem extends L2GameClientPacket
 			return;
 		}
 		
+		if (EventManager.getInstance().isRunning() && EventManager.getInstance().isRegistered(activeChar) && !EventManager.getInstance().getCurrentEvent().onUseItem(activeChar, item))
+			return;
+		
 		/*
 		 * The player can't use pet items if no pet is currently summoned. If a pet is summoned and player uses the item directly, it will be used by the pet.
 		 */
@@ -158,7 +160,7 @@ public final class UseItem extends L2GameClientPacket
 				return;
 			}
 			
-			final L2PetInstance pet = ((L2PetInstance) activeChar.getPet());
+			final Pet pet = ((Pet) activeChar.getPet());
 			
 			if (!pet.canWear(item.getItem()))
 			{
@@ -188,9 +190,15 @@ public final class UseItem extends L2GameClientPacket
 			
 			// Equip it, removing first the previous item.
 			if (item.isEquipped())
+			{
 				pet.getInventory().unEquipItemInSlot(item.getLocationSlot());
+				activeChar.sendPacket(SystemMessage.getSystemMessage(SystemMessageId.PET_TOOK_OFF_S1).addItemName(item));
+			}
 			else
+			{
 				pet.getInventory().equipPetItem(item);
+				activeChar.sendPacket(SystemMessage.getSystemMessage(SystemMessageId.PET_PUT_ON_S1).addItemName(item));
+			}
 			
 			activeChar.sendPacket(new PetItemList(pet));
 			pet.updateAndBroadcastStatus(1);
@@ -235,13 +243,9 @@ public final class UseItem extends L2GameClientPacket
 				return;
 			
 			if (activeChar.isAttackingNow())
-			{
-				ThreadPoolManager.getInstance().scheduleGeneral(new WeaponEquipTask(item, activeChar), (activeChar.getAttackEndTime() - System.currentTimeMillis()));
-				return;
-			}
-			
-			// Equip or unEquip
-			activeChar.useEquippableItem(item, true);
+				ThreadPool.schedule(new WeaponEquipTask(item, activeChar), (activeChar.getAttackEndTime() - System.currentTimeMillis()));
+			else
+				activeChar.useEquippableItem(item, true);
 		}
 		else
 		{

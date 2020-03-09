@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <list>
-	<class id="10" parentId="-1">
-		<set name="className" val="Human Mage" />
-		<set name="raceId" val="0" />
+	<class id="10"><!-- Human Mystic -->
 		<set name="str" val="22" />
 		<set name="con" val="27" />
 		<set name="dex" val="21" />
@@ -14,6 +12,8 @@
 		<set name="mAtk" val="6" />
 		<set name="mDef" val="41" />
 		<set name="runSpd" val="120" />
+		<set name="walkSpd" val="78" />
+		<set name="swimSpd" val="50" />
 		<set name="spawnX" val="-90890" />
 		<set name="spawnY" val="248027" />
 		<set name="spawnZ" val="-3570" />
@@ -26,8 +26,6 @@
 		<set name="mpTable" val="40;47.28;54.64;62.08;69.6;77.2;84.88;92.64;100.48;108.4;116.4;124.48;132.64;140.88;149.2;157.6;166.08;174.64;183.28;192;200.8;209.68;218.64;227.68;236.8;246;255.28;264.64;274.08;283.6;293.2;302.88;312.64;322.48;332.4;342.4;352.48;362.64;372.88;383.2;393.6;404.08;414.64;425.28;436;446.8;457.68;468.64;479.68;490.8;502;513.28;524.64;536.08;547.6;559.2;570.88;582.64;594.48;606.4;618.4;630.48;642.64;654.88;667.2;679.6;692.08;704.64;717.28;730;742.8;755.68;768.64;781.68;794.8;808;821.28;834.64;848.08;861.6" />
 		<set name="cpTable" val="50.5;58.235;66.055;73.96;81.95;90.025;98.185;106.43;114.76;123.175;131.675;140.26;148.93;157.685;166.525;175.45;184.46;193.555;202.735;212;221.35;230.785;240.305;249.91;259.6;269.375;279.235;289.18;299.21;309.325;319.525;329.81;340.18;350.635;361.175;371.8;382.51;393.305;404.185;415.15;426.2;437.335;448.555;459.86;471.25;482.725;494.285;505.93;517.66;529.475;541.375;553.36;565.43;577.585;589.825;602.15;614.56;627.055;639.635;652.3;665.05;677.885;690.805;703.81;716.9;730.075;743.335;756.68;770.11;783.625;797.225;810.91;824.68;838.535;852.475;866.5;880.61;894.805;909.085;923.45" />
 		<skillTrees>
-			<!-- AntBuff Shield -->
-			<skill id="8000" lvl="1" sp="0" minLvl="1" />
 			<!-- Magician"s Movement -->
 			<skill id="118" lvl="1" sp="0" minLvl="1" />
 			<!-- Anti Magic -->
@@ -110,9 +108,7 @@
 		</skillTrees>
 		<items val="425;461;6;5588" />
 	</class>
-	<class id="11" parentId="10">
-		<set name="className" val="Human Wizard" />
-		<set name="raceId" val="0" />
+	<class id="11"><!-- Human Wizard -->
 		<set name="str" val="22" />
 		<set name="con" val="27" />
 		<set name="dex" val="21" />
@@ -124,6 +120,8 @@
 		<set name="mAtk" val="6" />
 		<set name="mDef" val="41" />
 		<set name="runSpd" val="120" />
+		<set name="walkSpd" val="78" />
+		<set name="swimSpd" val="50" />
 		<set name="spawnX" val="-90890" />
 		<set name="spawnY" val="248027" />
 		<set name="spawnZ" val="-3570" />
@@ -290,9 +288,7 @@
 			<skill id="1274" lvl="4" sp="18000" minLvl="35" />
 		</skillTrees>
 	</class>
-	<class id="15" parentId="10">
-		<set name="className" val="Cleric" />
-		<set name="raceId" val="0" />
+	<class id="15"><!-- Cleric -->
 		<set name="str" val="22" />
 		<set name="con" val="27" />
 		<set name="dex" val="21" />
@@ -304,6 +300,8 @@
 		<set name="mAtk" val="6" />
 		<set name="mDef" val="41" />
 		<set name="runSpd" val="120" />
+		<set name="walkSpd" val="78" />
+		<set name="swimSpd" val="50" />
 		<set name="spawnX" val="-90890" />
 		<set name="spawnY" val="248027" />
 		<set name="spawnZ" val="-3570" />
@@ -468,9 +466,7 @@
 			<skill id="1204" lvl="2" sp="13000" minLvl="30" />
 		</skillTrees>
 	</class>
-	<class id="12" parentId="11">
-		<set name="className" val="Sorcerer" />
-		<set name="raceId" val="0" />
+	<class id="12"><!-- Sorcerer -->
 		<set name="str" val="22" />
 		<set name="con" val="27" />
 		<set name="dex" val="21" />
@@ -482,6 +478,8 @@
 		<set name="mAtk" val="6" />
 		<set name="mDef" val="41" />
 		<set name="runSpd" val="120" />
+		<set name="walkSpd" val="78" />
+		<set name="swimSpd" val="50" />
 		<set name="spawnX" val="-90890" />
 		<set name="spawnY" val="248027" />
 		<set name="spawnZ" val="-3570" />
@@ -896,9 +894,7 @@
 			<skill id="1417" lvl="5" sp="1150000" minLvl="74" />
 		</skillTrees>
 	</class>
-	<class id="13" parentId="11">
-		<set name="className" val="Necromancer" />
-		<set name="raceId" val="0" />
+	<class id="13"><!-- Necromancer -->
 		<set name="str" val="22" />
 		<set name="con" val="27" />
 		<set name="dex" val="21" />
@@ -910,6 +906,8 @@
 		<set name="mAtk" val="6" />
 		<set name="mDef" val="41" />
 		<set name="runSpd" val="120" />
+		<set name="walkSpd" val="78" />
+		<set name="swimSpd" val="50" />
 		<set name="spawnX" val="-90890" />
 		<set name="spawnY" val="248027" />
 		<set name="spawnZ" val="-3570" />
@@ -1406,9 +1404,7 @@
 			<skill id="1405" lvl="2" sp="0" minLvl="61" />
 		</skillTrees>
 	</class>
-	<class id="14" parentId="11">
-		<set name="className" val="Warlock" />
-		<set name="raceId" val="0" />
+	<class id="14"><!-- Warlock -->
 		<set name="str" val="22" />
 		<set name="con" val="27" />
 		<set name="dex" val="21" />
@@ -1420,6 +1416,8 @@
 		<set name="mAtk" val="6" />
 		<set name="mDef" val="41" />
 		<set name="runSpd" val="120" />
+		<set name="walkSpd" val="78" />
+		<set name="swimSpd" val="50" />
 		<set name="spawnX" val="-90890" />
 		<set name="spawnY" val="248027" />
 		<set name="spawnZ" val="-3570" />
@@ -1804,9 +1802,7 @@
 			<skill id="1405" lvl="2" sp="0" minLvl="61" />
 		</skillTrees>
 	</class>
-	<class id="16" parentId="15">
-		<set name="className" val="Bishop" />
-		<set name="raceId" val="0" />
+	<class id="16"><!-- Bishop -->
 		<set name="str" val="22" />
 		<set name="con" val="27" />
 		<set name="dex" val="21" />
@@ -1818,6 +1814,8 @@
 		<set name="mAtk" val="6" />
 		<set name="mDef" val="41" />
 		<set name="runSpd" val="120" />
+		<set name="walkSpd" val="78" />
+		<set name="swimSpd" val="50" />
 		<set name="spawnX" val="-90890" />
 		<set name="spawnY" val="248027" />
 		<set name="spawnZ" val="-3570" />
@@ -2362,9 +2360,7 @@
 			<skill id="1430" lvl="5" sp="650000" minLvl="72" />
 		</skillTrees>
 	</class>
-	<class id="17" parentId="15">
-		<set name="className" val="Human Prophet" />
-		<set name="raceId" val="0" />
+	<class id="17"><!-- Prophet -->
 		<set name="str" val="22" />
 		<set name="con" val="27" />
 		<set name="dex" val="21" />
@@ -2376,6 +2372,8 @@
 		<set name="mAtk" val="6" />
 		<set name="mDef" val="41" />
 		<set name="runSpd" val="120" />
+		<set name="walkSpd" val="78" />
+		<set name="swimSpd" val="50" />
 		<set name="spawnX" val="-90890" />
 		<set name="spawnY" val="248027" />
 		<set name="spawnZ" val="-3570" />
@@ -2751,9 +2749,7 @@
 			<skill id="1405" lvl="2" sp="0" minLvl="61" />
 		</skillTrees>
 	</class>
-	<class id="94" parentId="12">
-		<set name="className" val="Archmage" />
-		<set name="raceId" val="0" />
+	<class id="94"><!-- Archmage -->
 		<set name="str" val="22" />
 		<set name="con" val="27" />
 		<set name="dex" val="21" />
@@ -2765,6 +2761,8 @@
 		<set name="mAtk" val="6" />
 		<set name="mDef" val="41" />
 		<set name="runSpd" val="120" />
+		<set name="walkSpd" val="78" />
+		<set name="swimSpd" val="50" />
 		<set name="spawnX" val="-90890" />
 		<set name="spawnY" val="248027" />
 		<set name="spawnZ" val="-3570" />
@@ -2798,9 +2796,7 @@
 			<skill id="1419" lvl="1" sp="150000000" minLvl="80" />
 		</skillTrees>
 	</class>
-	<class id="95" parentId="13">
-		<set name="className" val="Soultaker" />
-		<set name="raceId" val="0" />
+	<class id="95"><!-- Soultaker -->
 		<set name="str" val="22" />
 		<set name="con" val="27" />
 		<set name="dex" val="21" />
@@ -2812,6 +2808,8 @@
 		<set name="mAtk" val="6" />
 		<set name="mDef" val="41" />
 		<set name="runSpd" val="120" />
+		<set name="walkSpd" val="78" />
+		<set name="swimSpd" val="50" />
 		<set name="spawnX" val="-90890" />
 		<set name="spawnY" val="248027" />
 		<set name="spawnZ" val="-3570" />
@@ -2855,9 +2853,7 @@
 			<skill id="1423" lvl="1" sp="150000000" minLvl="80" />
 		</skillTrees>
 	</class>
-	<class id="96" parentId="14">
-		<set name="className" val="Arcana Lord" />
-		<set name="raceId" val="0" />
+	<class id="96"><!-- Arcana Lord -->
 		<set name="str" val="22" />
 		<set name="con" val="27" />
 		<set name="dex" val="21" />
@@ -2869,6 +2865,8 @@
 		<set name="mAtk" val="6" />
 		<set name="mDef" val="41" />
 		<set name="runSpd" val="120" />
+		<set name="walkSpd" val="78" />
+		<set name="swimSpd" val="50" />
 		<set name="spawnX" val="-90890" />
 		<set name="spawnY" val="248027" />
 		<set name="spawnZ" val="-3570" />
@@ -2908,9 +2906,7 @@
 			<skill id="1424" lvl="1" sp="150000000" minLvl="80" />
 		</skillTrees>
 	</class>
-	<class id="97" parentId="16">
-		<set name="className" val="Cardinal" />
-		<set name="raceId" val="0" />
+	<class id="97"><!-- Cardinal -->
 		<set name="str" val="22" />
 		<set name="con" val="27" />
 		<set name="dex" val="21" />
@@ -2922,6 +2918,8 @@
 		<set name="mAtk" val="6" />
 		<set name="mDef" val="41" />
 		<set name="runSpd" val="120" />
+		<set name="walkSpd" val="78" />
+		<set name="swimSpd" val="50" />
 		<set name="spawnX" val="-90890" />
 		<set name="spawnY" val="248027" />
 		<set name="spawnZ" val="-3570" />
@@ -2967,9 +2965,7 @@
 			<skill id="1426" lvl="1" sp="150000000" minLvl="80" />
 		</skillTrees>
 	</class>
-	<class id="98" parentId="17">
-		<set name="className" val="Hierophant" />
-		<set name="raceId" val="0" />
+	<class id="98"><!-- Hierophant -->
 		<set name="str" val="22" />
 		<set name="con" val="27" />
 		<set name="dex" val="21" />
@@ -2981,6 +2977,8 @@
 		<set name="mAtk" val="6" />
 		<set name="mDef" val="41" />
 		<set name="runSpd" val="120" />
+		<set name="walkSpd" val="78" />
+		<set name="swimSpd" val="50" />
 		<set name="spawnX" val="-90890" />
 		<set name="spawnY" val="248027" />
 		<set name="spawnZ" val="-3570" />

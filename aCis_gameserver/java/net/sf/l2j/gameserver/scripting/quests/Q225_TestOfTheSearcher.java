@@ -1,21 +1,8 @@
-/*
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package net.sf.l2j.gameserver.scripting.quests;
 
-import net.sf.l2j.gameserver.model.actor.L2Npc;
-import net.sf.l2j.gameserver.model.actor.instance.L2PcInstance;
+import net.sf.l2j.gameserver.model.L2Skill;
+import net.sf.l2j.gameserver.model.actor.Npc;
+import net.sf.l2j.gameserver.model.actor.instance.Player;
 import net.sf.l2j.gameserver.model.base.ClassId;
 import net.sf.l2j.gameserver.network.serverpackets.SocialAction;
 import net.sf.l2j.gameserver.scripting.Quest;
@@ -74,7 +61,7 @@ public class Q225_TestOfTheSearcher extends Quest
 	private static final int DELU_CHIEF_KALKIS = 27093;
 	private static final int NEER_BODYGUARD = 27092;
 	
-	private static L2Npc _strongWoodenChest; // Used to avoid to spawn multiple instances.
+	private static Npc _strongWoodenChest; // Used to avoid to spawn multiple instances.
 	
 	public Q225_TestOfTheSearcher()
 	{
@@ -90,7 +77,7 @@ public class Q225_TestOfTheSearcher extends Quest
 	}
 	
 	@Override
-	public String onAdvEvent(String event, L2Npc npc, L2PcInstance player)
+	public String onAdvEvent(String event, Npc npc, Player player)
 	{
 		String htmltext = event;
 		QuestState st = player.getQuestState(qn);
@@ -98,13 +85,19 @@ public class Q225_TestOfTheSearcher extends Quest
 			return htmltext;
 		
 		// LUTHER
-		if (event.equalsIgnoreCase("30690-05a.htm"))
+		if (event.equalsIgnoreCase("30690-05.htm"))
 		{
 			st.setState(STATE_STARTED);
 			st.set("cond", "1");
 			st.playSound(QuestState.SOUND_ACCEPT);
 			st.giveItems(LUTHER_LETTER, 1);
-			st.giveItems(DIMENSIONAL_DIAMOND, (player.getClassId() == ClassId.scavenger) ? 82 : 96);
+			
+			if (!player.getMemos().getBool("secondClassChange39", false))
+			{
+				htmltext = "30690-05a.htm";
+				st.giveItems(DIMENSIONAL_DIAMOND, DF_REWARD_39.get(player.getClassId().getId()));
+				player.getMemos().set("secondClassChange39", true);
+			}
 		}
 		// ALEX
 		else if (event.equalsIgnoreCase("30291-07.htm"))
@@ -178,7 +171,7 @@ public class Q225_TestOfTheSearcher extends Quest
 	}
 	
 	@Override
-	public String onTalk(L2Npc npc, L2PcInstance player)
+	public String onTalk(Npc npc, Player player)
 	{
 		String htmltext = getNoQuestMsg();
 		QuestState st = player.getQuestState(qn);
@@ -188,12 +181,12 @@ public class Q225_TestOfTheSearcher extends Quest
 		switch (st.getState())
 		{
 			case STATE_CREATED:
-				if (player.getClassId() != ClassId.rogue && player.getClassId() != ClassId.elvenScout && player.getClassId() != ClassId.assassin && player.getClassId() != ClassId.scavenger)
+				if (player.getClassId() != ClassId.ROGUE && player.getClassId() != ClassId.ELVEN_SCOUT && player.getClassId() != ClassId.ASSASSIN && player.getClassId() != ClassId.SCAVENGER)
 					htmltext = "30690-01.htm";
 				else if (player.getLevel() < 39)
 					htmltext = "30690-02.htm";
 				else
-					htmltext = (player.getClassId() == ClassId.scavenger) ? "30690-04.htm" : "30690-03.htm";
+					htmltext = (player.getClassId() == ClassId.SCAVENGER) ? "30690-04.htm" : "30690-03.htm";
 				break;
 			
 			case STATE_STARTED:
@@ -374,7 +367,7 @@ public class Q225_TestOfTheSearcher extends Quest
 	}
 	
 	@Override
-	public String onAttack(L2Npc npc, L2PcInstance attacker, int damage, boolean isPet)
+	public String onAttack(Npc npc, Player attacker, int damage, boolean isPet, L2Skill skill)
 	{
 		QuestState st = checkPlayerState(attacker, npc, STATE_STARTED);
 		if (st == null)
@@ -390,7 +383,7 @@ public class Q225_TestOfTheSearcher extends Quest
 	}
 	
 	@Override
-	public String onKill(L2Npc npc, L2PcInstance player, boolean isPet)
+	public String onKill(Npc npc, Player player, boolean isPet)
 	{
 		QuestState st;
 		

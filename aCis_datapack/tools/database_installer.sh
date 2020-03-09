@@ -85,7 +85,6 @@ $MYG < ../sql/castle.sql &> /dev/null
 $MYG < ../sql/castle_doorupgrade.sql &> /dev/null
 $MYG < ../sql/castle_manor_procure.sql &> /dev/null
 $MYG < ../sql/castle_manor_production.sql &> /dev/null
-$MYG < ../sql/castle_siege_guards.sql &> /dev/null
 $MYG < ../sql/castle_trapupgrade.sql &> /dev/null
 $MYG < ../sql/character_friends.sql &> /dev/null
 $MYG < ../sql/character_hennas.sql &> /dev/null
@@ -109,10 +108,10 @@ $MYG < ../sql/clan_wars.sql &> /dev/null
 $MYG < ../sql/clanhall.sql &> /dev/null
 $MYG < ../sql/clanhall_functions.sql &> /dev/null
 $MYG < ../sql/cursed_weapons.sql &> /dev/null
+$MYG < ../sql/events.sql &> /dev/null
 $MYG < ../sql/fishing_championship.sql &> /dev/null
 $MYG < ../sql/forums.sql &> /dev/null
 $MYG < ../sql/games.sql &> /dev/null
-$MYG < ../sql/global_tasks.sql &> /dev/null
 $MYG < ../sql/grandboss_data.sql &> /dev/null
 $MYG < ../sql/grandboss_list.sql &> /dev/null
 $MYG < ../sql/heroes_diary.sql &> /dev/null

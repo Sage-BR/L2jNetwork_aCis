@@ -1,17 +1,3 @@
-/*
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package net.sf.l2j.gameserver.instancemanager;
 
 import java.text.SimpleDateFormat;
@@ -21,11 +7,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import net.sf.l2j.Config;
 import net.sf.l2j.commons.lang.StringUtil;
-import net.sf.l2j.gameserver.datatables.GmListTable;
+
+import net.sf.l2j.Config;
+import net.sf.l2j.gameserver.data.xml.AdminData;
 import net.sf.l2j.gameserver.idfactory.IdFactory;
-import net.sf.l2j.gameserver.model.actor.instance.L2PcInstance;
+import net.sf.l2j.gameserver.model.actor.instance.Player;
 import net.sf.l2j.gameserver.network.SystemMessageId;
 import net.sf.l2j.gameserver.network.clientpackets.Say2;
 import net.sf.l2j.gameserver.network.serverpackets.CreatureSay;
@@ -33,10 +20,6 @@ import net.sf.l2j.gameserver.network.serverpackets.L2GameServerPacket;
 import net.sf.l2j.gameserver.network.serverpackets.NpcHtmlMessage;
 import net.sf.l2j.gameserver.network.serverpackets.SystemMessage;
 
-/**
- * Petition Manager
- * @author Tempy
- */
 public final class PetitionManager
 {
 	protected static final Logger _log = Logger.getLogger(PetitionManager.class.getName());
@@ -86,10 +69,10 @@ public final class PetitionManager
 		
 		private final List<CreatureSay> _messageLog = new ArrayList<>();
 		
-		private final L2PcInstance _petitioner;
-		private L2PcInstance _responder;
+		private final Player _petitioner;
+		private Player _responder;
 		
-		public Petition(L2PcInstance petitioner, String petitionText, int petitionType)
+		public Petition(Player petitioner, String petitionText, int petitionType)
 		{
 			petitionType--;
 			_id = IdFactory.getInstance().getNextId();
@@ -122,7 +105,7 @@ public final class PetitionManager
 				else
 				{
 					// Ending petition consultation with <Player>.
-					getResponder().sendPacket(SystemMessage.getSystemMessage(SystemMessageId.PETITION_ENDED_WITH_S1).addPcName(getPetitioner()));
+					getResponder().sendPacket(SystemMessage.getSystemMessage(SystemMessageId.PETITION_ENDED_WITH_S1).addCharName(getPetitioner()));
 					
 					// Receipt No. <ID> petition cancelled.
 					if (endState == PetitionState.Petitioner_Cancel)
@@ -148,12 +131,12 @@ public final class PetitionManager
 			return _id;
 		}
 		
-		public L2PcInstance getPetitioner()
+		public Player getPetitioner()
 		{
 			return _petitioner;
 		}
 		
-		public L2PcInstance getResponder()
+		public Player getResponder()
 		{
 			return _responder;
 		}
@@ -197,7 +180,7 @@ public final class PetitionManager
 			_state = state;
 		}
 		
-		public void setResponder(L2PcInstance respondingAdmin)
+		public void setResponder(Player respondingAdmin)
 		{
 			if (getResponder() != null)
 				return;
@@ -228,7 +211,7 @@ public final class PetitionManager
 		_log.info("PetitionManager: Pending petition queue cleared. " + numPetitions + " petition(s) removed.");
 	}
 	
-	public boolean acceptPetition(L2PcInstance respondingAdmin, int petitionId)
+	public boolean acceptPetition(Player respondingAdmin, int petitionId)
 	{
 		if (!isValidPetition(petitionId))
 			return false;
@@ -248,11 +231,11 @@ public final class PetitionManager
 		currPetition.sendResponderPacket(SystemMessage.getSystemMessage(SystemMessageId.PETITION_ACCEPTED_RECENT_NO_S1).addNumber(currPetition.getId()));
 		
 		// Petition consultation with <Player> underway.
-		currPetition.sendResponderPacket(SystemMessage.getSystemMessage(SystemMessageId.PETITION_WITH_S1_UNDER_WAY).addPcName(currPetition.getPetitioner()));
+		currPetition.sendResponderPacket(SystemMessage.getSystemMessage(SystemMessageId.PETITION_WITH_S1_UNDER_WAY).addCharName(currPetition.getPetitioner()));
 		return true;
 	}
 	
-	public boolean cancelActivePetition(L2PcInstance player)
+	public boolean cancelActivePetition(Player player)
 	{
 		for (Petition currPetition : getPendingPetitions().values())
 		{
@@ -266,7 +249,7 @@ public final class PetitionManager
 		return false;
 	}
 	
-	public void checkPetitionMessages(L2PcInstance petitioner)
+	public void checkPetitionMessages(Player petitioner)
 	{
 		if (petitioner != null)
 			for (Petition currPetition : getPendingPetitions().values())
@@ -284,7 +267,7 @@ public final class PetitionManager
 			}
 	}
 	
-	public boolean endActivePetition(L2PcInstance player)
+	public boolean endActivePetition(Player player)
 	{
 		if (!player.isGM())
 			return false;
@@ -316,7 +299,7 @@ public final class PetitionManager
 		return getPendingPetitions().size();
 	}
 	
-	public int getPlayerTotalPetitionCount(L2PcInstance player)
+	public int getPlayerTotalPetitionCount(Player player)
 	{
 		if (player == null)
 			return 0;
@@ -367,7 +350,7 @@ public final class PetitionManager
 		return (currPetition.getState() == PetitionState.In_Process);
 	}
 	
-	public boolean isPlayerInConsultation(L2PcInstance player)
+	public boolean isPlayerInConsultation(Player player)
 	{
 		if (player != null)
 			for (Petition currPetition : getPendingPetitions().values())
@@ -390,7 +373,7 @@ public final class PetitionManager
 		return Config.PETITIONING_ALLOWED;
 	}
 	
-	public boolean isPlayerPetitionPending(L2PcInstance petitioner)
+	public boolean isPlayerPetitionPending(Player petitioner)
 	{
 		if (petitioner != null)
 			for (Petition currPetition : getPendingPetitions().values())
@@ -410,7 +393,7 @@ public final class PetitionManager
 		return getPendingPetitions().containsKey(petitionId);
 	}
 	
-	public boolean rejectPetition(L2PcInstance respondingAdmin, int petitionId)
+	public boolean rejectPetition(Player respondingAdmin, int petitionId)
 	{
 		if (!isValidPetition(petitionId))
 			return false;
@@ -424,7 +407,7 @@ public final class PetitionManager
 		return (currPetition.endPetitionConsultation(PetitionState.Responder_Reject));
 	}
 	
-	public boolean sendActivePetitionMessage(L2PcInstance player, String messageText)
+	public boolean sendActivePetitionMessage(Player player, String messageText)
 	{
 		// if (!isPlayerInConsultation(player))
 		// return false;
@@ -460,7 +443,7 @@ public final class PetitionManager
 		return false;
 	}
 	
-	public void sendPendingPetitionList(L2PcInstance activeChar)
+	public void sendPendingPetitionList(Player activeChar)
 	{
 		final SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
 		final StringBuilder sb = new StringBuilder("<html><body><center><font color=\"LEVEL\">Current Petitions</font><br><table width=\"300\">");
@@ -492,7 +475,7 @@ public final class PetitionManager
 		activeChar.sendPacket(html);
 	}
 	
-	public int submitPetition(L2PcInstance petitioner, String petitionText, int petitionType)
+	public int submitPetition(Player petitioner, String petitionText, int petitionType)
 	{
 		// Create a new petition instance and add it to the list of pending petitions.
 		Petition newPetition = new Petition(petitioner, petitionText, petitionType);
@@ -501,12 +484,12 @@ public final class PetitionManager
 		
 		// Notify all GMs that a new petition has been submitted.
 		String msgContent = petitioner.getName() + " has submitted a new petition."; // (ID: " + newPetitionId + ").";
-		GmListTable.broadcastToGMs(new CreatureSay(petitioner.getObjectId(), 17, "Petition System", msgContent));
+		AdminData.getInstance().broadcastToGMs(new CreatureSay(petitioner.getObjectId(), 17, "Petition System", msgContent));
 		
 		return newPetitionId;
 	}
 	
-	public void viewPetition(L2PcInstance activeChar, int petitionId)
+	public void viewPetition(Player activeChar, int petitionId)
 	{
 		if (!activeChar.isGM())
 			return;

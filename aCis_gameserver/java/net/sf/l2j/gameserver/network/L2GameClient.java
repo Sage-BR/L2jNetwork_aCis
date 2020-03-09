@@ -1,17 +1,3 @@
-/*
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package net.sf.l2j.gameserver.network;
 
 import java.net.InetAddress;
@@ -27,27 +13,27 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import net.sf.l2j.Config;
-import net.sf.l2j.L2DatabaseFactory;
+import net.sf.l2j.commons.concurrent.ThreadPool;
 import net.sf.l2j.commons.mmocore.MMOClient;
 import net.sf.l2j.commons.mmocore.MMOConnection;
 import net.sf.l2j.commons.mmocore.ReceivablePacket;
+
+import net.sf.l2j.Config;
+import net.sf.l2j.L2DatabaseFactory;
 import net.sf.l2j.gameserver.LoginServerThread;
-import net.sf.l2j.gameserver.LoginServerThread.SessionKey;
-import net.sf.l2j.gameserver.ThreadPoolManager;
-import net.sf.l2j.gameserver.datatables.CharNameTable;
-import net.sf.l2j.gameserver.datatables.ClanTable;
+import net.sf.l2j.gameserver.data.PlayerNameTable;
+import net.sf.l2j.gameserver.data.sql.ClanTable;
+import net.sf.l2j.gameserver.events.phoenixevents.EventManager;
 import net.sf.l2j.gameserver.model.CharSelectInfoPackage;
-import net.sf.l2j.gameserver.model.L2Clan;
-import net.sf.l2j.gameserver.model.L2World;
-import net.sf.l2j.gameserver.model.actor.instance.L2PcInstance;
+import net.sf.l2j.gameserver.model.World;
+import net.sf.l2j.gameserver.model.actor.instance.Player;
+import net.sf.l2j.gameserver.model.group.Party.MessageType;
 import net.sf.l2j.gameserver.model.olympiad.OlympiadManager;
+import net.sf.l2j.gameserver.model.pledge.Clan;
 import net.sf.l2j.gameserver.model.zone.ZoneId;
 import net.sf.l2j.gameserver.network.serverpackets.ActionFailed;
 import net.sf.l2j.gameserver.network.serverpackets.L2GameServerPacket;
 import net.sf.l2j.gameserver.network.serverpackets.ServerClose;
-import net.sf.l2j.gameserver.skills.AbnormalEffect;
-import net.sf.l2j.gameserver.util.FloodProtectors;
 
 /**
  * Represents a client connected on Game Server
@@ -69,7 +55,7 @@ public final class L2GameClient extends MMOClient<MMOConnection<L2GameClient>> i
 	// Info
 	private String _accountName;
 	private SessionKey _sessionId;
-	public L2PcInstance _activeChar;
+	public Player _activeChar;
 	private final ReentrantLock _activeCharLock = new ReentrantLock();
 	
 	@SuppressWarnings("unused")
@@ -101,7 +87,7 @@ public final class L2GameClient extends MMOClient<MMOConnection<L2GameClient>> i
 		_stats = new ClientStats();
 		_packetQueue = new ArrayBlockingQueue<>(Config.CLIENT_PACKET_QUEUE_SIZE);
 		
-		_autoSaveInDB = ThreadPoolManager.getInstance().scheduleGeneralAtFixedRate(new AutoSaveTask(), 300000L, 900000L);
+		_autoSaveInDB = ThreadPool.scheduleAtFixedRate(new AutoSaveTask(), 300000L, 900000L);
 	}
 	
 	public byte[] enableCrypt()
@@ -150,12 +136,12 @@ public final class L2GameClient extends MMOClient<MMOConnection<L2GameClient>> i
 		return true;
 	}
 	
-	public L2PcInstance getActiveChar()
+	public Player getActiveChar()
 	{
 		return _activeChar;
 	}
 	
-	public void setActiveChar(L2PcInstance pActiveChar)
+	public void setActiveChar(Player pActiveChar)
 	{
 		_activeChar = pActiveChar;
 	}
@@ -242,7 +228,7 @@ public final class L2GameClient extends MMOClient<MMOConnection<L2GameClient>> i
 			byte answer = 0;
 			if (clanId != 0)
 			{
-				L2Clan clan = ClanTable.getInstance().getClan(clanId);
+				Clan clan = ClanTable.getInstance().getClan(clanId);
 				
 				if (clan == null)
 					answer = 0; // jeezes!
@@ -303,7 +289,7 @@ public final class L2GameClient extends MMOClient<MMOConnection<L2GameClient>> i
 		if (objid < 0)
 			return;
 		
-		CharNameTable.getInstance().removeName(objid);
+		PlayerNameTable.getInstance().removePlayer(objid);
 		
 		try (Connection con = L2DatabaseFactory.getInstance().getConnection())
 		{
@@ -401,37 +387,39 @@ public final class L2GameClient extends MMOClient<MMOConnection<L2GameClient>> i
 		}
 	}
 	
-	public L2PcInstance loadCharFromDisk(int charslot)
+	public Player loadCharFromDisk(int slot)
 	{
-		final int objId = getObjectIdForSlot(charslot);
-		if (objId < 0)
+		final int objectId = getObjectIdForSlot(slot);
+		if (objectId < 0)
 			return null;
 		
-		L2PcInstance character = L2World.getInstance().getPlayer(objId);
-		if (character != null)
+		Player player = World.getInstance().getPlayer(objectId);
+		if (player != null)
 		{
 			// exploit prevention, should not happens in normal way
-			_log.severe("Attempt of double login: " + character.getName() + "(" + objId + ") " + getAccountName());
-			if (character.getClient() != null)
-				character.getClient().closeNow();
+			_log.severe("Attempt of double login: " + player.getName() + "(" + objectId + ") " + getAccountName());
+			
+			if (player.getClient() != null)
+				player.getClient().closeNow();
 			else
-				character.deleteMe();
+				player.deleteMe();
 			
 			return null;
 		}
 		
-		character = L2PcInstance.restore(objId);
-		if (character != null)
+		player = Player.restore(objectId);
+		if (player != null)
 		{
-			character.setRunning(); // running is default
-			character.standUp(); // standing is default
+			player.setRunning(); // running is default
+			player.standUp(); // standing is default
 			
-			character.setOnlineStatus(true, false);
+			player.setOnlineStatus(true, false);
+			World.getInstance().addPlayer(player);
 		}
 		else
-			_log.severe("L2GameClient: could not restore in slot: " + charslot);
+			_log.severe("L2GameClient: could not restore in slot: " + slot);
 		
-		return character;
+		return player;
 	}
 	
 	/**
@@ -485,7 +473,7 @@ public final class L2GameClient extends MMOClient<MMOConnection<L2GameClient>> i
 		// no long running tasks here, do it async
 		try
 		{
-			ThreadPoolManager.getInstance().executeTask(new DisconnectTask());
+			ThreadPool.execute(new DisconnectTask());
 		}
 		catch (RejectedExecutionException e)
 		{
@@ -505,7 +493,7 @@ public final class L2GameClient extends MMOClient<MMOConnection<L2GameClient>> i
 			if (_cleanupTask != null)
 				cancelCleanup();
 			
-			_cleanupTask = ThreadPoolManager.getInstance().scheduleGeneral(new CleanupTask(), 0); // instant
+			_cleanupTask = ThreadPool.schedule(new CleanupTask(), 0); // instant
 		}
 	}
 	
@@ -551,18 +539,21 @@ public final class L2GameClient extends MMOClient<MMOConnection<L2GameClient>> i
 				if (getActiveChar() != null && !isDetached())
 				{
 					setDetached(true);
+					
 					if (offlineMode(getActiveChar()))
 					{
-						getActiveChar().leaveParty();
+						if (getActiveChar().getParty() != null)
+							getActiveChar().getParty().removePartyMember(getActiveChar(), MessageType.EXPELLED);
+						
 						OlympiadManager.getInstance().unRegisterNoble(getActiveChar());
 						
-						// If the L2PcInstance has Pet, unsummon it
+						// If the character has Pet, unsummon it.
 						if (getActiveChar().hasPet())
 						{
 							getActiveChar().getPet().unSummon(getActiveChar());
 							// Dead pet wasn't unsummoned, broadcast npcinfo changes (pet will be without owner name - means owner offline)
 							if (getActiveChar().getPet() != null)
-								getActiveChar().getPet().broadcastNpcInfo(0);
+								getActiveChar().getPet().updateAndBroadcastStatus(0);
 						}
 						
 						if (Config.OFFLINE_SET_NAME_COLOR)
@@ -572,17 +563,18 @@ public final class L2GameClient extends MMOClient<MMOConnection<L2GameClient>> i
 						}
 						
 						if (Config.OFFLINE_SET_SLEEP)
-						{
-							getActiveChar().startAbnormalEffect(AbnormalEffect.SLEEP);
-							getActiveChar().broadcastUserInfo();
-						}
+							getActiveChar().startAbnormalEffect(0x000080);
 						
 						if (getActiveChar().getOfflineStartTime() == 0)
 							getActiveChar().setOfflineStartTime(System.currentTimeMillis());
 						
 						return;
 					}
+					
 					fast = !getActiveChar().isInCombat() && !getActiveChar().isLocked();
+					
+					// Unregister player if something wrong happened
+					EventManager.getInstance().unregisterPlayer(getActiveChar());
 				}
 				cleanMe(fast);
 			}
@@ -597,13 +589,13 @@ public final class L2GameClient extends MMOClient<MMOConnection<L2GameClient>> i
 	 * @param player the player to be check.
 	 * @return {@code true} if the player is allowed to remain as off-line shop.
 	 */
-	protected static boolean offlineMode(L2PcInstance player)
+	public static boolean offlineMode(Player player)
 	{
 		if (player.isInOlympiadMode() || player.isFestivalParticipant() || player.isInJail() || player.getVehicle() != null)
 			return false;
 		
 		boolean canSetShop = false;
-		switch (player.getPrivateStoreType())
+		switch (player.getStoreType())
 		{
 			case SELL:
 			case PACKAGE_SELL:
@@ -619,7 +611,7 @@ public final class L2GameClient extends MMOClient<MMOConnection<L2GameClient>> i
 			}
 			default:
 			{
-				canSetShop = Config.OFFLINE_CRAFT_ENABLE && player.isInCraftMode();
+				canSetShop = Config.OFFLINE_CRAFT_ENABLE && player.isCrafting();
 				break;
 			}
 		}
@@ -637,7 +629,7 @@ public final class L2GameClient extends MMOClient<MMOConnection<L2GameClient>> i
 			synchronized (this)
 			{
 				if (_cleanupTask == null)
-					_cleanupTask = ThreadPoolManager.getInstance().scheduleGeneral(new CleanupTask(), fast ? 5 : 15000L);
+					_cleanupTask = ThreadPool.schedule(new CleanupTask(), fast ? 5 : 15000L);
 			}
 		}
 		catch (Exception e1)
@@ -793,28 +785,19 @@ public final class L2GameClient extends MMOClient<MMOConnection<L2GameClient>> i
 		
 		try
 		{
-			if (_state == GameClientState.CONNECTED)
+			if (_state == GameClientState.CONNECTED && getStats().processedPackets > 3)
 			{
-				if (getStats().processedPackets > 3)
-				{
-					if (Config.PACKET_HANDLER_DEBUG)
-						_log.severe("Client " + toString() + " - Disconnected, too many packets in non-authed state.");
-					closeNow();
-					return;
-				}
+				if (Config.PACKET_HANDLER_DEBUG)
+					_log.severe("Client " + toString() + " - Disconnected, too many packets in non-authed state.");
 				
-				ThreadPoolManager.getInstance().executeIOPacket(this);
+				closeNow();
+				return;
 			}
-			else
-				ThreadPoolManager.getInstance().executePacket(this);
+			
+			ThreadPool.execute(this);
 		}
 		catch (RejectedExecutionException e)
 		{
-			// if the server is shutdown we ignore
-			if (!ThreadPoolManager.getInstance().isShutdown())
-			{
-				_log.severe("Failed executing: " + packet.getClass().getSimpleName() + " for Client: " + toString());
-			}
 		}
 	}
 	

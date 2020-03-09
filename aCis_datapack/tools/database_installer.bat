@@ -9,13 +9,13 @@ set mysqlBinPath=C:\Program Files\MySQL\MySQL Server 5.7\bin
 REM LOGINSERVER
 set lsuser=root
 set lspass=
-set lsdb=l2custom
+set lsdb=l2jnetwork
 set lshost=localhost
 
 REM GAMESERVER
 set gsuser=root
 set gspass=
-set gsdb=l2custom
+set gsdb=l2jnetwork
 set gshost=localhost
 REM ############################################
 
@@ -23,7 +23,7 @@ set mysqldumpPath="%mysqlBinPath%\mysqldump"
 set mysqlPath="%mysqlBinPath%\mysql"
 
 echo.
-echo.                        aCis database installation
+echo.                        L2jNetwork database installation
 echo.                        __________________________
 echo.
 echo OPTIONS : (f) full install, it will destroy all (need validation).
@@ -90,6 +90,7 @@ echo Installing empty character-related tables.
 %mysqlPath% -h %gshost% -u %gsuser% --password=%gspass% -D %gsdb% < ../sql/clanhall.sql
 %mysqlPath% -h %gshost% -u %gsuser% --password=%gspass% -D %gsdb% < ../sql/clanhall_functions.sql
 %mysqlPath% -h %gshost% -u %gsuser% --password=%gspass% -D %gsdb% < ../sql/cursed_weapons.sql
+%mysqlPath% -h %gshost% -u %gsuser% --password=%gspass% -D %gsdb% < ../sql/events.sql
 %mysqlPath% -h %gshost% -u %gsuser% --password=%gspass% -D %gsdb% < ../sql/fishing_championship.sql
 %mysqlPath% -h %gshost% -u %gsuser% --password=%gspass% -D %gsdb% < ../sql/forums.sql
 %mysqlPath% -h %gshost% -u %gsuser% --password=%gspass% -D %gsdb% < ../sql/games.sql
@@ -126,8 +127,6 @@ echo Done.
 echo.
 echo Installing server tables.
 %mysqlPath% -h %gshost% -u %gsuser% --password=%gspass% -D %gsdb% < ../sql/castle.sql
-%mysqlPath% -h %gshost% -u %gsuser% --password=%gspass% -D %gsdb% < ../sql/castle_siege_guards.sql
-%mysqlPath% -h %gshost% -u %gsuser% --password=%gspass% -D %gsdb% < ../sql/global_tasks.sql
 %mysqlPath% -h %gshost% -u %gsuser% --password=%gspass% -D %gsdb% < ../sql/grandboss_data.sql
 %mysqlPath% -h %gshost% -u %gsuser% --password=%gspass% -D %gsdb% < ../sql/raidboss_spawnlist.sql
 %mysqlPath% -h %gshost% -u %gsuser% --password=%gspass% -D %gsdb% < ../sql/random_spawn.sql

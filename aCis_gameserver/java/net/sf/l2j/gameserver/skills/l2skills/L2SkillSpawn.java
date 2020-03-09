@@ -1,28 +1,15 @@
-/*
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package net.sf.l2j.gameserver.skills.l2skills;
 
 import java.util.logging.Level;
 
 import net.sf.l2j.commons.random.Rnd;
-import net.sf.l2j.gameserver.datatables.NpcTable;
-import net.sf.l2j.gameserver.model.L2Object;
+
+import net.sf.l2j.gameserver.data.NpcTable;
 import net.sf.l2j.gameserver.model.L2Skill;
 import net.sf.l2j.gameserver.model.L2Spawn;
-import net.sf.l2j.gameserver.model.actor.L2Character;
-import net.sf.l2j.gameserver.model.actor.L2Npc;
+import net.sf.l2j.gameserver.model.WorldObject;
+import net.sf.l2j.gameserver.model.actor.Creature;
+import net.sf.l2j.gameserver.model.actor.Npc;
 import net.sf.l2j.gameserver.model.actor.template.NpcTemplate;
 import net.sf.l2j.gameserver.templates.StatsSet;
 
@@ -43,7 +30,7 @@ public class L2SkillSpawn extends L2Skill
 	}
 	
 	@Override
-	public void useSkill(L2Character caster, L2Object[] targets)
+	public void useSkill(Creature caster, WorldObject[] targets)
 	{
 		if (caster.isAlikeDead())
 			return;
@@ -64,22 +51,18 @@ public class L2SkillSpawn extends L2Skill
 		try
 		{
 			final L2Spawn spawn = new L2Spawn(template);
-			spawn.setHeading(-1);
 			
+			int x = caster.getX();
+			int y = caster.getY();
 			if (_randomOffset)
 			{
-				spawn.setLocx(caster.getX() + (Rnd.nextBoolean() ? Rnd.get(20, 50) : Rnd.get(-50, -20)));
-				spawn.setLocy(caster.getY() + (Rnd.nextBoolean() ? Rnd.get(20, 50) : Rnd.get(-50, -20)));
+				x += Rnd.nextBoolean() ? Rnd.get(20, 50) : Rnd.get(-50, -20);
+				y += Rnd.nextBoolean() ? Rnd.get(20, 50) : Rnd.get(-50, -20);
 			}
-			else
-			{
-				spawn.setLocx(caster.getX());
-				spawn.setLocy(caster.getY());
-			}
-			spawn.setLocz(caster.getZ() + 20);
+			spawn.setLoc(x, y, caster.getZ() + 20, caster.getHeading());
 			
-			spawn.stopRespawn();
-			L2Npc npc = spawn.doSpawn(_summonSpawn);
+			spawn.setRespawnState(false);
+			Npc npc = spawn.doSpawn(_summonSpawn);
 			
 			if (_despawnDelay > 0)
 				npc.scheduleDespawn(_despawnDelay);

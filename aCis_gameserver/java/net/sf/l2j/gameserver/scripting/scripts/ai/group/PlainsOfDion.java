@@ -1,32 +1,19 @@
-/*
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package net.sf.l2j.gameserver.scripting.scripts.ai.group;
 
 import net.sf.l2j.commons.random.Rnd;
-import net.sf.l2j.gameserver.geoengine.PathFinding;
-import net.sf.l2j.gameserver.model.actor.L2Npc;
-import net.sf.l2j.gameserver.model.actor.instance.L2MonsterInstance;
-import net.sf.l2j.gameserver.model.actor.instance.L2PcInstance;
-import net.sf.l2j.gameserver.scripting.scripts.ai.AbstractNpcAI;
-import net.sf.l2j.gameserver.util.Util;
+import net.sf.l2j.commons.util.ArraysUtil;
+
+import net.sf.l2j.gameserver.geoengine.GeoEngine;
+import net.sf.l2j.gameserver.model.L2Skill;
+import net.sf.l2j.gameserver.model.actor.Npc;
+import net.sf.l2j.gameserver.model.actor.instance.Monster;
+import net.sf.l2j.gameserver.model.actor.instance.Player;
+import net.sf.l2j.gameserver.scripting.scripts.ai.L2AttackableAIScript;
 
 /**
  * AI for mobs in Plains of Dion (near Floran Village)
- * @author Gladicek
  */
-public final class PlainsOfDion extends AbstractNpcAI
+public final class PlainsOfDion extends L2AttackableAIScript
 {
 	private static final int MONSTERS[] =
 	{
@@ -54,20 +41,24 @@ public final class PlainsOfDion extends AbstractNpcAI
 	public PlainsOfDion()
 	{
 		super("ai/group");
-		
+	}
+	
+	@Override
+	protected void registerNpcs()
+	{
 		addAttackId(MONSTERS);
 	}
 	
 	@Override
-	public String onAttack(L2Npc npc, L2PcInstance player, int damage, boolean isPet)
+	public String onAttack(Npc npc, Player player, int damage, boolean isPet, L2Skill skill)
 	{
 		if (npc.isScriptValue(0))
 		{
 			npc.broadcastNpcSay(MONSTERS_MSG[Rnd.get(5)].replace("$s1", player.getName()));
 			
-			for (L2MonsterInstance obj : npc.getKnownList().getKnownTypeInRadius(L2MonsterInstance.class, 300))
+			for (Monster obj : npc.getKnownTypeInRadius(Monster.class, 300))
 			{
-				if (Util.contains(MONSTERS, obj.getNpcId()) && !obj.isAttackingNow() && !obj.isDead() && PathFinding.getInstance().canSeeTarget(npc, obj))
+				if (!obj.isAttackingNow() && !obj.isDead() && ArraysUtil.contains(MONSTERS, obj.getNpcId()) && GeoEngine.getInstance().canSeeTarget(npc, obj))
 				{
 					attack(obj, player);
 					obj.broadcastNpcSay(MONSTERS_ASSIST_MSG[Rnd.get(3)]);
@@ -75,6 +66,6 @@ public final class PlainsOfDion extends AbstractNpcAI
 			}
 			npc.setScriptValue(1);
 		}
-		return super.onAttack(npc, player, damage, isPet);
+		return super.onAttack(npc, player, damage, isPet, skill);
 	}
 }

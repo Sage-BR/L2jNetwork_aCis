@@ -1,17 +1,3 @@
-/*
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package net.sf.l2j.gameserver.model.entity;
 
 import java.sql.Connection;
@@ -24,14 +10,15 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import net.sf.l2j.commons.concurrent.ThreadPool;
+
 import net.sf.l2j.L2DatabaseFactory;
-import net.sf.l2j.gameserver.ThreadPoolManager;
-import net.sf.l2j.gameserver.datatables.ClanTable;
+import net.sf.l2j.gameserver.data.sql.ClanTable;
 import net.sf.l2j.gameserver.instancemanager.AuctionManager;
 import net.sf.l2j.gameserver.instancemanager.ClanHallManager;
-import net.sf.l2j.gameserver.model.L2Clan;
-import net.sf.l2j.gameserver.model.actor.instance.L2DoorInstance;
-import net.sf.l2j.gameserver.model.actor.instance.L2PcInstance;
+import net.sf.l2j.gameserver.model.actor.instance.Door;
+import net.sf.l2j.gameserver.model.actor.instance.Player;
+import net.sf.l2j.gameserver.model.pledge.Clan;
 import net.sf.l2j.gameserver.model.zone.type.L2ClanHallZone;
 import net.sf.l2j.gameserver.network.SystemMessageId;
 import net.sf.l2j.gameserver.network.serverpackets.PledgeShowInfoUpdate;
@@ -58,7 +45,7 @@ public class ClanHall
 	private final String _desc;
 	private final String _location;
 	private final int _grade;
-	private final List<L2DoorInstance> _doors = new ArrayList<>();
+	private final List<Door> _doors = new ArrayList<>();
 	private final Map<Integer, ClanHallFunction> _functions = new ConcurrentHashMap<>();
 	
 	private int _ownerId;
@@ -138,9 +125,9 @@ public class ClanHall
 			
 			long currentTime = System.currentTimeMillis();
 			if (_endDate > currentTime)
-				ThreadPoolManager.getInstance().scheduleGeneral(new FunctionTask(cwh), _endDate - currentTime);
+				ThreadPool.schedule(new FunctionTask(cwh), _endDate - currentTime);
 			else
-				ThreadPoolManager.getInstance().scheduleGeneral(new FunctionTask(cwh), 0);
+				ThreadPool.execute(new FunctionTask(cwh));
 		}
 		
 		private class FunctionTask implements Runnable
@@ -158,7 +145,7 @@ public class ClanHall
 					if (_isFree)
 						return;
 					
-					final L2Clan clan = ClanTable.getInstance().getClan(getOwnerId());
+					final Clan clan = ClanTable.getInstance().getClan(getOwnerId());
 					if (clan.getWarehouse().getAdena() >= _fee || !_cwh)
 					{
 						int fee = (getEndTime() == -1) ? _tempFee : _fee;
@@ -169,7 +156,7 @@ public class ClanHall
 						if (_cwh)
 							clan.getWarehouse().destroyItemByItemId("CH_function_fee", 57, fee, null, null);
 						
-						ThreadPoolManager.getInstance().scheduleGeneral(new FunctionTask(true), getRate());
+						ThreadPool.schedule(new FunctionTask(true), getRate());
 					}
 					else
 						removeFunction(getType());
@@ -298,7 +285,7 @@ public class ClanHall
 	/**
 	 * @return clanHall doors list.
 	 */
-	public final List<L2DoorInstance> getDoors()
+	public final List<Door> getDoors()
 	{
 		return _doors;
 	}
@@ -307,9 +294,9 @@ public class ClanHall
 	 * @param doorId The id to make checks on.
 	 * @return a doorInstance based on a doorId.
 	 */
-	public final L2DoorInstance getDoor(int doorId)
+	public final Door getDoor(int doorId)
 	{
-		for (L2DoorInstance door : _doors)
+		for (Door door : _doors)
 		{
 			if (door.getDoorId() == doorId)
 				return door;
@@ -359,7 +346,7 @@ public class ClanHall
 	 * Set owner if clan hall is free
 	 * @param clan The new clan owner.
 	 */
-	public void setOwner(L2Clan clan)
+	public void setOwner(Clan clan)
 	{
 		// Verify that this ClanHall is Free and Clan isn't null
 		if (_ownerId > 0 || clan == null)
@@ -382,7 +369,7 @@ public class ClanHall
 	 * @param doorId The affected doorId.
 	 * @param open true will open it, false will close.
 	 */
-	public void openCloseDoor(L2PcInstance activeChar, int doorId, boolean open)
+	public void openCloseDoor(Player activeChar, int doorId, boolean open)
 	{
 		if (activeChar != null && activeChar.getClanId() == getOwnerId())
 			openCloseDoor(doorId, open);
@@ -393,7 +380,7 @@ public class ClanHall
 		openCloseDoor(getDoor(doorId), open);
 	}
 	
-	public static void openCloseDoor(L2DoorInstance door, boolean open)
+	public static void openCloseDoor(Door door, boolean open)
 	{
 		if (door != null)
 		{
@@ -404,7 +391,7 @@ public class ClanHall
 		}
 	}
 	
-	public void openCloseDoors(L2PcInstance activeChar, boolean open)
+	public void openCloseDoors(Player activeChar, boolean open)
 	{
 		if (activeChar != null && activeChar.getClanId() == getOwnerId())
 			openCloseDoors(open);
@@ -412,7 +399,7 @@ public class ClanHall
 	
 	public void openCloseDoors(boolean open)
 	{
-		for (L2DoorInstance door : _doors)
+		for (Door door : _doors)
 		{
 			if (open)
 				door.openMe();
@@ -500,7 +487,7 @@ public class ClanHall
 	 * @param addNew
 	 * @return
 	 */
-	public boolean updateFunctions(L2PcInstance player, int type, int lvl, int lease, long rate, boolean addNew)
+	public boolean updateFunctions(Player player, int type, int lvl, int lease, long rate, boolean addNew)
 	{
 		if (player == null)
 			return false;
@@ -562,16 +549,16 @@ public class ClanHall
 	{
 		long currentTime = System.currentTimeMillis();
 		if (_paidUntil > currentTime)
-			ThreadPoolManager.getInstance().scheduleGeneral(new FeeTask(), _paidUntil - currentTime);
+			ThreadPool.schedule(new FeeTask(), _paidUntil - currentTime);
 		else if (!_paid && !forced)
 		{
 			if (System.currentTimeMillis() + 86400000 <= _paidUntil + CH_RATE)
-				ThreadPoolManager.getInstance().scheduleGeneral(new FeeTask(), System.currentTimeMillis() + 86400000);
+				ThreadPool.schedule(new FeeTask(), System.currentTimeMillis() + 86400000);
 			else
-				ThreadPoolManager.getInstance().scheduleGeneral(new FeeTask(), (_paidUntil + CH_RATE) - System.currentTimeMillis());
+				ThreadPool.schedule(new FeeTask(), (_paidUntil + CH_RATE) - System.currentTimeMillis());
 		}
 		else
-			ThreadPoolManager.getInstance().scheduleGeneral(new FeeTask(), 0);
+			ThreadPool.schedule(new FeeTask(), 0);
 	}
 	
 	/** Fee Task */
@@ -593,11 +580,11 @@ public class ClanHall
 				
 				if (_paidUntil > time)
 				{
-					ThreadPoolManager.getInstance().scheduleGeneral(new FeeTask(), _paidUntil - time);
+					ThreadPool.schedule(new FeeTask(), _paidUntil - time);
 					return;
 				}
 				
-				final L2Clan clan = ClanTable.getInstance().getClan(getOwnerId());
+				final Clan clan = ClanTable.getInstance().getClan(getOwnerId());
 				if (clan.getWarehouse().getAdena() >= getLease())
 				{
 					if (_paidUntil != 0)
@@ -610,7 +597,7 @@ public class ClanHall
 					
 					clan.getWarehouse().destroyItemByItemId("CH_rental_fee", 57, getLease(), null, null);
 					
-					ThreadPoolManager.getInstance().scheduleGeneral(new FeeTask(), _paidUntil - time);
+					ThreadPool.schedule(new FeeTask(), _paidUntil - time);
 					_paid = true;
 					updateDb();
 				}
@@ -627,7 +614,7 @@ public class ClanHall
 							clan.broadcastToOnlineMembers(SystemMessage.getSystemMessage(SystemMessageId.THE_CLAN_HALL_FEE_IS_ONE_WEEK_OVERDUE_THEREFORE_THE_CLAN_HALL_OWNERSHIP_HAS_BEEN_REVOKED));
 						}
 						else
-							ThreadPoolManager.getInstance().scheduleGeneral(new FeeTask(), 3000);
+							ThreadPool.schedule(new FeeTask(), 3000);
 					}
 					else
 					{
@@ -635,9 +622,9 @@ public class ClanHall
 						clan.broadcastToOnlineMembers(SystemMessage.getSystemMessage(SystemMessageId.PAYMENT_FOR_YOUR_CLAN_HALL_HAS_NOT_BEEN_MADE_PLEASE_MAKE_PAYMENT_TO_YOUR_CLAN_WAREHOUSE_BY_S1_TOMORROW).addNumber(getLease()));
 						
 						if (time + 86400000 <= _paidUntil + CH_RATE)
-							ThreadPoolManager.getInstance().scheduleGeneral(new FeeTask(), time + 86400000);
+							ThreadPool.schedule(new FeeTask(), time + 86400000);
 						else
-							ThreadPoolManager.getInstance().scheduleGeneral(new FeeTask(), (_paidUntil + CH_RATE) - time);
+							ThreadPool.schedule(new FeeTask(), (_paidUntil + CH_RATE) - time);
 					}
 				}
 			}

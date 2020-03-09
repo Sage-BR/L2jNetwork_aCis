@@ -1,26 +1,10 @@
-/*
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package net.sf.l2j.gameserver.network.clientpackets;
-
-import java.util.logging.Level;
 
 import net.sf.l2j.gameserver.cache.CrestCache;
 import net.sf.l2j.gameserver.cache.CrestCache.CrestType;
 import net.sf.l2j.gameserver.idfactory.IdFactory;
-import net.sf.l2j.gameserver.model.L2Clan;
-import net.sf.l2j.gameserver.model.actor.instance.L2PcInstance;
+import net.sf.l2j.gameserver.model.actor.instance.Player;
+import net.sf.l2j.gameserver.model.pledge.Clan;
 import net.sf.l2j.gameserver.network.SystemMessageId;
 
 public final class RequestSetPledgeCrest extends L2GameClientPacket
@@ -42,11 +26,14 @@ public final class RequestSetPledgeCrest extends L2GameClientPacket
 	@Override
 	protected void runImpl()
 	{
-		final L2PcInstance activeChar = getClient().getActiveChar();
+		if (_length < 0 || _length > 256)
+			return;
+		
+		final Player activeChar = getClient().getActiveChar();
 		if (activeChar == null)
 			return;
 		
-		final L2Clan clan = activeChar.getClan();
+		final Clan clan = activeChar.getClan();
 		if (clan == null)
 			return;
 		
@@ -56,50 +43,34 @@ public final class RequestSetPledgeCrest extends L2GameClientPacket
 			return;
 		}
 		
-		if (_length < 0)
+		if ((activeChar.getClanPrivileges() & Clan.CP_CL_REGISTER_CREST) != Clan.CP_CL_REGISTER_CREST)
 		{
-			activeChar.sendMessage("File transfer error.");
+			activeChar.sendPacket(SystemMessageId.YOU_ARE_NOT_AUTHORIZED_TO_DO_THAT);
 			return;
 		}
 		
-		if (_length > 256)
+		if (_length == 0)
 		{
-			activeChar.sendMessage("The clan crest file size was too big (max 256 bytes).");
-			return;
-		}
-		
-		boolean updated = false;
-		int crestId = -1;
-		if ((activeChar.getClanPrivileges() & L2Clan.CP_CL_REGISTER_CREST) == L2Clan.CP_CL_REGISTER_CREST)
-		{
-			if (_length == 0 || _data.length == 0)
+			if (clan.getCrestId() != 0)
 			{
-				if (clan.getCrestId() == 0)
-					return;
-				
-				crestId = 0;
+				clan.changeClanCrest(0);
 				activeChar.sendPacket(SystemMessageId.CLAN_CREST_HAS_BEEN_DELETED);
-				updated = true;
-			}
-			else
-			{
-				if (clan.getLevel() < 3)
-				{
-					activeChar.sendPacket(SystemMessageId.CLAN_LVL_3_NEEDED_TO_SET_CREST);
-					return;
-				}
-				
-				crestId = IdFactory.getInstance().getNextId();
-				if (!CrestCache.getInstance().saveCrest(CrestType.PLEDGE, crestId, _data))
-				{
-					_log.log(Level.INFO, "Error saving crest for clan " + clan.getName() + " [" + clan.getClanId() + "]");
-					return;
-				}
-				updated = true;
 			}
 		}
-		
-		if (updated && crestId != -1)
-			clan.changeClanCrest(crestId);
+		else
+		{
+			if (clan.getLevel() < 3)
+			{
+				activeChar.sendPacket(SystemMessageId.CLAN_LVL_3_NEEDED_TO_SET_CREST);
+				return;
+			}
+			
+			final int crestId = IdFactory.getInstance().getNextId();
+			if (CrestCache.getInstance().saveCrest(CrestType.PLEDGE, crestId, _data))
+			{
+				clan.changeClanCrest(crestId);
+				activeChar.sendPacket(SystemMessageId.CLAN_EMBLEM_WAS_SUCCESSFULLY_REGISTERED);
+			}
+		}
 	}
 }
