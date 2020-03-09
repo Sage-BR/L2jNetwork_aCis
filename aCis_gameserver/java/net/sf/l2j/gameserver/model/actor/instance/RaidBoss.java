@@ -6,8 +6,7 @@ import net.sf.l2j.commons.concurrent.ThreadPool;
 import net.sf.l2j.commons.random.Rnd;
 
 import net.sf.l2j.Config;
-import net.sf.l2j.gameserver.events.phoenixevents.EventManager;
-import net.sf.l2j.gameserver.instancemanager.RaidBossPointsManager;
+import net.sf.l2j.gameserver.data.manager.RaidPointManager;
 import net.sf.l2j.gameserver.instancemanager.RaidBossSpawnManager;
 import net.sf.l2j.gameserver.instancemanager.RaidBossSpawnManager.StatusEnum;
 import net.sf.l2j.gameserver.model.L2Spawn;
@@ -18,6 +17,7 @@ import net.sf.l2j.gameserver.model.group.Party;
 import net.sf.l2j.gameserver.network.SystemMessageId;
 import net.sf.l2j.gameserver.network.serverpackets.PlaySound;
 import net.sf.l2j.gameserver.network.serverpackets.SystemMessage;
+import net.sf.l2j.gameserver.util.Broadcast;
 
 /**
  * This class manages all RaidBoss. In a group mob, there are one master called RaidBoss and several slaves called Minions.
@@ -67,10 +67,8 @@ public class RaidBoss extends Monster
 			final Player player = killer.getActingPlayer();
 			if (player != null)
 			{
-				
-				if (EventManager.getInstance().isRunning() && EventManager.getInstance().isRegistered(player))
-					EventManager.getInstance().getCurrentEvent().onKill(this, player);
-				
+				if (Config.ANNOUNCE_DEAD_RB)
+					Broadcast.announceToOnlinePlayers(player.getClan() != null ? "Raidboss " + getName() + " has been killed by " + player.getClan().getName() + " Clan." : "Raid Boss " + getName() + " has been killed by " + killer.getName(), true);
 				broadcastPacket(SystemMessage.getSystemMessage(SystemMessageId.RAID_WAS_SUCCESSFUL));
 				broadcastPacket(new PlaySound("systemmsg_e.1209"));
 				
@@ -79,14 +77,14 @@ public class RaidBoss extends Monster
 				{
 					for (Player member : party.getMembers())
 					{
-						RaidBossPointsManager.getInstance().addPoints(member, getNpcId(), (getLevel() / 2) + Rnd.get(-5, 5));
+						RaidPointManager.getInstance().addPoints(member, getNpcId(), (getLevel() / 2) + Rnd.get(-5, 5));
 						if (member.isNoble())
 							Hero.getInstance().setRBkilled(member.getObjectId(), getNpcId());
 					}
 				}
 				else
 				{
-					RaidBossPointsManager.getInstance().addPoints(player, getNpcId(), (getLevel() / 2) + Rnd.get(-5, 5));
+					RaidPointManager.getInstance().addPoints(player, getNpcId(), (getLevel() / 2) + Rnd.get(-5, 5));
 					if (player.isNoble())
 						Hero.getInstance().setRBkilled(player.getObjectId(), getNpcId());
 				}
@@ -118,24 +116,19 @@ public class RaidBoss extends Monster
 	{
 		super.startMaintenanceTask();
 		
-		_maintenanceTask = ThreadPool.scheduleAtFixedRate(new Runnable()
-		{
-			@Override
-			public void run()
-			{
-				// If the boss is dead, movement disabled, is Gordon or is in combat, return.
-				if (isDead() || isMovementDisabled() || getNpcId() == 29095 || isInCombat())
-					return;
-				
-				// Spawn must exist.
-				final L2Spawn spawn = getSpawn();
-				if (spawn == null)
-					return;
-				
-				// If the boss is above drift range (or 200 minimum), teleport him on his spawn.
-				if (!isInsideRadius(spawn.getLocX(), spawn.getLocY(), spawn.getLocZ(), Math.max(Config.MAX_DRIFT_RANGE, 200), true, false))
-					teleToLocation(spawn.getLoc(), 0);
-			}
+		_maintenanceTask = ThreadPool.scheduleAtFixedRate(() -> {
+			// If the boss is dead, movement disabled, is Gordon or is in combat, return.
+			if (isDead() || isMovementDisabled() || getNpcId() == 29095 || isInCombat())
+				return;
+			
+			// Spawn must exist.
+			final L2Spawn spawn = getSpawn();
+			if (spawn == null)
+				return;
+			
+			// If the boss is above drift range (or 200 minimum), teleport him on his spawn.
+			if (!isInsideRadius(spawn.getLocX(), spawn.getLocY(), spawn.getLocZ(), Math.max(Config.MAX_DRIFT_RANGE, 200), true, false))
+				teleToLocation(spawn.getLoc(), 0);
 		}, 60000, 30000);
 	}
 	

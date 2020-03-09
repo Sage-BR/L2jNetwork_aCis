@@ -64,7 +64,7 @@ public class PetStat extends SummonStat
 	@Override
 	public void setLevel(byte value)
 	{
-		getActiveChar().setPetData(getActiveChar().getTemplate().getPetDataEntry(value));
+		getActiveChar().setPetData(value);
 		
 		super.setLevel(value); // Set level.
 		

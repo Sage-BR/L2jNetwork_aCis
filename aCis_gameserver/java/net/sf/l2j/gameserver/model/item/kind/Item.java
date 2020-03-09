@@ -356,7 +356,7 @@ public abstract class Item
 	 */
 	public final int getReferencePrice()
 	{
-		return (isConsumable() ? (int) (_referencePrice * Config.RATE_CONSUMABLE_COST) : _referencePrice);
+		return _referencePrice;
 	}
 	
 	/**

@@ -89,7 +89,7 @@ public final class RequestAutoSoulShot extends L2GameClientPacket
 						activeChar.sendPacket(new ExAutoSoulShot(_itemId, _type));
 						
 						// start the auto soulshot use
-						if (activeChar.getActiveWeaponItem() != activeChar.getFistsWeaponItem() && item.getItem().getCrystalType() == activeChar.getActiveWeaponItem().getCrystalType())
+						if (activeChar.getActiveWeaponInstance() != null && item.getItem().getCrystalType() == activeChar.getActiveWeaponItem().getCrystalType())
 							activeChar.rechargeShots(true, true);
 						else
 						{

@@ -6,8 +6,8 @@ import net.sf.l2j.commons.lang.StringUtil;
 
 import net.sf.l2j.Config;
 import net.sf.l2j.gameserver.data.SkillTable.FrequentSkill;
-import net.sf.l2j.gameserver.instancemanager.CastleManager;
-import net.sf.l2j.gameserver.instancemanager.CoupleManager;
+import net.sf.l2j.gameserver.data.manager.CastleManager;
+import net.sf.l2j.gameserver.data.manager.CoupleManager;
 import net.sf.l2j.gameserver.model.World;
 import net.sf.l2j.gameserver.model.actor.Npc;
 import net.sf.l2j.gameserver.model.actor.ai.CtrlIntention;
@@ -41,6 +41,10 @@ public class WeddingManagerNpc extends Folk
 				player.getAI().setIntention(CtrlIntention.INTERACT, this);
 			else
 			{
+				// Stop moving if we're already in interact range.
+				if (player.isMoving() || player.isInCombat())
+					player.getAI().setIntention(CtrlIntention.IDLE);
+				
 				// Rotate the player to face the instance
 				player.sendPacket(new MoveToPawn(player, this, Npc.INTERACTION_DISTANCE));
 				
@@ -208,8 +212,8 @@ public class WeddingManagerNpc extends Folk
 		partner.setUnderMarryRequest(false);
 		
 		// reduce adenas amount according to configs
-		requester.reduceAdena("Wedding", Config.WEDDING_PRICE, requester.getCurrentFolkNPC(), true);
-		partner.reduceAdena("Wedding", Config.WEDDING_PRICE, requester.getCurrentFolkNPC(), true);
+		requester.reduceAdena("Wedding", Config.WEDDING_PRICE, requester.getCurrentFolk(), true);
+		partner.reduceAdena("Wedding", Config.WEDDING_PRICE, requester.getCurrentFolk(), true);
 		
 		// Messages to the couple
 		requester.sendMessage("Congratulations, you are now married with " + partner.getName() + " !");

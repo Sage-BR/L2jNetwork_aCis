@@ -1,13 +1,9 @@
 package net.sf.l2j.gameserver.network.clientpackets;
 
-import net.sf.l2j.gameserver.cache.CrestCache;
-import net.sf.l2j.gameserver.cache.CrestCache.CrestType;
+import net.sf.l2j.gameserver.data.cache.CrestCache;
+import net.sf.l2j.gameserver.data.cache.CrestCache.CrestType;
 import net.sf.l2j.gameserver.network.serverpackets.ExPledgeCrestLarge;
 
-/**
- * Fomat : chd
- * @author -Wooden-
- */
 public final class RequestExPledgeCrestLarge extends L2GameClientPacket
 {
 	private int _crestId;

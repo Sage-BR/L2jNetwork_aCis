@@ -9,6 +9,7 @@ import java.util.logging.Logger;
 
 import net.sf.l2j.Config;
 import net.sf.l2j.L2DatabaseFactory;
+import net.sf.l2j.gameserver.data.xml.NpcData;
 import net.sf.l2j.gameserver.instancemanager.DayNightSpawnManager;
 import net.sf.l2j.gameserver.model.L2Spawn;
 import net.sf.l2j.gameserver.model.actor.template.NpcTemplate;
@@ -50,7 +51,7 @@ public class SpawnTable
 			
 			while (rset.next())
 			{
-				template1 = NpcTable.getInstance().getTemplate(rset.getInt("npc_templateid"));
+				template1 = NpcData.getInstance().getTemplate(rset.getInt("npc_templateid"));
 				if (template1 != null)
 				{
 					if (template1.isType("SiegeGuard"))

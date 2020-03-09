@@ -46,12 +46,6 @@ public final class RequestFriendInvite extends L2GameClientPacket
 			return;
 		}
 		
-		if (friend.getFriendInviteRefusal())
-		{
-			activeChar.sendMessage("The target is on friend refusal.");
-			return;
-		}
-		
 		if (friend == activeChar)
 		{
 			// You cannot add yourself to your own friend list.

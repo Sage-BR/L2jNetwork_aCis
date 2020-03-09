@@ -19,6 +19,9 @@ public class Product
 {
 	private static final Logger LOG = Logger.getLogger(Product.class.getName());
 	
+	private static final String ADD_OR_UPDATE_BUYLIST = "INSERT INTO buylists (buylist_id,item_id,count,next_restock_time) VALUES(?,?,?,?) ON DUPLICATE KEY UPDATE count=VALUES(count), next_restock_time=VALUES(next_restock_time)";
+	private static final String DELETE_BUYLIST = "DELETE FROM buylists WHERE buylist_id=? AND item_id=?";
+	
 	private final int _buyListId;
 	private final Item _item;
 	private final int _price;
@@ -121,19 +124,18 @@ public class Product
 	 */
 	public void save(long nextRestockTime)
 	{
-		try (Connection con = L2DatabaseFactory.getInstance().getConnection(); PreparedStatement ps = con.prepareStatement("INSERT INTO `buylists`(`buylist_id`, `item_id`, `count`, `next_restock_time`) VALUES(?, ?, ?, ?) ON DUPLICATE KEY UPDATE `count` = ?, `next_restock_time` = ?"))
+		try (Connection con = L2DatabaseFactory.getInstance().getConnection();
+			PreparedStatement ps = con.prepareStatement(ADD_OR_UPDATE_BUYLIST))
 		{
 			ps.setInt(1, getBuyListId());
 			ps.setInt(2, getItemId());
 			ps.setInt(3, getCount());
 			ps.setLong(4, nextRestockTime);
-			ps.setInt(5, getCount());
-			ps.setLong(6, nextRestockTime);
 			ps.executeUpdate();
 		}
 		catch (Exception e)
 		{
-			LOG.log(Level.WARNING, "Failed to save product for buylist id:" + getBuyListId() + " and item id:" + getItemId(), e);
+			LOG.log(Level.SEVERE, "Failed to save product for buylist id:" + getBuyListId() + " and item id:" + getItemId(), e);
 		}
 	}
 	
@@ -142,7 +144,8 @@ public class Product
 	 */
 	public void delete()
 	{
-		try (Connection con = L2DatabaseFactory.getInstance().getConnection(); PreparedStatement ps = con.prepareStatement("DELETE FROM `buylists` WHERE `buylist_id` = ? AND `item_id` = ?"))
+		try (Connection con = L2DatabaseFactory.getInstance().getConnection();
+			PreparedStatement ps = con.prepareStatement(DELETE_BUYLIST))
 		{
 			ps.setInt(1, getBuyListId());
 			ps.setInt(2, getItemId());
@@ -150,7 +153,7 @@ public class Product
 		}
 		catch (Exception e)
 		{
-			LOG.log(Level.WARNING, "Failed to save product for buylist id:" + getBuyListId() + " and item id:" + getItemId(), e);
+			LOG.log(Level.SEVERE, "Failed to save product for buylist id:" + getBuyListId() + " and item id:" + getItemId(), e);
 		}
 	}
 }

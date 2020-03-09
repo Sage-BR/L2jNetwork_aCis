@@ -3,7 +3,6 @@ package net.sf.l2j.gameserver.network.clientpackets;
 import net.sf.l2j.commons.concurrent.ThreadPool;
 
 import net.sf.l2j.Config;
-import net.sf.l2j.gameserver.events.phoenixevents.EventManager;
 import net.sf.l2j.gameserver.handler.IItemHandler;
 import net.sf.l2j.gameserver.handler.ItemHandler;
 import net.sf.l2j.gameserver.model.L2Skill;
@@ -29,24 +28,6 @@ public final class UseItem extends L2GameClientPacket
 {
 	private int _objectId;
 	private boolean _ctrlPressed;
-	
-	public static class WeaponEquipTask implements Runnable
-	{
-		ItemInstance _item;
-		Player _activeChar;
-		
-		public WeaponEquipTask(ItemInstance it, Player character)
-		{
-			_item = it;
-			_activeChar = character;
-		}
-		
-		@Override
-		public void run()
-		{
-			_activeChar.useEquippableItem(_item, false);
-		}
-	}
 	
 	@Override
 	protected void readImpl()
@@ -117,9 +98,6 @@ public final class UseItem extends L2GameClientPacket
 			activeChar.sendPacket(SystemMessageId.CANNOT_DO_WHILE_FISHING_3);
 			return;
 		}
-		
-		if (EventManager.getInstance().isRunning() && EventManager.getInstance().isRegistered(activeChar) && !EventManager.getInstance().getCurrentEvent().onUseItem(activeChar, item))
-			return;
 		
 		/*
 		 * The player can't use pet items if no pet is currently summoned. If a pet is summoned and player uses the item directly, it will be used by the pet.
@@ -216,7 +194,7 @@ public final class UseItem extends L2GameClientPacket
 				return;
 			
 			if (activeChar.isAttackingNow())
-				ThreadPool.schedule(new WeaponEquipTask(item, activeChar), (activeChar.getAttackEndTime() - System.currentTimeMillis()));
+				ThreadPool.schedule(() -> activeChar.useEquippableItem(item, false), activeChar.getAttackEndTime() - System.currentTimeMillis());
 			else
 				activeChar.useEquippableItem(item, true);
 		}
@@ -234,7 +212,7 @@ public final class UseItem extends L2GameClientPacket
 				return;
 			}
 			
-			final IItemHandler handler = ItemHandler.getInstance().getItemHandler(item.getEtcItem());
+			final IItemHandler handler = ItemHandler.getInstance().getHandler(item.getEtcItem());
 			if (handler != null)
 				handler.useItem(activeChar, item, _ctrlPressed);
 			

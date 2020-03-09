@@ -32,7 +32,7 @@ public class HerbDropData extends XMLDocument
 	protected void load()
 	{
 		loadDocument("./data/xml/herbDrops.xml");
-		LOG.info("Loaded " + _herbGroups.size() + " herbs groups.");
+		LOGGER.info("Loaded {} herbs groups.", _herbGroups.size());
 	}
 	
 	@Override

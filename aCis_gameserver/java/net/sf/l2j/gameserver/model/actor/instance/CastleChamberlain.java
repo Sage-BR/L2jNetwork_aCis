@@ -7,8 +7,8 @@ import java.util.StringTokenizer;
 import net.sf.l2j.commons.lang.StringUtil;
 
 import net.sf.l2j.Config;
+import net.sf.l2j.gameserver.data.manager.CastleManorManager;
 import net.sf.l2j.gameserver.data.sql.ClanTable;
-import net.sf.l2j.gameserver.instancemanager.CastleManorManager;
 import net.sf.l2j.gameserver.instancemanager.SevenSigns;
 import net.sf.l2j.gameserver.instancemanager.SevenSigns.CabalType;
 import net.sf.l2j.gameserver.instancemanager.SevenSigns.SealType;
@@ -25,7 +25,9 @@ import net.sf.l2j.gameserver.network.serverpackets.NpcHtmlMessage;
 import net.sf.l2j.gameserver.network.serverpackets.SiegeInfo;
 
 /**
- * Castle Chamberlains implementation, used for:
+ * An instance type extending {@link Merchant}, used for castle chamberlains.<br>
+ * <br>
+ * It handles following actions :
  * <ul>
  * <li>Tax rate control</li>
  * <li>Regional manor system control</li>

@@ -1,10 +1,13 @@
 package net.sf.l2j.gameserver.templates;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import net.sf.l2j.gameserver.model.holder.IntIntHolder;
 
 /**
  * This class is used in order to have a set of couples (key,value).<BR>
@@ -284,7 +287,7 @@ public class StatsSet extends HashMap<String, Object>
 		if (val == null)
 			return Collections.emptyList();
 		
-		return (ArrayList<T>) val;
+		return (List<T>) val;
 	}
 	
 	public long getLong(final String key)
@@ -350,7 +353,7 @@ public class StatsSet extends HashMap<String, Object>
 		if (val == null)
 			return Collections.emptyMap();
 		
-		return (HashMap<T, U>) val;
+		return (Map<T, U>) val;
 	}
 	
 	public String getString(final String key)
@@ -383,6 +386,60 @@ public class StatsSet extends HashMap<String, Object>
 			return ((String) val).split(";");
 		
 		throw new IllegalArgumentException("StatsSet : String array required, but found: " + val + " for key: " + key + ".");
+	}
+	
+	public IntIntHolder getIntIntHolder(final String key)
+	{
+		final Object val = get(key);
+		
+		if (val instanceof String[])
+		{
+			final String[] toSplit = (String[]) val;
+			return new IntIntHolder(Integer.parseInt(toSplit[0]), Integer.parseInt(toSplit[1]));
+		}
+		
+		if (val instanceof String)
+		{
+			final String[] toSplit = ((String) val).split("-");
+			return new IntIntHolder(Integer.parseInt(toSplit[0]), Integer.parseInt(toSplit[1]));
+		}
+		
+		throw new IllegalArgumentException("StatsSet : int-int (IntIntHolder) required, but found: " + val + " for key: " + key + ".");
+	}
+	
+	public List<IntIntHolder> getIntIntHolderList(final String key)
+	{
+		final Object val = get(key);
+		
+		if (val instanceof String)
+		{
+			// String exists, but it empty : return a generic empty List.
+			final String string = ((String) val);
+			if (string.isEmpty())
+				return Collections.emptyList();
+			
+			// Single entry ; return the entry under List form.
+			if (!string.contains(";"))
+			{
+				final String[] toSplit = string.split("-");
+				return Arrays.asList(new IntIntHolder(Integer.parseInt(toSplit[0]), Integer.parseInt(toSplit[1])));
+			}
+			
+			// First split is using ";", second is using "-". Exemple : 1234-12;1234-12.
+			final String[] entries = string.split(";");
+			final List<IntIntHolder> list = new ArrayList<>(entries.length);
+			
+			// Feed the List.
+			for (String entry : entries)
+			{
+				final String[] toSplit = entry.split("-");
+				list.add(new IntIntHolder(Integer.parseInt(toSplit[0]), Integer.parseInt(toSplit[1])));
+			}
+			
+			return list;
+		}
+		
+		throw new IllegalArgumentException("StatsSet : int-int;int-int (List<IntIntHolder>) required, but found: " + val + " for key: " + key + ".");
 	}
 	
 	@SuppressWarnings("unchecked")

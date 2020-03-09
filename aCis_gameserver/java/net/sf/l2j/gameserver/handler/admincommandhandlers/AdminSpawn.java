@@ -8,10 +8,10 @@ import java.util.regex.Pattern;
 
 import net.sf.l2j.commons.lang.StringUtil;
 
-import net.sf.l2j.gameserver.data.NpcTable;
 import net.sf.l2j.gameserver.data.SpawnTable;
 import net.sf.l2j.gameserver.data.manager.FenceManager;
 import net.sf.l2j.gameserver.data.xml.AdminData;
+import net.sf.l2j.gameserver.data.xml.NpcData;
 import net.sf.l2j.gameserver.handler.IAdminCommandHandler;
 import net.sf.l2j.gameserver.instancemanager.DayNightSpawnManager;
 import net.sf.l2j.gameserver.instancemanager.RaidBossSpawnManager;
@@ -73,7 +73,7 @@ public class AdminSpawn implements IAdminCommandHandler
 				else
 				{
 					params[1] = params[1].replace('_', ' ');
-					npcId = NpcTable.getInstance().getTemplateByName(params[1]).getNpcId();
+					npcId = NpcData.getInstance().getTemplateByName(params[1]).getNpcId();
 				}
 			}
 			catch (Exception e)
@@ -198,7 +198,7 @@ public class AdminSpawn implements IAdminCommandHandler
 			DayNightSpawnManager.getInstance().cleanUp();
 			World.getInstance().deleteVisibleNpcSpawns();
 			// now respawn all
-			NpcTable.getInstance().reloadAllNpc();
+			NpcData.getInstance().reload();
 			SpawnTable.getInstance().reloadAll();
 			RaidBossSpawnManager.getInstance().reloadBosses();
 			SevenSigns.getInstance().spawnSevenSignsNPC();
@@ -287,12 +287,12 @@ public class AdminSpawn implements IAdminCommandHandler
 		NpcTemplate template;
 		
 		if (monsterId.matches("[0-9]*")) // First parameter was an ID number
-			template = NpcTable.getInstance().getTemplate(Integer.parseInt(monsterId));
+			template = NpcData.getInstance().getTemplate(Integer.parseInt(monsterId));
 		else
 		// First parameter wasn't just numbers, so go by name not ID
 		{
 			monsterId = monsterId.replace('_', ' ');
-			template = NpcTable.getInstance().getTemplateByName(monsterId);
+			template = NpcData.getInstance().getTemplateByName(monsterId);
 		}
 		
 		try
@@ -335,7 +335,7 @@ public class AdminSpawn implements IAdminCommandHandler
 	
 	private static void showMonsters(Player activeChar, int level, int from)
 	{
-		final List<NpcTemplate> mobs = NpcTable.getInstance().getTemplates(t -> t.isType("Monster") && t.getLevel() == level);
+		final List<NpcTemplate> mobs = NpcData.getInstance().getTemplates(t -> t.isType("Monster") && t.getLevel() == level);
 		final StringBuilder sb = new StringBuilder(200 + mobs.size() * 100);
 		
 		StringUtil.append(sb, "<html><title>Spawn Monster:</title><body><p> Level : ", level, "<br>Total Npc's : ", mobs.size(), "<br>");
@@ -356,7 +356,7 @@ public class AdminSpawn implements IAdminCommandHandler
 	
 	private static void showNpcs(Player activeChar, String starting, int from)
 	{
-		final List<NpcTemplate> mobs = NpcTable.getInstance().getTemplates(t -> t.isType("Folk") && t.getName().startsWith(starting));
+		final List<NpcTemplate> mobs = NpcData.getInstance().getTemplates(t -> t.isType("Folk") && t.getName().startsWith(starting));
 		final StringBuilder sb = new StringBuilder(200 + mobs.size() * 100);
 		
 		StringUtil.append(sb, "<html><title>Spawn Monster:</title><body><p> There are ", mobs.size(), " Npcs whose name starts with ", starting, ":<br>");

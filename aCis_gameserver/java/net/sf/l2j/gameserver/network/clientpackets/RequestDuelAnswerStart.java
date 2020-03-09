@@ -1,6 +1,6 @@
 package net.sf.l2j.gameserver.network.clientpackets;
 
-import net.sf.l2j.gameserver.instancemanager.DuelManager;
+import net.sf.l2j.gameserver.data.manager.DuelManager;
 import net.sf.l2j.gameserver.model.actor.instance.Player;
 import net.sf.l2j.gameserver.model.group.CommandChannel;
 import net.sf.l2j.gameserver.model.group.Party;
@@ -124,7 +124,7 @@ public final class RequestDuelAnswerStart extends L2GameClientPacket
 				requestor.sendPacket(SystemMessage.getSystemMessage(SystemMessageId.S1_HAS_ACCEPTED_YOUR_CHALLENGE_TO_A_DUEL_THE_DUEL_WILL_BEGIN_IN_A_FEW_MOMENTS).addCharName(activeChar));
 			}
 			
-			DuelManager.getInstance().addDuel(requestor, activeChar, _partyDuel);
+			DuelManager.getInstance().addDuel(requestor, activeChar, _partyDuel == 1);
 		}
 		else
 		{

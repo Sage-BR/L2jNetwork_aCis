@@ -10,21 +10,40 @@ import net.sf.l2j.gameserver.model.actor.Creature;
 
 /**
  * Destroys {@link Creature} corpse after specified time.
- * @author Hasha
  */
 public final class DecayTaskManager implements Runnable
 {
 	private final Map<Creature, Long> _characters = new ConcurrentHashMap<>();
 	
-	public static final DecayTaskManager getInstance()
-	{
-		return SingletonHolder._instance;
-	}
-	
 	protected DecayTaskManager()
 	{
 		// Run task each second.
 		ThreadPool.scheduleAtFixedRate(this, 1000, 1000);
+	}
+	
+	@Override
+	public final void run()
+	{
+		// List is empty, skip.
+		if (_characters.isEmpty())
+			return;
+		
+		// Get current time.
+		final long time = System.currentTimeMillis();
+		
+		// Loop all characters.
+		for (Map.Entry<Creature, Long> entry : _characters.entrySet())
+		{
+			// Time hasn't passed yet, skip.
+			if (time < entry.getValue())
+				continue;
+			
+			final Creature character = entry.getKey();
+			
+			// Decay character and remove task.
+			character.onDecay();
+			_characters.remove(character);
+		}
 	}
 	
 	/**
@@ -79,33 +98,13 @@ public final class DecayTaskManager implements Runnable
 		return System.currentTimeMillis() < time - corpseTime;
 	}
 	
-	@Override
-	public final void run()
+	public static final DecayTaskManager getInstance()
 	{
-		// List is empty, skip.
-		if (_characters.isEmpty())
-			return;
-		
-		// Get current time.
-		final long time = System.currentTimeMillis();
-		
-		// Loop all characters.
-		for (Map.Entry<Creature, Long> entry : _characters.entrySet())
-		{
-			// Time hasn't passed yet, skip.
-			if (time < entry.getValue())
-				continue;
-			
-			final Creature character = entry.getKey();
-			
-			// Decay character and remove task.
-			character.onDecay();
-			_characters.remove(character);
-		}
+		return SingletonHolder.INSTANCE;
 	}
 	
 	private static final class SingletonHolder
 	{
-		protected static final DecayTaskManager _instance = new DecayTaskManager();
+		protected static final DecayTaskManager INSTANCE = new DecayTaskManager();
 	}
 }

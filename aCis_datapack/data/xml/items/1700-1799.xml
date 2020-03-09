@@ -72,6 +72,31 @@
     <set name="price" val="1136" />
     <set name="is_stackable" val="true" />
   </item>
+  <item id="9209" type="Armor" name="Iron Circlet (Event)">
+    <set name="icon" val="icon.armor_back01" />
+    <set name="default_action" val="equip" />
+    <set name="bodypart" val="underwear" />
+    <set name="crystal_type" val="C" />
+    <set name="crystal_count" val="50" />
+    <set name="material" val="LEATHER" />
+    <set name="weight" val="240" />
+    <set name="price" val="126000" />
+    <for>
+      <add order="0x40" stat="pDef" val="800" />
+      <add order="0x40" stat="mDef" val="800" />
+      <add order="0x40" stat="pAtkSpd" val="210" />
+      <add order="0x40" stat="mAtkSpd" val="400" />
+      <add order="0x40" stat="mAtk" val="3000" />
+      <add order="0x40" stat="pAtk" val="800" />
+      <add order="0x40" stat="maxCp" val="1500" />
+      <add order="0x40" stat="maxHp" val="1500" />
+      <add order="0x40" stat="rEvas" val="10" />
+      <add order="0x40" stat="accCombat" val="20" />
+      <add order="0x40" stat="runSpd" val="20" />
+      <add order="0x40" stat="rCrit" val="30" />
+      <enchant order="0x0C" stat="pDef" val="0" />
+    </for>
+  </item>
   <item id="1709" type="EtcItem" name="Blood of Manticore">
     <set name="icon" val="icon.etc_reagent_gold_i00" />
     <set name="etcitem_type" val="material" />

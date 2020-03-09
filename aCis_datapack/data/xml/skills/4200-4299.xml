@@ -370,7 +370,7 @@
 		<set name="skillType" val="BUFF" />
 		<set name="target" val="TARGET_SELF" />
 		<for>
-			<effect name="Buff" time="14400" val="0" stackOrder="1" stackType="public_slot" />
+			<effect name="Buff" time="14400" abnormal="changetexture" val="0" stackOrder="1" stackType="public_slot" />
 		</for>
 	</skill>
 	<skill id="4224" levels="1" name="Face Chance: Day to Night">

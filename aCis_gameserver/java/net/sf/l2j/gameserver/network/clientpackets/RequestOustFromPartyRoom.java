@@ -1,6 +1,6 @@
 package net.sf.l2j.gameserver.network.clientpackets;
 
-import net.sf.l2j.gameserver.data.MapRegionTable;
+import net.sf.l2j.gameserver.data.xml.MapRegionData;
 import net.sf.l2j.gameserver.model.World;
 import net.sf.l2j.gameserver.model.actor.instance.Player;
 import net.sf.l2j.gameserver.model.partymatching.PartyMatchRoom;
@@ -52,7 +52,7 @@ public final class RequestOustFromPartyRoom extends L2GameClientPacket
 			PartyMatchWaitingList.getInstance().addPlayer(member);
 			
 			// Send Room list
-			member.sendPacket(new PartyMatchList(member, 0, MapRegionTable.getInstance().getClosestLocation(member.getX(), member.getY()), member.getLevel()));
+			member.sendPacket(new PartyMatchList(member, 0, MapRegionData.getInstance().getClosestLocation(member.getX(), member.getY()), member.getLevel()));
 			
 			// Clean player's LFP title
 			member.broadcastUserInfo();

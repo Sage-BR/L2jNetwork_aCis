@@ -7,7 +7,6 @@ import java.sql.ResultSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 import net.sf.l2j.commons.data.xml.XMLDocument;
@@ -39,9 +38,11 @@ public class BuyListManager extends XMLDocument
 	protected void load()
 	{
 		loadDocument("./data/xml/buyLists.xml");
-		LOG.info("Loaded " + _buyLists.size() + " buyLists.");
+		LOGGER.info("Loaded {} buyLists.", _buyLists.size());
 		
-		try (Connection con = L2DatabaseFactory.getInstance().getConnection(); PreparedStatement ps = con.prepareStatement("SELECT * FROM `buylists`"); ResultSet rs = ps.executeQuery())
+		try (Connection con = L2DatabaseFactory.getInstance().getConnection();
+			PreparedStatement ps = con.prepareStatement("SELECT * FROM `buylists`");
+			ResultSet rs = ps.executeQuery())
 		{
 			while (rs.next())
 			{
@@ -63,7 +64,7 @@ public class BuyListManager extends XMLDocument
 		}
 		catch (Exception e)
 		{
-			LOG.log(Level.WARNING, "Failed to load buyList data from database.", e);
+			LOGGER.error("Failed to load buyList data from database.", e);
 		}
 	}
 	

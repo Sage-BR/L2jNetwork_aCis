@@ -25,10 +25,10 @@ import net.sf.l2j.commons.concurrent.ThreadPool;
 
 import net.sf.l2j.Config;
 import net.sf.l2j.L2DatabaseFactory;
-import net.sf.l2j.gameserver.data.PlayerNameTable;
 import net.sf.l2j.gameserver.data.SkillTable;
+import net.sf.l2j.gameserver.data.manager.CastleManager;
+import net.sf.l2j.gameserver.data.sql.PlayerInfoTable;
 import net.sf.l2j.gameserver.handler.admincommandhandlers.AdminVipStatus;
-import net.sf.l2j.gameserver.instancemanager.CastleManager;
 import net.sf.l2j.gameserver.model.L2Augmentation;
 import net.sf.l2j.gameserver.model.L2Skill;
 import net.sf.l2j.gameserver.model.World;
@@ -498,11 +498,19 @@ public class MultiNpc extends Npc
 	@Override
 	public void showChatWindow(Player player, String command)
 	{
-		StringTokenizer st = new StringTokenizer(command);
-		st.nextToken();
-		int page = Integer.parseInt(st.nextToken());
-		String filename = "data/html/mods/donateNpc/" + page + ".htm";
-		filename = "data/html/mods/donateNpc/50091-" + page + ".htm";
+		int val = 0;
+		try
+		{
+			val = Integer.parseInt(command.substring(5));
+		}
+		catch (IndexOutOfBoundsException ioobe)
+		{
+		}
+		catch (NumberFormatException nfe)
+		{
+		}
+		String filename = "data/html/mods/donateNpc/" + val + ".htm";
+		filename = "data/html/mods/donateNpc/50091-" + val + ".htm";
 		
 		final NpcHtmlMessage html = new NpcHtmlMessage(getObjectId());
 		html.setFile(filename);
@@ -656,7 +664,6 @@ public class MultiNpc extends Npc
 		else if (player.destroyItemByItemId("Consume", Config.DONATE_ITEM, Config.REC_ITEM_COUNT, player, true))
 		{
 			player.setRecomHave(255);
-			player.getLastRecomUpdate();
 			player.broadcastUserInfo();
 		}
 		else
@@ -878,7 +885,7 @@ public class MultiNpc extends Npc
 			player.sendMessage("Please, choose a different name.");
 			return false;
 		}
-		else if (PlayerNameTable.getInstance().getPlayerObjectId(newName) > 0)
+		else if (PlayerInfoTable.getInstance().getPlayerObjectId(newName) > 0)
 		{
 			player.sendMessage("The name " + newName + " already exists.");
 			return false;
@@ -1023,7 +1030,7 @@ public class MultiNpc extends Npc
 		if (player.destroyItemByItemId("Consume", Config.DONATE_ITEM, Config.CLASS_ITEM_COUNT, player, true))
 		{
 			for (final L2Skill skill : player.getSkills().values())
-				player.removeSkill(skill);
+				player.removeSkill(skill.getId(), true);
 			
 			String classes = command.substring(command.indexOf("_") + 1);
 			switch (classes)
@@ -1156,24 +1163,11 @@ public class MultiNpc extends Npc
 			player.store();
 			player.broadcastUserInfo();
 			player.sendSkillList();
-			player.giveAvailableSkills();
+			player.rewardSkills();
 			player.sendMessage("Your base class has been changed! You will Be Disconected in 5 Seconds!");
 			ThreadPool.schedule(() -> player.logout(false), 5000);
 		}
 		else
 			player.sendMessage("You do not have enough Donate Coins.");
-	}
-	
-	@Override
-	public String getHtmlPath(int npcId, int val)
-	{
-		String filename = "";
-		
-		if (val == 0)
-			filename = "" + npcId;
-		else
-			filename = npcId + "-" + val;
-		
-		return "data/html/mods/donateNpc/" + filename + ".htm";
 	}
 }

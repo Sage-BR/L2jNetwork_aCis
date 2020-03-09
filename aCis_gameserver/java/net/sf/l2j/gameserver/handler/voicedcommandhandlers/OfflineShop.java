@@ -15,7 +15,6 @@
 package net.sf.l2j.gameserver.handler.voicedcommandhandlers;
 
 import net.sf.l2j.Config;
-import net.sf.l2j.gameserver.datatables.SkillTable;
 import net.sf.l2j.gameserver.handler.IVoicedCommandHandler;
 import net.sf.l2j.gameserver.instancemanager.SevenSignsFestival;
 import net.sf.l2j.gameserver.model.actor.instance.Player;
@@ -112,7 +111,7 @@ public class OfflineShop implements IVoicedCommandHandler
 		}
 		
 		if (player.isFlying())
-			player.removeSkill(SkillTable.getInstance().getInfo(4289, 1));
+			player.removeSkill(4289, false);
 		
 		if (!L2GameClient.offlineMode(player))
 		{

@@ -2,7 +2,6 @@ package net.sf.l2j.gameserver.handler.usercommandhandlers;
 
 import net.sf.l2j.Config;
 import net.sf.l2j.gameserver.data.SkillTable;
-import net.sf.l2j.gameserver.events.phoenixevents.EventManager;
 import net.sf.l2j.gameserver.handler.IUserCommandHandler;
 import net.sf.l2j.gameserver.model.L2Skill;
 import net.sf.l2j.gameserver.model.actor.instance.Player;
@@ -21,7 +20,7 @@ public class Escape implements IUserCommandHandler
 	@Override
 	public boolean useUserCommand(int id, Player activeChar)
 	{
-		if (EventManager.getInstance().isRegistered(activeChar) || activeChar.isCastingNow() || activeChar.isSitting() || activeChar.isMovementDisabled() || activeChar.isOutOfControl() || activeChar.isInOlympiadMode() || activeChar.inObserverMode() || activeChar.isFestivalParticipant() || activeChar.isInJail() || activeChar.isInFunEvent() || activeChar.isAio() || activeChar.isInsideZone(ZoneId.PVP))
+		if (activeChar.isCastingNow() || activeChar.isSitting() || activeChar.isMovementDisabled() || activeChar.isOutOfControl() || activeChar.isInOlympiadMode() || activeChar.inObserverMode() || activeChar.isFestivalParticipant() || activeChar.isInJail() || activeChar.isInFunEvent() || activeChar.isAio() || activeChar.isInsideZone(ZoneId.PVP))
 		{
 			activeChar.sendPacket(SystemMessageId.NO_UNSTUCK_PLEASE_SEND_PETITION);
 			return false;
@@ -35,17 +34,17 @@ public class Escape implements IUserCommandHandler
 		else
 		{
 			activeChar.sendPacket(new PlaySound("systemmsg_e.809"));
-			int unstuckTimer = Config.UNSTUCK_TIME*1000;
+			int unstuckTimer = Config.UNSTUCK_TIME * 1000;
 			
 			L2Skill skill = SkillTable.getInstance().getInfo(2099, 1);
 			skill.setHitTime(unstuckTimer);
 			activeChar.doCast(skill);
-
-			if(unstuckTimer<60000)
-				activeChar.sendPacket(SystemMessage.getSystemMessage(SystemMessageId.S1_S2).addString("You will unstuck in "+ unstuckTimer / 1000 +" seconds."));
+			
+			if (unstuckTimer < 60000)
+				activeChar.sendPacket(SystemMessage.getSystemMessage(SystemMessageId.S1_S2).addString("You will unstuck in " + unstuckTimer / 1000 + " seconds."));
 			else
-				activeChar.sendPacket(SystemMessage.getSystemMessage(SystemMessageId.S1_S2).addString("You will unstuck i "+ unstuckTimer / 60000 +" minutes."));
-
+				activeChar.sendPacket(SystemMessage.getSystemMessage(SystemMessageId.S1_S2).addString("You will unstuck i " + unstuckTimer / 60000 + " minutes."));
+			
 		}
 		
 		return true;

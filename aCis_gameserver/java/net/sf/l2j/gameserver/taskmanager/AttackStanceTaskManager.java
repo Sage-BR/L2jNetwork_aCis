@@ -14,7 +14,6 @@ import net.sf.l2j.gameserver.network.serverpackets.AutoAttackStop;
 
 /**
  * Turns off attack stance of {@link Creature} after PERIOD ms.
- * @author Luca Baldi, Hasha
  */
 public final class AttackStanceTaskManager implements Runnable
 {
@@ -22,15 +21,47 @@ public final class AttackStanceTaskManager implements Runnable
 	
 	private final Map<Creature, Long> _characters = new ConcurrentHashMap<>();
 	
-	public static final AttackStanceTaskManager getInstance()
-	{
-		return SingletonHolder._instance;
-	}
-	
 	protected AttackStanceTaskManager()
 	{
 		// Run task each second.
 		ThreadPool.scheduleAtFixedRate(this, 1000, 1000);
+	}
+	
+	@Override
+	public final void run()
+	{
+		// List is empty, skip.
+		if (_characters.isEmpty())
+			return;
+		
+		// Get current time.
+		final long time = System.currentTimeMillis();
+		
+		// Loop all characters.
+		for (Map.Entry<Creature, Long> entry : _characters.entrySet())
+		{
+			// Time hasn't passed yet, skip.
+			if (time < entry.getValue())
+				continue;
+			
+			// Get character.
+			final Creature character = entry.getKey();
+			
+			// Stop character attack stance animation.
+			character.broadcastPacket(new AutoAttackStop(character.getObjectId()));
+			
+			if (character instanceof Player)
+			{
+				// Stop summon attack stance animation.
+				final Summon summon = ((Player) character).getPet();
+				if (summon != null)
+					summon.broadcastPacket(new AutoAttackStop(summon.getObjectId()));
+			}
+			
+			// Inform character AI and remove task.
+			character.getAI().setAutoAttacking(false);
+			_characters.remove(character);
+		}
 	}
 	
 	/**
@@ -74,41 +105,13 @@ public final class AttackStanceTaskManager implements Runnable
 		return _characters.containsKey(character);
 	}
 	
-	@Override
-	public final void run()
+	public static final AttackStanceTaskManager getInstance()
 	{
-		// List is empty, skip.
-		if (_characters.isEmpty())
-			return;
-		
-		// Get current time.
-		final long time = System.currentTimeMillis();
-		
-		// Loop all characters.
-		for (Map.Entry<Creature, Long> entry : _characters.entrySet())
-		{
-			// Time hasn't passed yet, skip.
-			if (time < entry.getValue())
-				continue;
-			
-			// Get character.
-			final Creature character = entry.getKey();
-			
-			// Stop character attack stance animation.
-			character.broadcastPacket(new AutoAttackStop(character.getObjectId()));
-			
-			// Stop pet attack stance animation.
-			if (character instanceof Player && ((Player) character).getPet() != null)
-				((Player) character).getPet().broadcastPacket(new AutoAttackStop(((Player) character).getPet().getObjectId()));
-			
-			// Inform character AI and remove task.
-			character.getAI().setAutoAttacking(false);
-			_characters.remove(character);
-		}
+		return SingletonHolder.INSTANCE;
 	}
 	
 	private static class SingletonHolder
 	{
-		protected static final AttackStanceTaskManager _instance = new AttackStanceTaskManager();
+		protected static final AttackStanceTaskManager INSTANCE = new AttackStanceTaskManager();
 	}
 }

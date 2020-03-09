@@ -19,7 +19,7 @@ import net.sf.l2j.gameserver.instancemanager.ClanHallManager;
 import net.sf.l2j.gameserver.model.actor.instance.Door;
 import net.sf.l2j.gameserver.model.actor.instance.Player;
 import net.sf.l2j.gameserver.model.pledge.Clan;
-import net.sf.l2j.gameserver.model.zone.type.L2ClanHallZone;
+import net.sf.l2j.gameserver.model.zone.type.ClanHallZone;
 import net.sf.l2j.gameserver.network.SystemMessageId;
 import net.sf.l2j.gameserver.network.serverpackets.PledgeShowInfoUpdate;
 import net.sf.l2j.gameserver.network.serverpackets.SystemMessage;
@@ -49,7 +49,7 @@ public class ClanHall
 	private final Map<Integer, ClanHallFunction> _functions = new ConcurrentHashMap<>();
 	
 	private int _ownerId;
-	private L2ClanHallZone _zone;
+	private ClanHallZone _zone;
 	
 	protected long _paidUntil;
 	protected boolean _paid;
@@ -317,7 +317,7 @@ public class ClanHall
 	 * Sets this clan halls zone
 	 * @param zone
 	 */
-	public void setZone(L2ClanHallZone zone)
+	public void setZone(ClanHallZone zone)
 	{
 		_zone = zone;
 	}
@@ -325,7 +325,7 @@ public class ClanHall
 	/**
 	 * @return the zone of this clan hall
 	 */
-	public L2ClanHallZone getZone()
+	public ClanHallZone getZone()
 	{
 		return _zone;
 	}

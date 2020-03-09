@@ -284,7 +284,7 @@ public abstract class L2Effect
 	 */
 	public final void exit()
 	{
-		this.exit(false);
+		exit(false);
 	}
 	
 	public final void exit(boolean preventUpdate)

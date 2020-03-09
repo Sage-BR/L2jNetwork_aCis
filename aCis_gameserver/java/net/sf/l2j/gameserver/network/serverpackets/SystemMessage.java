@@ -1,7 +1,6 @@
 package net.sf.l2j.gameserver.network.serverpackets;
 
 import java.util.Arrays;
-import java.util.logging.Level;
 
 import net.sf.l2j.gameserver.model.L2Effect;
 import net.sf.l2j.gameserver.model.L2Skill;
@@ -73,7 +72,8 @@ public final class SystemMessage extends L2GameServerPacket
 		{
 			_params = Arrays.copyOf(_params, _paramIndex + 1);
 			_smId.setParamCount(_paramIndex + 1);
-			_log.log(Level.INFO, "Wrong parameter count '" + (_paramIndex + 1) + "' for SystemMessageId: " + _smId);
+			
+			LOGGER.warn("Wrong parameter count '{}' for {}.", _paramIndex + 1, _smId);
 		}
 		
 		_params[_paramIndex++] = param;

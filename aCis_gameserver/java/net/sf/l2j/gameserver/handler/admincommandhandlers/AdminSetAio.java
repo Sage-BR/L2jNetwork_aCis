@@ -120,7 +120,7 @@ public class AdminSetAio implements IAdminCommandHandler
 			target.sendPacket(new CreatureSay(0, Say2.HERO_VOICE, "AIO Manager", "Dear " + player.getName() + ", you got AIO Status for " + time + " day(s)."));
 			
 			for (L2Skill skill : target.getSkills().values())
-				target.removeSkill(skill);
+				target.removeSkill(skill.getId(), true);
 			
 			if (Config.AIO_ITEM_ID != 0)
 			{
@@ -138,7 +138,7 @@ public class AdminSetAio implements IAdminCommandHandler
 		target.getMemos().set("aioEndTime", 0);
 		target.setAio(false);
 		for (L2Skill skill : target.getSkills().values())
-			target.removeSkill(skill);
+			target.removeSkill(skill.getId(), true);
 		
 		if (Config.AIO_ITEM_ID != 0)
 			target.destroyItemByItemId("Destroy", Config.AIO_ITEM_ID, 1, target, true);

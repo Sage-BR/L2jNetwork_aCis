@@ -5,8 +5,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import net.sf.l2j.Config;
-import net.sf.l2j.gameserver.data.MapRegionTable;
 import net.sf.l2j.gameserver.data.SkillTable;
+import net.sf.l2j.gameserver.data.xml.MapRegionData;
 import net.sf.l2j.gameserver.model.L2Skill;
 import net.sf.l2j.gameserver.model.actor.Creature;
 import net.sf.l2j.gameserver.model.actor.Summon;
@@ -17,8 +17,8 @@ import net.sf.l2j.gameserver.model.group.Party;
 import net.sf.l2j.gameserver.model.group.Party.MessageType;
 import net.sf.l2j.gameserver.model.item.instance.ItemInstance;
 import net.sf.l2j.gameserver.model.location.Location;
-import net.sf.l2j.gameserver.model.zone.type.L2OlympiadStadiumZone;
-import net.sf.l2j.gameserver.model.zone.type.L2TownZone;
+import net.sf.l2j.gameserver.model.zone.type.OlympiadStadiumZone;
+import net.sf.l2j.gameserver.model.zone.type.TownZone;
 import net.sf.l2j.gameserver.network.SystemMessageId;
 import net.sf.l2j.gameserver.network.serverpackets.ExOlympiadMode;
 import net.sf.l2j.gameserver.network.serverpackets.InventoryUpdate;
@@ -133,7 +133,7 @@ public abstract class AbstractOlympiadGame
 		
 		try
 		{
-			player.getSavedLocation().set(player.getX(), player.getY(), player.getZ());
+			player.getSavedLocation().set(player.getPosition());
 			
 			player.setTarget(null);
 			
@@ -165,8 +165,8 @@ public abstract class AbstractOlympiadGame
 			// Remove Clan Skills
 			if (player.getClan() != null)
 			{
-				for (L2Skill skill : player.getClan().getClanSkills())
-					player.removeSkill(skill, false);
+				for (L2Skill skill : player.getClan().getClanSkills().values())
+					player.removeSkill(skill.getId(), false);
 			}
 			
 			// Abort casting if player casting
@@ -180,7 +180,7 @@ public abstract class AbstractOlympiadGame
 			if (player.isHero())
 			{
 				for (L2Skill skill : SkillTable.getHeroSkills())
-					player.removeSkill(skill, false);
+					player.removeSkill(skill.getId(), false);
 			}
 			
 			// Heal Player fully
@@ -369,7 +369,7 @@ public abstract class AbstractOlympiadGame
 		if (loc.equals(Location.DUMMY_LOC))
 			return;
 		
-		final L2TownZone town = MapRegionTable.getTown(loc.getX(), loc.getY(), loc.getZ());
+		final TownZone town = MapRegionData.getTown(loc.getX(), loc.getY(), loc.getZ());
 		if (town != null)
 			loc = town.getSpawnLoc();
 		
@@ -413,7 +413,7 @@ public abstract class AbstractOlympiadGame
 	
 	public abstract void sendOlympiadInfo(Creature player);
 	
-	public abstract void broadcastOlympiadInfo(L2OlympiadStadiumZone stadium);
+	public abstract void broadcastOlympiadInfo(OlympiadStadiumZone stadium);
 	
 	protected abstract void broadcastPacket(L2GameServerPacket packet);
 	
@@ -445,7 +445,7 @@ public abstract class AbstractOlympiadGame
 	
 	protected abstract boolean haveWinner();
 	
-	protected abstract void validateWinner(L2OlympiadStadiumZone stadium);
+	protected abstract void validateWinner(OlympiadStadiumZone stadium);
 	
 	protected abstract int getDivider();
 	

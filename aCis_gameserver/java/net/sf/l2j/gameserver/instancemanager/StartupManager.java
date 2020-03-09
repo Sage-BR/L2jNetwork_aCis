@@ -36,8 +36,6 @@ import net.sf.l2j.gameserver.network.serverpackets.InventoryUpdate;
 import net.sf.l2j.gameserver.network.serverpackets.NpcHtmlMessage;
 import net.sf.l2j.gameserver.network.serverpackets.SocialAction;
 import net.sf.l2j.gameserver.taskmanager.ArmorTaskManager;
-import net.sf.l2j.gameserver.taskmanager.BuffTaskManager;
-import net.sf.l2j.gameserver.taskmanager.PreviewTaskManager;
 import net.sf.l2j.gameserver.taskmanager.WeaponTaskManager;
 
 /**
@@ -52,12 +50,9 @@ public class StartupManager
 	
 	public static void Welcome(Player player)
 	{
-		
-		final NpcHtmlMessage html = new NpcHtmlMessage(player.getObjectId());
 		if (player.getClassId().getId() >= 0)
 		{
-			html.setFile("data/html/mods/startup/startupsystem.htm");
-			player.sendPacket(html);
+			start(player);
 			player.setIsParalyzed(true);
 			ThreadPool.schedule(new Runnable()
 			{
@@ -69,33 +64,6 @@ public class StartupManager
 				}
 			}, 1000 * 2);
 		}
-	}
-	
-	public static void doPreview(Player player, int time)
-	{
-		player.setPreview(true);
-		player.setIsParalyzed(true);
-		player.getAppearance().setInvisible();
-		PreviewTaskManager.getInstance().add(player);
-		long remainingTime = player.getMemos().getLong("previewEndTime", 0);
-		if (remainingTime > 0)
-		{
-			player.getMemos().set("previewEndTime", remainingTime + TimeUnit.DAYS.toMillis(time));
-		}
-		else
-		{
-			player.getMemos().set("previewEndTime", System.currentTimeMillis() + TimeUnit.HOURS.toMillis(time));
-			player.broadcastUserInfo();
-		}
-	}
-	
-	public static void removePreview(Player player)
-	{
-		PreviewTaskManager.getInstance().remove(player);
-		player.getMemos().set("previewEndTime", 0);
-		player.setPreview(false);
-		player.broadcastUserInfo();
-		
 	}
 	
 	public static void doEquip(Player player, int time)
@@ -152,33 +120,6 @@ public class StartupManager
 		
 	}
 	
-	public static void doBuff(Player player, int time)
-	{
-		player.setBuff(true);
-		player.setIsParalyzed(true);
-		player.getAppearance().setInvisible();
-		BuffTaskManager.getInstance().add(player);
-		long remainingTime = player.getMemos().getLong("buffEndTime", 0);
-		if (remainingTime > 0)
-		{
-			player.getMemos().set("buffEndTime", remainingTime + TimeUnit.HOURS.toMillis(time));
-		}
-		else
-		{
-			player.getMemos().set("buffEndTime", System.currentTimeMillis() + TimeUnit.HOURS.toMillis(time));
-			player.broadcastUserInfo();
-		}
-	}
-	
-	public static void removeBuff(Player player)
-	{
-		BuffTaskManager.getInstance().remove(player);
-		player.getMemos().set("buffEndTime", 0);
-		player.setBuff(false);
-		player.broadcastUserInfo();
-		
-	}
-	
 	public static void onEnterEquip(Player activeChar)
 	{
 		long now = Calendar.getInstance().getTimeInMillis();
@@ -215,8 +156,6 @@ public class StartupManager
 	{
 		long now = Calendar.getInstance().getTimeInMillis();
 		long endDay = activeChar.getMemos().getLong("weaponEndTime");
-		ClassId classes = activeChar.getClassId();
-		
 		if (now > endDay)
 			StartupManager.removeWepEquip(activeChar);
 		else if (activeChar.isMageClass())
@@ -225,13 +164,7 @@ public class StartupManager
 			activeChar.setIsParalyzed(true);
 			activeChar.getAppearance().setInvisible();
 			NpcHtmlMessage html = new NpcHtmlMessage(1);
-			html.setFile("data/html/mods/startup/weapons/mageaweapons.htm");
-			activeChar.sendPacket(html);
-		}
-		else if (classes == ClassId.TREASURE_HUNTER || classes == ClassId.HAWKEYE || classes == ClassId.PLAINS_WALKER || classes == ClassId.SILVER_RANGER || classes == ClassId.ABYSS_WALKER || classes == ClassId.PHANTOM_RANGER)
-		{
-			NpcHtmlMessage html = new NpcHtmlMessage(1);
-			html.setFile("data/html/mods/startup/weapons/lightweapons.htm");
+			html.setFile("data/html/mods/startup/weapons/weapons.htm");
 			activeChar.sendPacket(html);
 		}
 		else
@@ -240,43 +173,8 @@ public class StartupManager
 			activeChar.setIsParalyzed(true);
 			activeChar.getAppearance().setInvisible();
 			NpcHtmlMessage html = new NpcHtmlMessage(1);
-			html.setFile("data/html/mods/startup/weapons/fighterweapons-1.htm");
+			html.setFile("data/html/mods/startup/weapons/weapons.htm");
 			activeChar.sendPacket(html);
-		}
-	}
-	
-	public static void onEnterPreview(Player activeChar)
-	{
-		long now = Calendar.getInstance().getTimeInMillis();
-		long endDay = activeChar.getMemos().getLong("previewEndTime");
-		
-		if (now > endDay)
-			StartupManager.removePreview(activeChar);
-		else
-		{
-			activeChar.setPreview(true);
-			activeChar.setIsParalyzed(true);
-			activeChar.getAppearance().setInvisible();
-			activeChar.enterNewMode(149918, -112541, -2080);
-			StartupManager.HtmlView1(activeChar);
-			activeChar.broadcastUserInfo();
-		}
-	}
-	
-	public static void onEnterBuff(Player activeChar)
-	{
-		long now = Calendar.getInstance().getTimeInMillis();
-		long endDay = activeChar.getMemos().getLong("buffEndTime");
-		
-		if (now > endDay)
-			StartupManager.removeBuff(activeChar);
-		else
-		{
-			activeChar.setBuff(true);
-			activeChar.setIsParalyzed(true);
-			activeChar.getAppearance().setInvisible();
-			StartupManager.HtmlBuff(activeChar);
-			activeChar.broadcastUserInfo();
 		}
 	}
 	
@@ -546,50 +444,7 @@ public class StartupManager
 	public void Classes(String command, Player player)
 	{
 		String params = command.substring(command.indexOf("_") + 1);
-		if (params.startsWith("farmzone1"))
-		{
-			player.enterNewMode(149918, -112541, -2080);
-			doPreview(player, 90);
-			ThreadPool.schedule(new Runnable()
-			{
-				@Override
-				public void run()
-				{
-					StartupManager.HtmlView1(player);
-					player.sendPacket(new CreatureSay(0, Say2.PARTYROOM_COMMANDER, "DROP", " ADENA"));
-				}
-			}, 1000 * 2);
-		}
-		else if (params.startsWith("farmzone2"))
-		{
-			player.enterNewMode(181387, -78694, -2732);
-			doPreview(player, 90);
-			StartupManager.HtmlView2(player);
-			ThreadPool.schedule(new Runnable()
-			{
-				
-				@Override
-				public void run()
-				{
-					player.sendPacket(new CreatureSay(0, Say2.PARTYROOM_COMMANDER, "DROP", " COINS, LS, BOG"));
-				}
-			}, 1000 * 2);
-		}
-		else if (params.startsWith("pvpzone"))
-		{
-			player.enterNewMode(10468, -24569, -3645);
-			doPreview(player, 90);
-			StartupManager.HtmlView3(player);
-			ThreadPool.schedule(new Runnable()
-			{
-				@Override
-				public void run()
-				{
-					player.sendPacket(new CreatureSay(0, Say2.PARTYROOM_COMMANDER, "PVP ZONE", " BE READY FOR PVP!"));
-				}
-			}, 1000 * 2);
-		}
-		else if (params.startsWith("tlh"))
+		if (params.startsWith("tlh"))
 		{
 			removeEquip(player);
 			List<Integer> TallumH = Arrays.asList(2382, 547, 5768, 5780, 924, 862, 893, 871, 902);
@@ -606,7 +461,7 @@ public class StartupManager
 					player.broadcastCharInfo();
 					new InventoryUpdate();
 					NpcHtmlMessage html = new NpcHtmlMessage(1);
-					html.setFile("data/html/mods/startup/weapons/fighterweapons-1.htm");
+					html.setFile("data/html/mods/startup/weapons/weapons.htm");
 					player.sendPacket(html);
 				}
 			}
@@ -628,7 +483,7 @@ public class StartupManager
 					player.broadcastCharInfo();
 					new InventoryUpdate();
 					NpcHtmlMessage html = new NpcHtmlMessage(1);
-					html.setFile("data/html/mods/startup/weapons/fighterweapons-1.htm");
+					html.setFile("data/html/mods/startup/weapons/weapons.htm");
 					player.sendPacket(html);
 				}
 			}
@@ -650,7 +505,7 @@ public class StartupManager
 					player.broadcastCharInfo();
 					new InventoryUpdate();
 					NpcHtmlMessage html = new NpcHtmlMessage(1);
-					html.setFile("data/html/mods/startup/weapons/lightweapons.htm");
+					html.setFile("data/html/mods/startup/weapons/weapons.htm");
 					player.sendPacket(html);
 				}
 			}
@@ -672,7 +527,7 @@ public class StartupManager
 					player.broadcastCharInfo();
 					new InventoryUpdate();
 					NpcHtmlMessage html = new NpcHtmlMessage(1);
-					html.setFile("data/html/mods/startup/weapons/lightweapons.htm");
+					html.setFile("data/html/mods/startup/weapons/weapons.htm");
 					player.sendPacket(html);
 				}
 			}
@@ -694,7 +549,7 @@ public class StartupManager
 					player.broadcastCharInfo();
 					new InventoryUpdate();
 					NpcHtmlMessage html = new NpcHtmlMessage(1);
-					html.setFile("data/html/mods/startup/weapons/fighterweapons-1.htm");
+					html.setFile("data/html/mods/startup/weapons/weapons.htm");
 					player.sendPacket(html);
 				}
 			}
@@ -716,7 +571,7 @@ public class StartupManager
 					player.broadcastCharInfo();
 					new InventoryUpdate();
 					NpcHtmlMessage html = new NpcHtmlMessage(1);
-					html.setFile("data/html/mods/startup/weapons/mageaweapons.htm");
+					html.setFile("data/html/mods/startup/weapons/weapons.htm");
 					player.sendPacket(html);
 				}
 			}
@@ -738,7 +593,7 @@ public class StartupManager
 					player.broadcastCharInfo();
 					new InventoryUpdate();
 					NpcHtmlMessage html = new NpcHtmlMessage(1);
-					html.setFile("data/html/mods/startup/weapons/mageaweapons.htm");
+					html.setFile("data/html/mods/startup/weapons/weapons.htm");
 					player.sendPacket(html);
 				}
 			}
@@ -760,7 +615,7 @@ public class StartupManager
 					player.broadcastCharInfo();
 					new InventoryUpdate();
 					NpcHtmlMessage html = new NpcHtmlMessage(1);
-					html.setFile("data/html/mods/startup/weapons/fighterweapons-1.htm");
+					html.setFile("data/html/mods/startup/weapons/weapons.htm");
 					player.sendPacket(html);
 				}
 			}
@@ -782,248 +637,540 @@ public class StartupManager
 					player.broadcastCharInfo();
 					new InventoryUpdate();
 					NpcHtmlMessage html = new NpcHtmlMessage(1);
-					html.setFile("data/html/mods/startup/weapons/fighterweapons-1.htm");
+					html.setFile("data/html/mods/startup/weapons/weapons.htm");
 					player.sendPacket(html);
 				}
 			}
 		}
-		else if (params.startsWith("som"))
+		else if (params.startsWith("darkhealth"))
 		{
-			List<Integer> SOM = Arrays.asList(151);
+			List<Integer> darkhealth = Arrays.asList(5648);
 			ItemInstance items = null;
-			for (int id : SOM)
+			for (int id : darkhealth)
 			{
-				if (SOM.contains(id))
+				if (darkhealth.contains(id))
 				{
 					player.getInventory().addItem("Weapon", id, 1, player, null);
 					items = player.getInventory().getItemByItemId(id);
 					player.getInventory().equipItemAndRecord(items);
 					player.getInventory().reloadEquippedItems();
 					removeWepEquip(player);
-					doBuff(player, 90);
+					Buff(player);
 					player.broadcastCharInfo();
 					new InventoryUpdate();
-					StartupManager.HtmlBuff(player);
 				}
 			}
 		}
-		else if (params.startsWith("bran"))
+		else if (params.startsWith("darkcdmg"))
 		{
-			List<Integer> bran = Arrays.asList(5607);
+			List<Integer> darkcdmg = Arrays.asList(5647);
 			ItemInstance items = null;
-			for (int id : bran)
+			for (int id : darkcdmg)
 			{
-				if (bran.contains(id))
+				if (darkcdmg.contains(id))
 				{
 					player.getInventory().addItem("Weapon", id, 1, player, null);
 					items = player.getInventory().getItemByItemId(id);
 					player.getInventory().equipItemAndRecord(items);
 					player.getInventory().reloadEquippedItems();
 					removeWepEquip(player);
-					doBuff(player, 90);
+					Buff(player);
 					player.broadcastCharInfo();
 					new InventoryUpdate();
-					StartupManager.HtmlBuff(player);
 				}
 			}
 		}
-		else if (params.startsWith("dread"))
+		else if (params.startsWith("darkrfocus"))
 		{
-			List<Integer> dread = Arrays.asList(5633);
+			List<Integer> darkrfocus = Arrays.asList(5649);
 			ItemInstance items = null;
-			for (int id : dread)
+			for (int id : darkrfocus)
 			{
-				if (dread.contains(id))
+				if (darkrfocus.contains(id))
 				{
 					player.getInventory().addItem("Weapon", id, 1, player, null);
 					items = player.getInventory().getItemByItemId(id);
 					player.getInventory().equipItemAndRecord(items);
 					player.getInventory().reloadEquippedItems();
 					removeWepEquip(player);
-					doBuff(player, 90);
+					Buff(player);
 					player.broadcastCharInfo();
 					new InventoryUpdate();
-					StartupManager.HtmlBuff(player);
 				}
 			}
 		}
-		else if (params.startsWith("darkl"))
+		else if (params.startsWith("dragonhealth"))
 		{
-			List<Integer> darkl = Arrays.asList(5648);
+			List<Integer> dragonhealth = Arrays.asList(5644);
 			ItemInstance items = null;
-			for (int id : darkl)
+			for (int id : dragonhealth)
 			{
-				if (darkl.contains(id))
+				if (dragonhealth.contains(id))
 				{
 					player.getInventory().addItem("Weapon", id, 1, player, null);
 					items = player.getInventory().getItemByItemId(id);
 					player.getInventory().equipItemAndRecord(items);
 					player.getInventory().reloadEquippedItems();
 					removeWepEquip(player);
-					doBuff(player, 90);
+					Buff(player);
 					player.broadcastCharInfo();
 					new InventoryUpdate();
-					StartupManager.HtmlBuff(player);
 				}
 			}
 		}
-		else if (params.startsWith("dragon"))
+		else if (params.startsWith("dragoncbleed"))
 		{
-			List<Integer> dra = Arrays.asList(5644);
+			List<Integer> dragoncbleed = Arrays.asList(5645);
 			ItemInstance items = null;
-			for (int id : dra)
+			for (int id : dragoncbleed)
 			{
-				if (dra.contains(id))
+				if (dragoncbleed.contains(id))
 				{
 					player.getInventory().addItem("Weapon", id, 1, player, null);
 					items = player.getInventory().getItemByItemId(id);
 					player.getInventory().equipItemAndRecord(items);
 					player.getInventory().reloadEquippedItems();
 					removeWepEquip(player);
-					doBuff(player, 90);
+					Buff(player);
 					player.broadcastCharInfo();
 					new InventoryUpdate();
-					StartupManager.HtmlBuff(player);
 				}
 			}
 		}
-		else if (params.startsWith("ely"))
+		else if (params.startsWith("dragoncdrain"))
 		{
-			List<Integer> ely = Arrays.asList(5602);
+			List<Integer> dragoncdrain = Arrays.asList(5646);
 			ItemInstance items = null;
-			for (int id : ely)
+			for (int id : dragoncdrain)
 			{
-				if (ely.contains(id))
+				if (dragoncdrain.contains(id))
 				{
 					player.getInventory().addItem("Weapon", id, 1, player, null);
 					items = player.getInventory().getItemByItemId(id);
 					player.getInventory().equipItemAndRecord(items);
 					player.getInventory().reloadEquippedItems();
 					removeWepEquip(player);
-					doBuff(player, 90);
+					Buff(player);
 					player.broadcastCharInfo();
 					new InventoryUpdate();
-					StartupManager.HtmlBuff(player);
 				}
 			}
 		}
-		else if (params.startsWith("carnage"))
+		else if (params.startsWith("doomanger"))
 		{
-			List<Integer> car = Arrays.asList(5609);
+			List<Integer> doomanger = Arrays.asList(8136);
 			ItemInstance items = null;
-			for (int id : car)
+			for (int id : doomanger)
 			{
-				if (car.contains(id))
+				if (doomanger.contains(id))
 				{
 					player.getInventory().addItem("Weapon", id, 1, player, null);
 					items = player.getInventory().getItemByItemId(id);
 					player.getInventory().equipItemAndRecord(items);
 					player.getInventory().reloadEquippedItems();
 					removeWepEquip(player);
-					doBuff(player, 90);
+					Buff(player);
 					player.broadcastCharInfo();
 					new InventoryUpdate();
-					StartupManager.HtmlBuff(player);
 				}
 			}
 		}
-		else if (params.startsWith("soulbow"))
+		else if (params.startsWith("doomhealth"))
 		{
-			List<Integer> soul = Arrays.asList(5612);
+			List<Integer> doomhealth = Arrays.asList(8135);
 			ItemInstance items = null;
-			for (int id : soul)
+			for (int id : doomhealth)
 			{
-				if (soul.contains(id))
+				if (doomhealth.contains(id))
 				{
 					player.getInventory().addItem("Weapon", id, 1, player, null);
 					items = player.getInventory().getItemByItemId(id);
 					player.getInventory().equipItemAndRecord(items);
 					player.getInventory().reloadEquippedItems();
 					removeWepEquip(player);
-					doBuff(player, 90);
+					Buff(player);
 					player.broadcastCharInfo();
 					new InventoryUpdate();
-					StartupManager.HtmlBuff(player);
 				}
 			}
 		}
-		else if (params.startsWith("bloody"))
+		else if (params.startsWith("doomrhaste"))
 		{
-			List<Integer> bloody = Arrays.asList(5614);
+			List<Integer> doomrhaste = Arrays.asList(8137);
 			ItemInstance items = null;
-			for (int id : bloody)
+			for (int id : doomrhaste)
 			{
-				if (bloody.contains(id))
+				if (doomrhaste.contains(id))
 				{
 					player.getInventory().addItem("Weapon", id, 1, player, null);
 					items = player.getInventory().getItemByItemId(id);
 					player.getInventory().equipItemAndRecord(items);
 					player.getInventory().reloadEquippedItems();
 					removeWepEquip(player);
-					doBuff(player, 90);
+					Buff(player);
 					player.broadcastCharInfo();
 					new InventoryUpdate();
-					StartupManager.HtmlBuff(player);
 				}
 			}
 		}
-		else if (params.startsWith("soulsepa"))
+		else if (params.startsWith("sepacdamage"))
 		{
-			List<Integer> soulsepa = Arrays.asList(5618);
+			List<Integer> sepacdamage = Arrays.asList(5618);
 			ItemInstance items = null;
-			for (int id : soulsepa)
+			for (int id : sepacdamage)
 			{
-				if (soulsepa.contains(id))
+				if (sepacdamage.contains(id))
 				{
 					player.getInventory().addItem("Weapon", id, 1, player, null);
 					items = player.getInventory().getItemByItemId(id);
 					player.getInventory().equipItemAndRecord(items);
 					player.getInventory().reloadEquippedItems();
 					removeWepEquip(player);
-					doBuff(player, 90);
+					Buff(player);
 					player.broadcastCharInfo();
 					new InventoryUpdate();
-					StartupManager.HtmlBuff(player);
 				}
 			}
 		}
-		else if (params.startsWith("damascus"))
+		else if (params.startsWith("sepaguidance"))
 		{
-			List<Integer> damascus = Arrays.asList(5706);
+			List<Integer> sepaguidance = Arrays.asList(5617);
 			ItemInstance items = null;
-			for (int id : damascus)
+			for (int id : sepaguidance)
 			{
-				if (damascus.contains(id))
+				if (sepaguidance.contains(id))
 				{
 					player.getInventory().addItem("Weapon", id, 1, player, null);
 					items = player.getInventory().getItemByItemId(id);
 					player.getInventory().equipItemAndRecord(items);
 					player.getInventory().reloadEquippedItems();
 					removeWepEquip(player);
-					doBuff(player, 90);
+					Buff(player);
 					player.broadcastCharInfo();
 					new InventoryUpdate();
-					StartupManager.HtmlBuff(player);
 				}
 			}
 		}
-		else if (params.startsWith("grinder"))
+		else if (params.startsWith("separhaste"))
 		{
-			List<Integer> grinder = Arrays.asList(5625);
+			List<Integer> separhaste = Arrays.asList(5619);
 			ItemInstance items = null;
-			for (int id : grinder)
+			for (int id : separhaste)
 			{
-				if (grinder.contains(id))
+				if (separhaste.contains(id))
 				{
 					player.getInventory().addItem("Weapon", id, 1, player, null);
 					items = player.getInventory().getItemByItemId(id);
 					player.getInventory().equipItemAndRecord(items);
 					player.getInventory().reloadEquippedItems();
 					removeWepEquip(player);
-					doBuff(player, 90);
+					Buff(player);
 					player.broadcastCharInfo();
 					new InventoryUpdate();
-					StartupManager.HtmlBuff(player);
+				}
+			}
+		}
+		else if (params.startsWith("soulshot"))
+		{
+			List<Integer> soulshot = Arrays.asList(5611);
+			ItemInstance items = null;
+			for (int id : soulshot)
+			{
+				if (soulshot.contains(id))
+				{
+					player.getInventory().addItem("Weapon", id, 1, player, null);
+					items = player.getInventory().getItemByItemId(id);
+					player.getInventory().equipItemAndRecord(items);
+					player.getInventory().reloadEquippedItems();
+					removeWepEquip(player);
+					Buff(player);
+					player.broadcastCharInfo();
+					new InventoryUpdate();
+				}
+			}
+		}
+		else if (params.startsWith("soulpoison"))
+		{
+			List<Integer> soulpoison = Arrays.asList(5613);
+			ItemInstance items = null;
+			for (int id : soulpoison)
+			{
+				if (soulpoison.contains(id))
+				{
+					player.getInventory().addItem("Weapon", id, 1, player, null);
+					items = player.getInventory().getItemByItemId(id);
+					player.getInventory().equipItemAndRecord(items);
+					player.getInventory().reloadEquippedItems();
+					removeWepEquip(player);
+					Buff(player);
+					player.broadcastCharInfo();
+					new InventoryUpdate();
+				}
+			}
+		}
+		else if (params.startsWith("soulrecov"))
+		{
+			List<Integer> soulrecov = Arrays.asList(5612);
+			ItemInstance items = null;
+			for (int id : soulrecov)
+			{
+				if (soulrecov.contains(id))
+				{
+					player.getInventory().addItem("Weapon", id, 1, player, null);
+					items = player.getInventory().getItemByItemId(id);
+					player.getInventory().equipItemAndRecord(items);
+					player.getInventory().reloadEquippedItems();
+					removeWepEquip(player);
+					Buff(player);
+					player.broadcastCharInfo();
+					new InventoryUpdate();
+				}
+			}
+		}
+		else if (params.startsWith("grindergui"))
+		{
+			List<Integer> grindergui = Arrays.asList(5624);
+			ItemInstance items = null;
+			for (int id : grindergui)
+			{
+				if (grindergui.contains(id))
+				{
+					player.getInventory().addItem("Weapon", id, 1, player, null);
+					items = player.getInventory().getItemByItemId(id);
+					player.getInventory().equipItemAndRecord(items);
+					player.getInventory().reloadEquippedItems();
+					removeWepEquip(player);
+					Buff(player);
+					player.broadcastCharInfo();
+					new InventoryUpdate();
+				}
+			}
+		}
+		else if (params.startsWith("grinderhealth"))
+		{
+			List<Integer> grinderhealth = Arrays.asList(5625);
+			ItemInstance items = null;
+			for (int id : grinderhealth)
+			{
+				if (grinderhealth.contains(id))
+				{
+					player.getInventory().addItem("Weapon", id, 1, player, null);
+					items = player.getInventory().getItemByItemId(id);
+					player.getInventory().equipItemAndRecord(items);
+					player.getInventory().reloadEquippedItems();
+					removeWepEquip(player);
+					Buff(player);
+					player.broadcastCharInfo();
+					new InventoryUpdate();
+				}
+			}
+		}
+		else if (params.startsWith("grinderrevas"))
+		{
+			List<Integer> grinderrevas = Arrays.asList(5623);
+			ItemInstance items = null;
+			for (int id : grinderrevas)
+			{
+				if (grinderrevas.contains(id))
+				{
+					player.getInventory().addItem("Weapon", id, 1, player, null);
+					items = player.getInventory().getItemByItemId(id);
+					player.getInventory().equipItemAndRecord(items);
+					player.getInventory().reloadEquippedItems();
+					removeWepEquip(player);
+					Buff(player);
+					player.broadcastCharInfo();
+					new InventoryUpdate();
+				}
+			}
+		}
+		else if (params.startsWith("tallumguid"))
+		{
+			List<Integer> tallumguid = Arrays.asList(5632);
+			ItemInstance items = null;
+			for (int id : tallumguid)
+			{
+				if (tallumguid.contains(id))
+				{
+					player.getInventory().addItem("Weapon", id, 1, player, null);
+					items = player.getInventory().getItemByItemId(id);
+					player.getInventory().equipItemAndRecord(items);
+					player.getInventory().reloadEquippedItems();
+					removeWepEquip(player);
+					Buff(player);
+					player.broadcastCharInfo();
+					new InventoryUpdate();
+				}
+			}
+		}
+		else if (params.startsWith("tallumhealth"))
+		{
+			List<Integer> tallumhealth = Arrays.asList(5633);
+			ItemInstance items = null;
+			for (int id : tallumhealth)
+			{
+				if (tallumhealth.contains(id))
+				{
+					player.getInventory().addItem("Weapon", id, 1, player, null);
+					items = player.getInventory().getItemByItemId(id);
+					player.getInventory().equipItemAndRecord(items);
+					player.getInventory().reloadEquippedItems();
+					removeWepEquip(player);
+					Buff(player);
+					player.broadcastCharInfo();
+					new InventoryUpdate();
+				}
+			}
+		}
+		else if (params.startsWith("tallumblow"))
+		{
+			List<Integer> tallumblow = Arrays.asList(5634);
+			ItemInstance items = null;
+			for (int id : tallumblow)
+			{
+				if (tallumblow.contains(id))
+				{
+					player.getInventory().addItem("Weapon", id, 1, player, null);
+					items = player.getInventory().getItemByItemId(id);
+					player.getInventory().equipItemAndRecord(items);
+					player.getInventory().reloadEquippedItems();
+					removeWepEquip(player);
+					Buff(player);
+					player.broadcastCharInfo();
+					new InventoryUpdate();
+				}
+			}
+		}
+		else if (params.startsWith("somacume"))
+		{
+			List<Integer> somacume = Arrays.asList(5643);
+			ItemInstance items = null;
+			for (int id : somacume)
+			{
+				if (somacume.contains(id))
+				{
+					player.getInventory().addItem("Weapon", id, 1, player, null);
+					items = player.getInventory().getItemByItemId(id);
+					player.getInventory().equipItemAndRecord(items);
+					player.getInventory().reloadEquippedItems();
+					removeWepEquip(player);
+					Buff(player);
+					player.broadcastCharInfo();
+					new InventoryUpdate();
+				}
+			}
+		}
+		else if (params.startsWith("sompower"))
+		{
+			List<Integer> sompower = Arrays.asList(5641);
+			ItemInstance items = null;
+			for (int id : sompower)
+			{
+				if (sompower.contains(id))
+				{
+					player.getInventory().addItem("Weapon", id, 1, player, null);
+					items = player.getInventory().getItemByItemId(id);
+					player.getInventory().equipItemAndRecord(items);
+					player.getInventory().reloadEquippedItems();
+					removeWepEquip(player);
+					Buff(player);
+					player.broadcastCharInfo();
+					new InventoryUpdate();
+				}
+			}
+		}
+		else if (params.startsWith("somsilence"))
+		{
+			List<Integer> somsilence = Arrays.asList(5642);
+			ItemInstance items = null;
+			for (int id : somsilence)
+			{
+				if (somsilence.contains(id))
+				{
+					player.getInventory().addItem("Weapon", id, 1, player, null);
+					items = player.getInventory().getItemByItemId(id);
+					player.getInventory().equipItemAndRecord(items);
+					player.getInventory().reloadEquippedItems();
+					removeWepEquip(player);
+					Buff(player);
+					player.broadcastCharInfo();
+					new InventoryUpdate();
+				}
+			}
+		}
+		else if (params.startsWith("elysiananger"))
+		{
+			List<Integer> elysiananger = Arrays.asList(5603);
+			ItemInstance items = null;
+			for (int id : elysiananger)
+			{
+				if (elysiananger.contains(id))
+				{
+					player.getInventory().addItem("Weapon", id, 1, player, null);
+					items = player.getInventory().getItemByItemId(id);
+					player.getInventory().equipItemAndRecord(items);
+					player.getInventory().reloadEquippedItems();
+					removeWepEquip(player);
+					Buff(player);
+					player.broadcastCharInfo();
+					new InventoryUpdate();
+				}
+			}
+		}
+		else if (params.startsWith("elysiacdrain"))
+		{
+			List<Integer> elysiacdrain = Arrays.asList(5604);
+			ItemInstance items = null;
+			for (int id : elysiacdrain)
+			{
+				if (elysiacdrain.contains(id))
+				{
+					player.getInventory().addItem("Weapon", id, 1, player, null);
+					items = player.getInventory().getItemByItemId(id);
+					player.getInventory().equipItemAndRecord(items);
+					player.getInventory().reloadEquippedItems();
+					removeWepEquip(player);
+					Buff(player);
+					player.broadcastCharInfo();
+					new InventoryUpdate();
+				}
+			}
+		}
+		else if (params.startsWith("elysiahealth"))
+		{
+			List<Integer> elysiahealth = Arrays.asList(5602);
+			ItemInstance items = null;
+			for (int id : elysiahealth)
+			{
+				if (elysiahealth.contains(id))
+				{
+					player.getInventory().addItem("Weapon", id, 1, player, null);
+					items = player.getInventory().getItemByItemId(id);
+					player.getInventory().equipItemAndRecord(items);
+					player.getInventory().reloadEquippedItems();
+					removeWepEquip(player);
+					Buff(player);
+					player.broadcastCharInfo();
+					new InventoryUpdate();
+				}
+			}
+		}
+		else if (params.startsWith("damascusdual"))
+		{
+			List<Integer> damascusdual = Arrays.asList(5706);
+			ItemInstance items = null;
+			for (int id : damascusdual)
+			{
+				if (damascusdual.contains(id))
+				{
+					player.getInventory().addItem("Weapon", id, 1, player, null);
+					items = player.getInventory().getItemByItemId(id);
+					player.getInventory().equipItemAndRecord(items);
+					player.getInventory().reloadEquippedItems();
+					removeWepEquip(player);
+					Buff(player);
+					player.broadcastCharInfo();
+					new InventoryUpdate();
 				}
 			}
 		}
@@ -1040,49 +1187,6 @@ public class StartupManager
 			}, 500 * 1);
 			
 		}
-		else if (params.startsWith("welcome"))
-			StartupManager.start(player);
-		else if (params.startsWith("page1"))
-			StartupManager.WeaponsPage1(player);
-		else if (params.startsWith("page2"))
-			StartupManager.WeaponsPage2(player);
-		else if (params.startsWith("buff"))
-			StartupManager.Buff(player);
-	}
-	
-	public static void HtmlView(Player player)
-	{
-		NpcHtmlMessage html = new NpcHtmlMessage(1);
-		html.setFile("data/html/mods/startup/preview/previewme.htm");
-		player.sendPacket(html);
-	}
-	
-	public static void HtmlView1(Player player)
-	{
-		NpcHtmlMessage html = new NpcHtmlMessage(1);
-		html.setFile("data/html/mods/startup/preview/previewme-1.htm");
-		player.sendPacket(html);
-	}
-	
-	public static void HtmlView2(Player player)
-	{
-		NpcHtmlMessage html = new NpcHtmlMessage(1);
-		html.setFile("data/html/mods/startup/preview/previewme-2.htm");
-		player.sendPacket(html);
-	}
-	
-	public static void HtmlView3(Player player)
-	{
-		NpcHtmlMessage html = new NpcHtmlMessage(1);
-		html.setFile("data/html/mods/startup/teleport.htm");
-		player.sendPacket(html);
-	}
-	
-	public static void HtmlBuff(Player player)
-	{
-		NpcHtmlMessage html = new NpcHtmlMessage(1);
-		html.setFile("data/html/mods/startup/buffme.htm");
-		player.sendPacket(html);
 	}
 	
 	public static void HtmlTeleport(Player player)
@@ -1092,32 +1196,25 @@ public class StartupManager
 		player.sendPacket(html);
 	}
 	
-	public static void WeaponsPage1(Player player)
+	public static void WeaponsPage(Player player)
 	{
 		NpcHtmlMessage html = new NpcHtmlMessage(1);
-		html.setFile("data/html/mods/startup/weapons/fighterweapons-1.htm");
-		player.sendPacket(html);
-	}
-	
-	public static void WeaponsPage2(Player player)
-	{
-		NpcHtmlMessage html = new NpcHtmlMessage(1);
-		html.setFile("data/html/mods/startup/weapons/fighterweapons-2.htm");
+		html.setFile("data/html/mods/startup/weapons/weapons.htm");
 		player.sendPacket(html);
 	}
 	
 	public static void Buff(Player player)
 	{
-		StartupManager.HtmlView(player);
 		for (int id : (player.isMageClass() || player.getClassId() == ClassId.DOMINATOR || player.getClassId() == ClassId.DOOMCRYER) ? Config.NEWBIE_MAGE_BUFFS : Config.NEWBIE_FIGHTER_BUFFS)
 		{
 			player.setCurrentHp(player.getMaxHp());
 			player.setCurrentCp(player.getMaxCp());
 			player.setCurrentMp(player.getMaxMp());
-			removeBuff(player);
-			doPreview(player, 90);
 			L2Skill buff = SkillTable.getInstance().getInfo(id, SkillTable.getInstance().getMaxLevel(id));
 			buff.getEffects(player, player);
+			player.broadcastPacket(new SocialAction(player, 9));
+			
+			HtmlTeleport(player);
 		}
 	}
 	
@@ -1128,8 +1225,6 @@ public class StartupManager
 		player.getAppearance().setVisible();
 		player.setIsParalyzed(false);
 		player.setIsInvul(false);
-		removePreview(player);
-		removeBuff(player);
 		removeEquip(player);
 		removeWepEquip(player);
 		ThreadPool.schedule(new Runnable()

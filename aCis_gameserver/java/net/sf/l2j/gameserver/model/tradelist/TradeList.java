@@ -530,22 +530,22 @@ public class TradeList
 	 * Buy items from this PrivateStore list
 	 * @param player
 	 * @param items
-	 * @return int: result of trading. 0 - ok, 1 - canceled (no adena), 2 - failed (item error)
+	 * @return true if successful, false otherwise.
 	 */
-	public synchronized int privateStoreBuy(Player player, Set<ItemRequest> items)
+	public synchronized boolean privateStoreBuy(Player player, Set<ItemRequest> items)
 	{
 		if (_locked)
-			return 1;
+			return false;
 		
 		if (!validate())
 		{
 			lock();
-			return 1;
+			return false;
 		}
 		
 		if (!_owner.isOnline() || !player.isOnline())
-			return 1;
-		
+			return false;;
+			
 		int slots = 0;
 		long weight = 0;
 		long totalPrice = 0;
@@ -574,19 +574,19 @@ public class TradeList
 			if (!found)
 			{
 				if (isPackaged())
-					return 2;
+					return false;
 				
 				item.setCount(0);
 				continue;
 			}
 			
-			totalPrice += (long)item.getCount() * item.getPrice();
+			totalPrice += (long) item.getCount() * item.getPrice();
 			// Check for overflow
 			if (Integer.MAX_VALUE / item.getCount() < item.getPrice() || totalPrice > Integer.MAX_VALUE || totalPrice < 0)
 			{
 				// private store attempting to overflow - disable it
 				lock();
-				return 1;
+				return false;
 			}
 			
 			// Check if requested item is available for manipulation
@@ -595,13 +595,13 @@ public class TradeList
 			{
 				// private store sell invalid item - disable it
 				lock();
-				return 2;
+				return false;
 			}
 			
 			Item template = ItemTable.getInstance().getTemplate(item.getItemId());
 			if (template == null)
 				continue;
-			weight += (long)item.getCount() * template.getWeight();
+			weight += (long) item.getCount() * template.getWeight();
 			if (!template.isStackable())
 				slots += item.getCount();
 			else if (playerInventory.getItemByItemId(item.getItemId()) == null)
@@ -611,19 +611,19 @@ public class TradeList
 		if (totalPrice > playerInventory.getAdena())
 		{
 			player.sendPacket(SystemMessageId.YOU_NOT_ENOUGH_ADENA);
-			return 1;
+			return false;
 		}
 		
 		if (!playerInventory.validateCapacity(slots))
 		{
 			player.sendPacket(SystemMessageId.SLOTS_FULL);
-			return 1;
+			return false;
 		}
 		
-		if (weight > Integer.MAX_VALUE || weight < 0 || !playerInventory.validateWeight((int)weight))
+		if (weight > Integer.MAX_VALUE || weight < 0 || !playerInventory.validateWeight((int) weight))
 		{
 			player.sendPacket(SystemMessageId.WEIGHT_LIMIT_EXCEEDED);
-			return 1;
+			return false;
 		}
 		
 		// Prepare inventory update packets
@@ -631,14 +631,14 @@ public class TradeList
 		final InventoryUpdate playerIU = new InventoryUpdate();
 		
 		final ItemInstance adenaItem = playerInventory.getAdenaInstance();
-		if (totalPrice < 0 || !playerInventory.reduceAdena("PrivateStore", (int)totalPrice, player, _owner))
+		if (totalPrice < 0 || !playerInventory.reduceAdena("PrivateStore", (int) totalPrice, player, _owner))
 		{
 			player.sendPacket(SystemMessageId.YOU_NOT_ENOUGH_ADENA);
-			return 1;
+			return false;
 		}
 		
 		playerIU.addItem(adenaItem);
-		ownerInventory.addAdena("PrivateStore", (int)totalPrice, _owner, player);
+		ownerInventory.addAdena("PrivateStore", (int) totalPrice, _owner, player);
 		
 		boolean ok = true;
 		
@@ -710,16 +710,16 @@ public class TradeList
 		_owner.sendPacket(ownerIU);
 		player.sendPacket(playerIU);
 		if (ok)
-			return 0;
+			return true;
 		
-		return 2;
+		return false;
 	}
 	
 	/**
 	 * Sell items to this PrivateStore list
 	 * @param player
 	 * @param items
-	 * @return : boolean true if success
+	 * @return true if successful, false otherwise.
 	 */
 	public synchronized boolean privateStoreSell(Player player, ItemRequest[] items)
 	{
@@ -765,7 +765,7 @@ public class TradeList
 			if (!found)
 				continue;
 			
-			long _totalPrice = totalPrice + (long)item.getCount() * item.getPrice();
+			long _totalPrice = totalPrice + (long) item.getCount() * item.getPrice();
 			// check for overflow
 			if (Integer.MAX_VALUE / item.getCount() < item.getPrice() || _totalPrice > Integer.MAX_VALUE || _totalPrice < 0)
 			{
@@ -808,7 +808,7 @@ public class TradeList
 			ok = true;
 			
 			// increase total price only after successful transaction
-			totalPrice = (int)_totalPrice;
+			totalPrice = (int) _totalPrice;
 			
 			// Add changes to inventory update packets
 			if (oldItem.getCount() > 0 && oldItem != newItem)

@@ -21,10 +21,9 @@ import net.sf.l2j.commons.mmocore.ReceivablePacket;
 import net.sf.l2j.Config;
 import net.sf.l2j.L2DatabaseFactory;
 import net.sf.l2j.gameserver.LoginServerThread;
-import net.sf.l2j.gameserver.data.PlayerNameTable;
 import net.sf.l2j.gameserver.data.sql.ClanTable;
-import net.sf.l2j.gameserver.events.phoenixevents.EventManager;
-import net.sf.l2j.gameserver.model.CharSelectInfoPackage;
+import net.sf.l2j.gameserver.data.sql.PlayerInfoTable;
+import net.sf.l2j.gameserver.model.CharSelectSlot;
 import net.sf.l2j.gameserver.model.World;
 import net.sf.l2j.gameserver.model.actor.instance.Player;
 import net.sf.l2j.gameserver.model.group.Party.MessageType;
@@ -61,7 +60,7 @@ public final class L2GameClient extends MMOClient<MMOConnection<L2GameClient>> i
 	@SuppressWarnings("unused")
 	private boolean _isAuthedGG;
 	private final long _connectionStartTime;
-	private CharSelectInfoPackage[] _charSlotMapping = null;
+	private CharSelectSlot[] _slots;
 	
 	// floodprotectors
 	private final long[] _floodProtectors = new long[FloodProtectors.Action.VALUES_LENGTH];
@@ -289,7 +288,7 @@ public final class L2GameClient extends MMOClient<MMOConnection<L2GameClient>> i
 		if (objid < 0)
 			return;
 		
-		PlayerNameTable.getInstance().removePlayer(objid);
+		PlayerInfoTable.getInstance().removePlayer(objid);
 		
 		try (Connection con = L2DatabaseFactory.getInstance().getConnection())
 		{
@@ -316,7 +315,7 @@ public final class L2GameClient extends MMOClient<MMOConnection<L2GameClient>> i
 			statement.execute();
 			statement.close();
 			
-			statement = con.prepareStatement("DELETE FROM character_recipebook WHERE char_id=?");
+			statement = con.prepareStatement("DELETE FROM character_recipebook WHERE charId=?");
 			statement.setInt(1, objid);
 			statement.execute();
 			statement.close();
@@ -423,19 +422,25 @@ public final class L2GameClient extends MMOClient<MMOConnection<L2GameClient>> i
 	}
 	
 	/**
-	 * @param chars
+	 * Get a {@link CharSelectSlot} based on its id. Integrity checks are included.
+	 * @param id : The slot id to call.
+	 * @return the associated slot informations based on slot id
 	 */
-	public void setCharSelection(CharSelectInfoPackage[] chars)
+	public CharSelectSlot getCharSelectSlot(int id)
 	{
-		_charSlotMapping = chars;
-	}
-	
-	public CharSelectInfoPackage getCharSelection(int charslot)
-	{
-		if ((_charSlotMapping == null) || (charslot < 0) || (charslot >= _charSlotMapping.length))
+		if (_slots == null || id < 0 || id >= _slots.length)
 			return null;
 		
-		return _charSlotMapping[charslot];
+		return _slots[id];
+	}
+	
+		/**
+		 * Set the character selection slots.
+		 * @param list : Use the List as character slots.
+		 */
+		public void setCharSelectSlot(CharSelectSlot[] list)
+	{
+			_slots = list;
 	}
 	
 	public void close(L2GameServerPacket gsp)
@@ -452,7 +457,7 @@ public final class L2GameClient extends MMOClient<MMOConnection<L2GameClient>> i
 	 */
 	private int getObjectIdForSlot(int charslot)
 	{
-		final CharSelectInfoPackage info = getCharSelection(charslot);
+		final CharSelectSlot info = getCharSelectSlot(charslot);
 		if (info == null)
 		{
 			_log.warning(toString() + " tried to delete Character in slot " + charslot + " but no characters exits at that slot.");
@@ -539,15 +544,13 @@ public final class L2GameClient extends MMOClient<MMOConnection<L2GameClient>> i
 				if (getActiveChar() != null && !isDetached())
 				{
 					setDetached(true);
-					
 					if (offlineMode(getActiveChar()))
 					{
 						if (getActiveChar().getParty() != null)
 							getActiveChar().getParty().removePartyMember(getActiveChar(), MessageType.EXPELLED);
-						
 						OlympiadManager.getInstance().unRegisterNoble(getActiveChar());
 						
-						// If the character has Pet, unsummon it.
+						// If the Character has Pet, unsummon it
 						if (getActiveChar().hasPet())
 						{
 							getActiveChar().getPet().unSummon(getActiveChar());
@@ -570,11 +573,7 @@ public final class L2GameClient extends MMOClient<MMOConnection<L2GameClient>> i
 						
 						return;
 					}
-					
 					fast = !getActiveChar().isInCombat() && !getActiveChar().isLocked();
-					
-					// Unregister player if something wrong happened
-					EventManager.getInstance().unregisterPlayer(getActiveChar());
 				}
 				cleanMe(fast);
 			}
@@ -591,7 +590,7 @@ public final class L2GameClient extends MMOClient<MMOConnection<L2GameClient>> i
 	 */
 	public static boolean offlineMode(Player player)
 	{
-		if (player.isInOlympiadMode() || player.isFestivalParticipant() || player.isInJail() || player.getVehicle() != null)
+		if (player.isInOlympiadMode() || player.isFestivalParticipant() || player.isInJail() || player.getBoat() != null)
 			return false;
 		
 		boolean canSetShop = false;

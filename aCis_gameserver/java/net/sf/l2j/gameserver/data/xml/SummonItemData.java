@@ -29,7 +29,7 @@ public class SummonItemData extends XMLDocument
 	protected void load()
 	{
 		loadDocument("./data/xml/summonItems.xml");
-		LOG.info("Loaded " + _items.size() + " summon items.");
+		LOGGER.info("Loaded {} summon items.", _items.size());
 	}
 	
 	@Override

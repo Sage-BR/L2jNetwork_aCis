@@ -1313,13 +1313,6 @@
     <set name="weight" val="240" />
     <set name="price" val="126000" />
     <for>
-      <add order="0x10" stat="pDef" val="250" />
-      <add order="0x10" stat="pAtkSpd" val="40" />
-      <add order="0x10" stat="mAtkSpd" val="40" />
-      <add order="0x10" stat="mAtk" val="100" />
-      <add order="0x10" stat="pAtk" val="100" />
-      <add order="0x10" stat="maxCp" val="900" />
-      <add order="0x10" stat="maxHp" val="900" />
       <enchant order="0x0C" stat="pDef" val="0" />
     </for>
   </item>

@@ -14,16 +14,13 @@ public class ConsoleLogFormatter extends MasterFormatter
 		
 		StringUtil.append(sb, record.getMessage(), CRLF);
 		
-		if (record.getThrown() != null)
+		final Throwable throwable = record.getThrown();
+		if (throwable != null)
 		{
-			try
-			{
-				StringUtil.append(sb, record.getThrown().getMessage(), CRLF);
-			}
-			catch (Exception ex)
-			{
-			}
+			for (StackTraceElement traceElement : throwable.getStackTrace())
+				StringUtil.append(sb, SHIFT, traceElement, CRLF);
 		}
+		
 		return sb.toString();
 	}
 }

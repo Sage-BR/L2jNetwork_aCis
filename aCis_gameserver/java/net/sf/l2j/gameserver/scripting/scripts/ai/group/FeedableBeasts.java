@@ -7,7 +7,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import net.sf.l2j.commons.random.Rnd;
 import net.sf.l2j.commons.util.ArraysUtil;
 
-import net.sf.l2j.gameserver.data.NpcTable;
+import net.sf.l2j.gameserver.data.xml.NpcData;
 import net.sf.l2j.gameserver.idfactory.IdFactory;
 import net.sf.l2j.gameserver.model.L2Skill;
 import net.sf.l2j.gameserver.model.WorldObject;
@@ -607,7 +607,7 @@ public class FeedableBeasts extends L2AttackableAIScript
 			if (player.getTrainedBeast() != null)
 				player.getTrainedBeast().deleteMe();
 			
-			NpcTemplate template = NpcTable.getInstance().getTemplate(nextNpcId);
+			NpcTemplate template = NpcData.getInstance().getTemplate(nextNpcId);
 			TamedBeast nextNpc = new TamedBeast(IdFactory.getInstance().getNextId(), template, player, food, npc.getX(), npc.getY(), npc.getZ());
 			nextNpc.setRunning();
 			

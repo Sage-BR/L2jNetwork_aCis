@@ -13,10 +13,9 @@ import net.sf.l2j.commons.math.MathUtil;
 import net.sf.l2j.commons.random.Rnd;
 
 import net.sf.l2j.Config;
-import net.sf.l2j.gameserver.data.MapRegionTable;
-import net.sf.l2j.gameserver.data.MapRegionTable.TeleportType;
 import net.sf.l2j.gameserver.data.SkillTable.FrequentSkill;
-import net.sf.l2j.gameserver.events.phoenixevents.EventManager;
+import net.sf.l2j.gameserver.data.xml.MapRegionData;
+import net.sf.l2j.gameserver.data.xml.MapRegionData.TeleportType;
 import net.sf.l2j.gameserver.geoengine.GeoEngine;
 import net.sf.l2j.gameserver.handler.ISkillHandler;
 import net.sf.l2j.gameserver.handler.SkillHandler;
@@ -105,13 +104,7 @@ import net.sf.l2j.gameserver.templates.skills.L2SkillType;
 import net.sf.l2j.gameserver.util.Broadcast;
 
 /**
- * Creature is the mother class of all character objects of the world (PC, NPC...) :
- * <ul>
- * <li>L2CastleGuardInstance</li>
- * <li>L2DoorInstance</li>
- * <li>L2Npc</li>
- * <li>L2Playable</li>
- * </ul>
+ * An instance type extending {@link WorldObject} which represents the mother class of all character objects of the world such as players, NPCs and monsters.
  */
 public abstract class Creature extends WorldObject
 {
@@ -162,36 +155,11 @@ public abstract class Creature extends WorldObject
 	private ChanceSkillList _chanceSkills;
 	protected FusionSkill _fusionSkill;
 	
-	/** Zone system */
-	private final byte[] _zones = new byte[ZoneId.getZoneCount()];
+	private final byte[] _zones = new byte[ZoneId.VALUES.length];
 	protected byte _zoneValidateCounter = 4;
 	
 	private boolean _isRaid = false;
 	
-	/**
-	 * Constructor of Creature.<BR>
-	 * <BR>
-	 * <B><U> Concept</U> :</B><BR>
-	 * <BR>
-	 * Each Creature owns generic and static properties (ex : all Keltir have the same number of HP...). All of those properties are stored in a different template for each type of Creature. Each template is loaded once in the server cache memory (reduce memory use). When a new instance of Creature
-	 * is spawned, server just create a link between the instance and the template This link is stored in <B>_template</B><BR>
-	 * <BR>
-	 * <B><U> Actions</U> :</B>
-	 * <ul>
-	 * <li>Set the _template of the Creature</li>
-	 * <li>Set _overloaded to false (the charcater can take more items)</li>
-	 * </ul>
-	 * <ul>
-	 * <li>If Creature is a L2Npc, copy skills from template to object</li>
-	 * <li>If Creature is a L2Npc, link _calculators to NPC_STD_CALCULATOR</li>
-	 * </ul>
-	 * <ul>
-	 * <li>If Creature is NOT a L2Npc, create an empty _skills slot</li>
-	 * <li>If Creature is a Player or L2Summon, copy basic Calculator set to object</li>
-	 * </ul>
-	 * @param objectId Identifier of the object to initialized
-	 * @param template The L2CharTemplate to apply to the object
-	 */
 	public Creature(int objectId, CreatureTemplate template)
 	{
 		super(objectId);
@@ -268,9 +236,6 @@ public abstract class Creature extends WorldObject
 		setIsTeleporting(false);
 	}
 	
-	/**
-	 * @return character inventory, default null, overridden in L2Playable types and in L2Npc.
-	 */
 	public Inventory getInventory()
 	{
 		return null;
@@ -492,11 +457,9 @@ public abstract class Creature extends WorldObject
 	
 	public void teleToLocation(TeleportType teleportWhere)
 	{
-		teleToLocation(MapRegionTable.getInstance().getLocationToTeleport(this, teleportWhere), 20);
+		teleToLocation(MapRegionData.getInstance().getLocationToTeleport(this, teleportWhere), 20);
 	}
 	
-	// =========================================================
-	// Method - Private
 	/**
 	 * Launch a physical attack against a target (Simple, Bow, Pole or Dual).<BR>
 	 * <BR>
@@ -522,26 +485,6 @@ public abstract class Creature extends WorldObject
 		{
 			sendPacket(ActionFailed.STATIC_PACKET);
 			return;
-		}
-		
-		if (this instanceof Player && EventManager.getInstance().isRegistered(this) || this instanceof Summon && EventManager.getInstance().isRegistered(((Summon) this).getOwner()))
-		{
-			Player p = getActingPlayer();
-			Player t = null;
-			if (target instanceof Player || target instanceof Summon)
-			{
-				t = target.getActingPlayer();
-				if (EventManager.getInstance().areTeammates(p, t))
-				{
-					sendPacket(ActionFailed.STATIC_PACKET);
-					return;
-				}
-			}
-			if (!EventManager.getInstance().getCurrentEvent().canAttack(p, target))
-			{
-				sendPacket(ActionFailed.STATIC_PACKET);
-				return;
-			}
 		}
 		
 		if (!isAlikeDead())
@@ -610,6 +553,8 @@ public abstract class Creature extends WorldObject
 			return;
 		}
 		
+		final long time = System.currentTimeMillis();
+		
 		// Check for a bow
 		if (weaponItemType == WeaponType.BOW)
 		{
@@ -626,12 +571,11 @@ public abstract class Creature extends WorldObject
 					return;
 				}
 				
-				// Verify if the bow can be use
-				final long timeToNextBowAttack = _disableBowAttackEndTime - System.currentTimeMillis();
-				if (timeToNextBowAttack > 0)
+				// Verify if the bow can be used.
+				if (_disableBowAttackEndTime > time)
 				{
 					// Cancel the action because the bow can't be re-use at this moment
-					ThreadPool.schedule(new NotifyAITask(CtrlEvent.EVT_READY_TO_ACT), timeToNextBowAttack);
+					ThreadPool.schedule(new NotifyAITask(CtrlEvent.EVT_READY_TO_ACT), 100);
 					sendPacket(ActionFailed.STATIC_PACKET);
 					return;
 				}
@@ -653,7 +597,7 @@ public abstract class Creature extends WorldObject
 			}
 			else if (this instanceof Npc)
 			{
-				if (_disableBowAttackEndTime > System.currentTimeMillis())
+				if (_disableBowAttackEndTime > time)
 					return;
 			}
 		}
@@ -663,7 +607,8 @@ public abstract class Creature extends WorldObject
 		
 		// Get the Attack Speed of the Creature (delay (in milliseconds) before next attack)
 		int timeAtk = calculateTimeBetweenAttacks(target, weaponItemType);
-		_attackEndTime = System.currentTimeMillis() + timeAtk;
+		_attackEndTime = time + timeAtk - 100;
+		_disableBowAttackEndTime = time + 50;
 		
 		// Create Attack
 		Attack attack = new Attack(this, isChargedShot(ShotType.SOULSHOT), (weaponItem != null) ? weaponItem.getCrystalType().getId() : 0);
@@ -708,9 +653,6 @@ public abstract class Creature extends WorldObject
 			
 			if (player.getPet() != target)
 				player.updatePvPStatus(target);
-			
-			if (this instanceof Player && target instanceof Player && EventManager.getInstance().isRegistered(this))
-				EventManager.getInstance().getCurrentEvent().onHit((Player) this, (Player) target);
 		}
 		
 		// Check if hit isn't missed
@@ -838,7 +780,7 @@ public abstract class Creature extends WorldObject
 		ThreadPool.schedule(new HitTask(target, damage1, crit1, miss1, attack.soulshot, shld1), sAtk);
 		
 		// Calculate and set the disable delay of the bow in function of the Attack Speed
-		_disableBowAttackEndTime = System.currentTimeMillis() + (sAtk + reuse);
+		_disableBowAttackEndTime += (sAtk + reuse);
 		
 		// Add this hit to the Server-Client packet Attack
 		attack.hit(attack.createHit(target, damage1, miss1, crit1, shld1));
@@ -1083,47 +1025,6 @@ public abstract class Creature extends WorldObject
 			
 			return;
 		}
-		
-		try
-		{
-			if (getTarget() != null && (this instanceof Player || this instanceof Summon))
-			{
-				boolean isArea = false;
-				switch (skill.getTargetType())
-				{
-					case TARGET_AREA:
-					case TARGET_FRONT_AREA:
-					case TARGET_BEHIND_AREA:
-					case TARGET_AURA:
-					case TARGET_FRONT_AURA:
-					case TARGET_BEHIND_AURA:
-						isArea = true;
-				}
-				
-				if (!isArea)
-				{
-					Player p = getActingPlayer();
-					if (p != null && EventManager.getInstance().isRegistered(p))
-					{
-						if (!EventManager.getInstance().getCurrentEvent().canAttack(p, getTarget()))
-						{
-							getAI().setIntention(CtrlIntention.ACTIVE);
-							return;
-						}
-						
-						if (getTarget() instanceof Player && EventManager.getInstance().areTeammates(p, (Player) getTarget()) && skill.isOffensive())
-						{
-							getAI().setIntention(CtrlIntention.ACTIVE);
-							return;
-						}
-					}
-				}
-			}
-		}
-		catch (ClassCastException e)
-		{
-		}
-		
 		// Override casting type
 		if (skill.isSimultaneousCast() && !simultaneously)
 			simultaneously = true;
@@ -1263,7 +1164,7 @@ public abstract class Creature extends WorldObject
 		else
 		{
 			setIsCastingNow(true);
-			_castInterruptTime = System.currentTimeMillis() + hitTime / 2;
+			_castInterruptTime = System.currentTimeMillis() + hitTime - 200;
 			setLastSkillCast(skill);
 		}
 		
@@ -1343,19 +1244,21 @@ public abstract class Creature extends WorldObject
 		int level = skill.getLevel();
 		if (level < 1)
 			level = 1;
-			
-		// Send MagicSkillUse with target, displayId, level, skillTime, reuseDelay
-		// to the Creature AND to all Player in the _KnownPlayers of the Creature
-		if (!skill.isPotion())
+		
+		// Broadcast MagicSkillUse for non toggle skills.
+		if (!skill.isToggle())
 		{
-			broadcastPacket(new MagicSkillUse(this, target, displayId, level, hitTime, reuseDelay, false));
-			broadcastPacket(new MagicSkillLaunched(this, displayId, level, (targets == null || targets.length == 0) ? new WorldObject[]
+			if (!skill.isPotion())
 			{
-				target
-			} : targets));
+				broadcastPacket(new MagicSkillUse(this, target, displayId, level, hitTime, reuseDelay, false));
+				broadcastPacket(new MagicSkillLaunched(this, displayId, level, (targets == null || targets.length == 0) ? new WorldObject[]
+				{
+					target
+				} : targets));
+			}
+			else
+				broadcastPacket(new MagicSkillUse(this, target, displayId, level, 0, 0));
 		}
-		else
-			broadcastPacket(new MagicSkillUse(this, target, displayId, level, 0, 0));
 		
 		if (this instanceof Playable)
 		{
@@ -1569,11 +1472,6 @@ public abstract class Creature extends WorldObject
 		// Stop Regeneration task, and removes all current effects
 		getStatus().stopHpMpRegeneration();
 		stopAllEffectsExceptThoseThatLastThroughDeath();
-		
-		if (EventManager.getInstance().isRunning() && EventManager.getInstance().isRegistered(this))
-		{
-			// do nothing
-		}
 		
 		calculateRewards(killer);
 		
@@ -2368,14 +2266,7 @@ public abstract class Creature extends WorldObject
 		broadcastPacket(new Revive(this));
 		
 		// Schedule a paralyzed task to wait for the animation to finish
-		ThreadPool.schedule(new Runnable()
-		{
-			@Override
-			public void run()
-			{
-				setIsParalyzed(false);
-			}
-		}, (int) (2000 / getStat().getMovementSpeedMultiplier()));
+		ThreadPool.schedule(() -> setIsParalyzed(false), (int) (2000 / getStat().getMovementSpeedMultiplier()));
 		setIsParalyzed(true);
 	}
 	
@@ -3400,10 +3291,6 @@ public abstract class Creature extends WorldObject
 			distance = Math.sqrt(dx * dx + dy * dy);
 		}
 		
-		// debug distance
-		if (Config.DEBUG)
-			_log.fine("distance to target:" + distance);
-		
 		double cos;
 		double sin;
 		
@@ -3453,8 +3340,8 @@ public abstract class Creature extends WorldObject
 		// npc walkers not checked
 		if (!isFlying() && (!isInsideZone(ZoneId.WATER) || isInsideZone(ZoneId.SIEGE)) && !(this instanceof Walker))
 		{
-			final boolean isInVehicle = this instanceof Player && ((Player) this).getVehicle() != null;
-			if (isInVehicle)
+			final boolean isInBoat = this instanceof Player && ((Player) this).getBoat() != null;
+			if (isInBoat)
 				newMd.disregardingGeodata = true;
 			
 			double originalDistance = distance;
@@ -3468,7 +3355,7 @@ public abstract class Creature extends WorldObject
 			// when geodata == 2, for all characters except mobs returning home (could be changed later to teleport if pathfinding fails)
 			// when geodata == 1, for l2playableinstance and l2riftinstance only
 			// assuming intention_follow only when following owner
-			if ((Config.PATHFINDING && !(this instanceof Attackable && ((Attackable) this).isReturningToSpawnPoint())) || (this instanceof Player && !(isInVehicle && distance > 1500)) || (this instanceof Summon && !(getAI().getIntention() == CtrlIntention.FOLLOW)) || isAfraid() || this instanceof RiftInvader)
+			if ((!(this instanceof Attackable && ((Attackable) this).isReturningToSpawnPoint())) || (this instanceof Player && !(isInBoat && distance > 1500)) || (this instanceof Summon && !(getAI().getIntention() == CtrlIntention.FOLLOW)) || isAfraid() || this instanceof RiftInvader)
 			{
 				if (isOnGeodataPath())
 				{
@@ -3514,10 +3401,10 @@ public abstract class Creature extends WorldObject
 			
 			// Pathfinding checks. Only when geodata setting is 2, the LoS check gives shorter result than the original movement was and the LoS gives a shorter distance than 2000
 			// This way of detecting need for pathfinding could be changed.
-			if (Config.PATHFINDING && originalDistance - distance > 30 && distance < 2000 && !isAfraid())
+			if (originalDistance - distance > 30 && distance < 2000 && !isAfraid())
 			{
 				// Path calculation -- overrides previous movement check
-				if ((this instanceof Playable && !isInVehicle) || isMinion() || isInCombat())
+				if ((this instanceof Playable && !isInBoat) || isMinion() || isInCombat())
 				{
 					newMd.geoPath = GeoEngine.getInstance().findPath(curX, curY, curZ, originalX, originalY, originalZ, this instanceof Playable);
 					if (newMd.geoPath == null || newMd.geoPath.size() < 2)
@@ -3559,7 +3446,7 @@ public abstract class Creature extends WorldObject
 			}
 			
 			// If no distance to go through, the movement is canceled
-			if (distance < 1 && (Config.PATHFINDING || this instanceof Playable || this instanceof RiftInvader || isAfraid()))
+			if (distance < 1)
 			{
 				if (this instanceof Summon)
 					((Summon) this).setFollowStatus(false);
@@ -3812,6 +3699,15 @@ public abstract class Creature extends WorldObject
 	 * @return the secondary {@link Item} item (always equiped in the left hand).
 	 */
 	public abstract Item getSecondaryWeaponItem();
+	
+	/**
+	 * @return the type of attack, depending of the worn weapon.
+	 */
+	public WeaponType getAttackType()
+	{
+		final Weapon weapon = getActiveWeaponItem();
+		return (weapon == null) ? WeaponType.NONE : weapon.getItemType();
+	}
 	
 	/**
 	 * Manage hit process (called by Hit Task).<BR>
@@ -4102,7 +3998,7 @@ public abstract class Creature extends WorldObject
 		if (target instanceof Creature)
 			return target.isInsideZone(ZoneId.PEACE) || attacker.isInsideZone(ZoneId.PEACE);
 		
-		return (MapRegionTable.getTown(target.getX(), target.getY(), target.getZ()) != null || attacker.isInsideZone(ZoneId.PEACE));
+		return (MapRegionData.getTown(target.getX(), target.getY(), target.getZ()) != null || attacker.isInsideZone(ZoneId.PEACE));
 	}
 	
 	/**
@@ -4110,26 +4006,8 @@ public abstract class Creature extends WorldObject
 	 */
 	public boolean isInActiveRegion()
 	{
-		try
-		{
-			WorldRegion region = World.getInstance().getRegion(getX(), getY());
-			return ((region != null) && (region.isActive()));
-		}
-		catch (Exception e)
-		{
-			if (this instanceof Player)
-			{
-				_log.warning("Player " + getName() + " at bad coords: (x: " + getX() + ", y: " + getY() + ", z: " + getZ() + ").");
-				((Player) this).sendMessage("Error with your coordinates! Please reboot your game fully!");
-				((Player) this).teleToLocation(80753, 145481, -3532, 0); // Near Giran luxury shop
-			}
-			else
-			{
-				_log.warning("Object " + getName() + " at bad coords: (x: " + getX() + ", y: " + getY() + ", z: " + getZ() + ").");
-				decayMe();
-			}
-			return false;
-		}
+		final WorldRegion region = getRegion();
+		return region != null && region.isActive();
 	}
 	
 	/**
@@ -4163,18 +4041,6 @@ public abstract class Creature extends WorldObject
 			default:
 				return Formulas.calcPAtkSpd(this, target, getStat().getPAtkSpd());
 		}
-	}
-	
-	/**
-	 * @return the type of attack, depending of the worn weapon.
-	 */
-	public WeaponType getAttackType()
-	{
-		final Weapon weapon = getActiveWeaponItem();
-		if (weapon != null)
-			return weapon.getItemType();
-		
-		return WeaponType.NONE;
 	}
 	
 	public ChanceSkillList getChanceSkills()
@@ -4238,8 +4104,8 @@ public abstract class Creature extends WorldObject
 	}
 	
 	/**
-	 * This method is overidden on Player, L2Summon and L2Npc.
-	 * @return the skills list of this Creature.
+	 * By default, return an empty immutable map. This method is overidden on {@link Player}, {@link Summon} and {@link Npc}.
+	 * @return the skills list of this {@link Creature}.
 	 */
 	public Map<Integer, L2Skill> getSkills()
 	{
@@ -4247,20 +4113,19 @@ public abstract class Creature extends WorldObject
 	}
 	
 	/**
-	 * Return the level of a skill owned by the Creature.
-	 * @param skillId The identifier of the L2Skill whose level must be returned
-	 * @return The level of the L2Skill identified by skillId
+	 * Returns the level of a skill owned by this {@link Creature}.
+	 * @param skillId : The skill identifier whose level must be returned.
+	 * @return the level of the skill identified by skillId.
 	 */
 	public int getSkillLevel(int skillId)
 	{
 		final L2Skill skill = getSkills().get(skillId);
-		
-		return (skill == null) ? -1 : skill.getLevel();
+		return (skill == null) ? 0 : skill.getLevel();
 	}
 	
 	/**
-	 * @param skillId The identifier of the L2Skill to check the knowledge
-	 * @return True if the skill is known by the Creature.
+	 * @param skillId : The skill identifier to check.
+	 * @return the {@link L2Skill} reference if known by this {@link Creature}, or null.
 	 */
 	public L2Skill getSkill(int skillId)
 	{
@@ -4268,132 +4133,12 @@ public abstract class Creature extends WorldObject
 	}
 	
 	/**
-	 * Add a skill to the Creature _skills and its Func objects to the calculator set of the Creature.<BR>
-	 * <BR>
-	 * <B><U> Concept</U> :</B><BR>
-	 * <BR>
-	 * All skills own by a Creature are identified in <B>_skills</B><BR>
-	 * <BR>
-	 * <B><U> Actions</U> :</B>
-	 * <ul>
-	 * <li>Replace oldSkill by newSkill or Add the newSkill</li>
-	 * <li>If an old skill has been replaced, remove all its Func objects of Creature calculator set</li>
-	 * <li>Add Func objects of newSkill to the calculator set of the Creature</li>
-	 * </ul>
-	 * <B><U>Overriden in:</U></B>
-	 * <ul>
-	 * <li>Player : Save update in the character_skills table of the database</li>
-	 * </ul>
-	 * @param newSkill The L2Skill to add to the Creature
-	 * @return The L2Skill replaced or null if just added a new L2Skill
+	 * @param skillId : The skill identifier to check.
+	 * @return true if the {@link L2Skill} is known by this {@link Creature}, false otherwise.
 	 */
-	public L2Skill addSkill(L2Skill newSkill)
+	public boolean hasSkill(int skillId)
 	{
-		L2Skill oldSkill = null;
-		
-		if (newSkill != null)
-		{
-			// Replace oldSkill by newSkill or Add the newSkill
-			oldSkill = getSkills().put(newSkill.getId(), newSkill);
-			
-			// If an old skill has been replaced, remove all its Func objects
-			if (oldSkill != null)
-			{
-				// if skill came with another one, we should delete the other one too.
-				if (oldSkill.triggerAnotherSkill())
-					removeSkill(oldSkill.getTriggeredId(), true);
-				
-				removeStatsByOwner(oldSkill);
-			}
-			// Add Func objects of newSkill to the calculator set of the Creature
-			addStatFuncs(newSkill.getStatFuncs(this));
-			
-			if (oldSkill != null && _chanceSkills != null)
-				removeChanceSkill(oldSkill.getId());
-			
-			if (newSkill.isChance())
-				addChanceTrigger(newSkill);
-		}
-		
-		return oldSkill;
-	}
-	
-	/**
-	 * Remove a skill from the Creature and its Func objects from calculator set of the Creature.<BR>
-	 * <BR>
-	 * <B><U> Concept</U> :</B><BR>
-	 * <BR>
-	 * All skills own by a Creature are identified in <B>_skills</B><BR>
-	 * <BR>
-	 * <B><U> Actions</U> :</B>
-	 * <ul>
-	 * <li>Remove the skill from the Creature _skills</li>
-	 * <li>Remove all its Func objects from the Creature calculator set</li>
-	 * </ul>
-	 * <B><U> Overriden in </U> :</B>
-	 * <ul>
-	 * <li>Player : Save update in the character_skills table of the database</li>
-	 * </ul>
-	 * @param skill The L2Skill to remove from the Creature
-	 * @return The L2Skill removed
-	 */
-	public L2Skill removeSkill(L2Skill skill)
-	{
-		if (skill == null)
-			return null;
-		
-		return removeSkill(skill.getId(), true);
-	}
-	
-	public L2Skill removeSkill(L2Skill skill, boolean cancelEffect)
-	{
-		if (skill == null)
-			return null;
-		
-		// Remove the skill from the Creature _skills
-		return removeSkill(skill.getId(), cancelEffect);
-	}
-	
-	public L2Skill removeSkill(int skillId)
-	{
-		return removeSkill(skillId, true);
-	}
-	
-	public L2Skill removeSkill(int skillId, boolean cancelEffect)
-	{
-		// Remove the skill from the Creature _skills
-		L2Skill oldSkill = getSkills().remove(skillId);
-		
-		// Remove all its Func objects from the Creature calculator set
-		if (oldSkill != null)
-		{
-			// this is just a fail-safe againts buggers and gm dummies...
-			if ((oldSkill.triggerAnotherSkill()) && oldSkill.getTriggeredId() > 0)
-				removeSkill(oldSkill.getTriggeredId(), true);
-			
-			// Stop casting if this skill is used right now
-			if (getLastSkillCast() != null && isCastingNow())
-			{
-				if (oldSkill.getId() == getLastSkillCast().getId())
-					abortCast();
-			}
-			if (getLastSimultaneousSkillCast() != null && isCastingSimultaneouslyNow())
-			{
-				if (oldSkill.getId() == getLastSimultaneousSkillCast().getId())
-					abortCast();
-			}
-			
-			if (cancelEffect || oldSkill.isToggle())
-			{
-				removeStatsByOwner(oldSkill);
-				stopSkillEffects(oldSkill.getId());
-			}
-			
-			if (oldSkill.isChance() && _chanceSkills != null)
-				removeChanceSkill(oldSkill.getId());
-		}
-		
-		return oldSkill;
+		return getSkills().containsKey(skillId);
 	}
 	
 	/**
@@ -4676,8 +4421,10 @@ public abstract class Creature extends WorldObject
 		}
 		
 		_skillCast = null;
-		setIsCastingNow(false);
 		_castInterruptTime = 0;
+		
+		setIsCastingNow(false);
+		setIsCastingSimultaneouslyNow(false);
 		
 		final L2Skill skill = mut.skill;
 		final WorldObject target = mut.targets.length > 0 ? mut.targets[0] : null;
@@ -4685,7 +4432,7 @@ public abstract class Creature extends WorldObject
 		// Attack target after skill use
 		if (skill.nextActionIsAttack() && getTarget() instanceof Creature && getTarget() != this && getTarget() == target && getTarget().isAttackable())
 		{
-			if (getAI() == null || getAI().getNextIntention() == null || getAI().getNextIntention().getIntention() != CtrlIntention.MOVE_TO)
+			if (getAI().getNextIntention() == null || getAI().getNextIntention().getIntention() != CtrlIntention.MOVE_TO)
 				getAI().setIntention(CtrlIntention.ATTACK, target);
 		}
 		
@@ -4884,7 +4631,7 @@ public abstract class Creature extends WorldObject
 			}
 			
 			// Launch the magic skill and calculate its effects
-			final ISkillHandler handler = SkillHandler.getInstance().getSkillHandler(skill.getSkillType());
+			final ISkillHandler handler = SkillHandler.getInstance().getHandler(skill.getSkillType());
 			if (handler != null)
 				handler.useSkill(this, skill, targets);
 			else
@@ -5480,7 +5227,7 @@ public abstract class Creature extends WorldObject
 	 */
 	public int getMaxBuffCount()
 	{
-		return Config.BUFFS_MAX_AMOUNT + Math.max(0, getSkillLevel(L2Skill.SKILL_DIVINE_INSPIRATION));
+		return Config.MAX_BUFFS_AMOUNT + getSkillLevel(L2Skill.SKILL_DIVINE_INSPIRATION);
 	}
 	
 	/**

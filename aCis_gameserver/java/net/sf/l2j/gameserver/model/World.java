@@ -5,8 +5,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
-import net.sf.l2j.gameserver.data.PlayerNameTable;
 import net.sf.l2j.gameserver.data.SpawnTable;
+import net.sf.l2j.gameserver.data.sql.PlayerInfoTable;
 import net.sf.l2j.gameserver.model.actor.Npc;
 import net.sf.l2j.gameserver.model.actor.instance.Pet;
 import net.sf.l2j.gameserver.model.actor.instance.Player;
@@ -30,7 +30,7 @@ public final class World
 	public static final int WORLD_Y_MAX = (TILE_Y_MAX - 17) * TILE_SIZE;
 	
 	// Regions and offsets
-	private static final int REGION_SIZE = 4096;
+	private static final int REGION_SIZE = 2048;
 	private static final int REGIONS_X = (WORLD_X_MAX - WORLD_X_MIN) / REGION_SIZE;
 	private static final int REGIONS_Y = (WORLD_Y_MAX - WORLD_Y_MIN) / REGION_SIZE;
 	private static final int REGION_X_OFFSET = Math.abs(WORLD_X_MIN / REGION_SIZE);
@@ -104,7 +104,7 @@ public final class World
 	
 	public Player getPlayer(String name)
 	{
-		return _players.get(PlayerNameTable.getInstance().getPlayerObjectId(name));
+		return _players.get(PlayerInfoTable.getInstance().getPlayerObjectId(name));
 	}
 	
 	public Player getPlayer(int objectId)
@@ -112,9 +112,9 @@ public final class World
 		return _players.get(objectId);
 	}
 	
-	public Pet addPet(int ownerId, Pet pet)
+	public void addPet(int ownerId, Pet pet)
 	{
-		return _pets.putIfAbsent(ownerId, pet);
+		_pets.putIfAbsent(ownerId, pet);
 	}
 	
 	public void removePet(int ownerId)

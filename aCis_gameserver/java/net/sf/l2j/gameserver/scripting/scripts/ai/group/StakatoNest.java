@@ -61,7 +61,21 @@ public class StakatoNest extends L2AttackableAIScript
 				{
 					npc.setIsCastingNow(true);
 					npc.broadcastPacket(new MagicSkillUse(npc, follower, (npc.getNpcId() == CANNIBALISTIC_STAKATO_LEADER_2) ? 4072 : 4073, 1, 3000, 0));
-					ThreadPool.schedule(new EatTask(npc, follower), 3000L);
+					ThreadPool.schedule(() ->
+					{
+						if (npc.isDead())
+							return;
+						
+						if (follower.isDead())
+						{
+							npc.setIsCastingNow(false);
+							return;
+						}
+						
+						npc.setCurrentHp(npc.getCurrentHp() + (follower.getCurrentHp() / 2));
+						follower.doDie(follower);
+						npc.setIsCastingNow(false);
+					}, 3000L);
 					break;
 				}
 			}
@@ -129,34 +143,5 @@ public class StakatoNest extends L2AttackableAIScript
 				break;
 		}
 		return super.onKill(npc, killer, isPet);
-	}
-	
-	private class EatTask implements Runnable
-	{
-		private final Npc _npc;
-		private final Npc _follower;
-		
-		public EatTask(Npc npc, Npc follower)
-		{
-			_npc = npc;
-			_follower = follower;
-		}
-		
-		@Override
-		public void run()
-		{
-			if (_npc.isDead())
-				return;
-			
-			if (_follower == null || _follower.isDead())
-			{
-				_npc.setIsCastingNow(false);
-				return;
-			}
-			
-			_npc.setCurrentHp(_npc.getCurrentHp() + (_follower.getCurrentHp() / 2));
-			_follower.doDie(_follower);
-			_npc.setIsCastingNow(false);
-		}
 	}
 }

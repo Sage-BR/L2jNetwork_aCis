@@ -7,7 +7,7 @@ import net.sf.l2j.commons.math.MathUtil;
 import net.sf.l2j.commons.random.Rnd;
 import net.sf.l2j.commons.util.ArraysUtil;
 
-import net.sf.l2j.gameserver.data.NpcTable;
+import net.sf.l2j.gameserver.data.xml.NpcData;
 import net.sf.l2j.gameserver.instancemanager.DimensionalRiftManager;
 import net.sf.l2j.gameserver.model.L2Skill;
 import net.sf.l2j.gameserver.model.WorldObject;
@@ -43,7 +43,7 @@ public class L2AttackableAIScript extends Quest
 	protected void registerNpcs()
 	{
 		// register all mobs here...
-		for (NpcTemplate template : NpcTable.getInstance().getAllNpcs())
+		for (NpcTemplate template : NpcData.getInstance().getAllNpcs())
 		{
 			try
 			{

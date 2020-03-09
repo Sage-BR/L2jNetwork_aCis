@@ -30,7 +30,7 @@ public class WalkerRouteData extends XMLDocument
 	protected void load()
 	{
 		loadDocument("./data/xml/walkerRoutes.xml");
-		LOG.info("Loaded " + _routes.size() + " Walker routes.");
+		LOGGER.info("Loaded {} Walker routes.", _routes.size());
 	}
 	
 	@Override

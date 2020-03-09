@@ -73,6 +73,10 @@ public class SiegeFlag extends Npc
 				player.getAI().setIntention(CtrlIntention.ATTACK, this);
 			else
 			{
+				// Stop moving if we're already in interact range.
+				if (player.isMoving() || player.isInCombat())
+					player.getAI().setIntention(CtrlIntention.IDLE);
+				
 				// Rotate the player to face the instance
 				player.sendPacket(new MoveToPawn(player, this, Npc.INTERACTION_DISTANCE));
 				

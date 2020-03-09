@@ -4,7 +4,7 @@ import java.util.logging.Level;
 
 import net.sf.l2j.commons.concurrent.ThreadPool;
 
-import net.sf.l2j.gameserver.data.NpcTable;
+import net.sf.l2j.gameserver.data.xml.NpcData;
 import net.sf.l2j.gameserver.data.xml.SummonItemData;
 import net.sf.l2j.gameserver.events.TvTEvent;
 import net.sf.l2j.gameserver.handler.IItemHandler;
@@ -70,7 +70,7 @@ public class SummonItems implements IItemHandler
 		if (npcId == 0)
 			return;
 		
-		final NpcTemplate npcTemplate = NpcTable.getInstance().getTemplate(npcId);
+		final NpcTemplate npcTemplate = NpcData.getInstance().getTemplate(npcId);
 		if (npcTemplate == null)
 			return;
 		

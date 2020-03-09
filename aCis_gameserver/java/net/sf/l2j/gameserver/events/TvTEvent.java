@@ -18,11 +18,12 @@ import net.sf.l2j.commons.concurrent.ThreadPool;
 import net.sf.l2j.commons.random.Rnd;
 
 import net.sf.l2j.Config;
-import net.sf.l2j.gameserver.data.DoorTable;
 import net.sf.l2j.gameserver.data.ItemTable;
-import net.sf.l2j.gameserver.data.NpcTable;
 import net.sf.l2j.gameserver.data.SkillTable;
 import net.sf.l2j.gameserver.data.SpawnTable;
+import net.sf.l2j.gameserver.data.xml.DoorData;
+import net.sf.l2j.gameserver.datatables.DoorTable;
+import net.sf.l2j.gameserver.datatables.NpcTable;
 import net.sf.l2j.gameserver.model.L2Skill;
 import net.sf.l2j.gameserver.model.L2Spawn;
 import net.sf.l2j.gameserver.model.World;
@@ -403,7 +404,7 @@ public class TvTEvent
 	{
 		for (int doorId : Config.TVT_EVENT_DOOR_IDS)
 		{
-			Door doorInstance = DoorTable.getInstance().getDoor(doorId);
+			Door doorInstance = DoorData.getInstance().getDoor(doorId);
 			
 			if (doorInstance != null)
 				doorInstance.closeMe();

@@ -17,7 +17,7 @@ package net.sf.l2j.gameserver.handler.voicedcommandhandlers;
 import java.text.SimpleDateFormat;
 
 import net.sf.l2j.Config;
-import net.sf.l2j.gameserver.data.NpcTable;
+import net.sf.l2j.gameserver.data.xml.NpcData;
 import net.sf.l2j.gameserver.handler.IVoicedCommandHandler;
 import net.sf.l2j.gameserver.instancemanager.GrandBossManager;
 import net.sf.l2j.gameserver.instancemanager.RaidBossSpawnManager;
@@ -66,16 +66,14 @@ public class GrandBossStatus implements IVoicedCommandHandler
 			NpcHtmlMessage html = new NpcHtmlMessage(0);
 			for (int rboss : RBOSSES)
 			{
-				String name = NpcTable.getInstance().getTemplate(rboss).getName();
+				String name = NpcData.getInstance().getTemplate(rboss).getName();
 				long delay = RaidBossSpawnManager.getInstance().getRespawntime(rboss);
 				sb.append("<html><head><title>Epic Boss Manager</title></head><body>");
 				sb.append("<center>");
 				sb.append("<img src=\"L2UI.SquareGray\" width=300 height=1><br>");
 				
 				if (delay <= System.currentTimeMillis())
-				{
 					sb.append("" + name + ":&nbsp;<font color=\"4d94ff\">Is Alive!</font><br1>");
-				}
 				else
 				{
 					sb.append("" + name + ":&nbsp;<br1>");
@@ -88,14 +86,12 @@ public class GrandBossStatus implements IVoicedCommandHandler
 			{
 				StatsSet info = GrandBossManager.getInstance().getStatsSet(rboss);
 				long temp = info.getLong("respawn_time");
-				String Grand = NpcTable.getInstance().getTemplate(rboss).getName();
+				String Grand = NpcData.getInstance().getTemplate(rboss).getName();
 				
 				sb.append("<center>");
 				sb.append("<img src=\"L2UI.SquareGray\" width=300 height=1><br>");
 				if (temp <= System.currentTimeMillis())
-				{
 					sb.append("" + Grand + ":&nbsp;<font color=\"4d94ff\">Is Alive!</font><br1>");
-				}
 				else
 				{
 					sb.append("" + Grand + ":&nbsp;<br1>");
@@ -106,19 +102,15 @@ public class GrandBossStatus implements IVoicedCommandHandler
 			// Case of Baium
 			StatsSet infobaium = GrandBossManager.getInstance().getStatsSet(BAIUM);
 			long tempbaium = infobaium.getLong("respawn_time");
-			String Baium = NpcTable.getInstance().getTemplate(BAIUM).getName();
+			String Baium = NpcData.getInstance().getTemplate(BAIUM).getName();
 			int BaiumStatus = GrandBossManager.getInstance().getBossStatus(BAIUM);
 			
 			sb.append("<center>");
 			sb.append("<img src=\"L2UI.SquareGray\" width=300 height=1><br>");
 			if (tempbaium <= System.currentTimeMillis() && BaiumStatus == 0)
-			{
 				sb.append("" + Baium + ":&nbsp;<font color=\"ff4d4d\">Is Asleep!</font><br1>");
-			}
 			else if (BaiumStatus == 1)
-			{
 				sb.append("" + Baium + ":&nbsp;<font color=\"ff4d4d\">Is Awake and fighting. Entry is locked.</font><br1>");
-			}
 			else
 			{
 				sb.append("" + Baium + ":&nbsp;<br1>");
@@ -130,23 +122,17 @@ public class GrandBossStatus implements IVoicedCommandHandler
 			{
 				StatsSet infogrand = GrandBossManager.getInstance().getStatsSet(rboss);
 				long tempgrand = infogrand.getLong("respawn_time");
-				String Grand = NpcTable.getInstance().getTemplate(rboss).getName();
+				String Grand = NpcData.getInstance().getTemplate(rboss).getName();
 				int BossStatus = GrandBossManager.getInstance().getBossStatus(rboss);
 				
 				sb.append("<center>");
 				sb.append("<img src=\"L2UI.SquareGray\" width=300 height=1><br>");
 				if (tempgrand <= System.currentTimeMillis() && BossStatus == 0)
-				{
 					sb.append("" + Grand + ":&nbsp;<font color=\"4d94ff\">Is spawned. Entry is unlocked.</font><br1>");
-				}
 				else if (BossStatus == 1)
-				{
 					sb.append("" + Grand + ":&nbsp;<font color=\"ff4d4d\">Someone has entered. Hurry!</font><br1>");
-				}
 				else if (BossStatus == 2)
-				{
 					sb.append("" + Grand + ":&nbsp;<font color=\"ff4d4d\">Is engaged in battle. Entry is locked.</font><br1>");
-				}
 				else
 				{
 					sb.append("" + Grand + ":&nbsp;<br1>");

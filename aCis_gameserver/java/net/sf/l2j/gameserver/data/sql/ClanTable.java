@@ -17,8 +17,8 @@ import net.sf.l2j.commons.lang.StringUtil;
 
 import net.sf.l2j.Config;
 import net.sf.l2j.L2DatabaseFactory;
+import net.sf.l2j.gameserver.data.manager.CastleManager;
 import net.sf.l2j.gameserver.idfactory.IdFactory;
-import net.sf.l2j.gameserver.instancemanager.CastleManager;
 import net.sf.l2j.gameserver.model.actor.instance.Player;
 import net.sf.l2j.gameserver.model.entity.Castle;
 import net.sf.l2j.gameserver.model.pledge.Clan;
@@ -74,6 +74,7 @@ public class ClanTable
 				
 				clan.addReputationScore(rs.getInt("reputation_score"));
 				clan.setAuctionBiddedAt(rs.getInt("auction_bid_at"));
+				clan.setNewLeaderId(rs.getInt("new_leader_id"), false);
 				
 				if (clan.getDissolvingExpiryTime() != 0)
 					scheduleRemoveClan(clan);
@@ -271,14 +272,10 @@ public class ClanTable
 		if (clan == null)
 			return;
 		
-		ThreadPool.schedule(new Runnable()
+		ThreadPool.schedule(() ->
 		{
-			@Override
-			public void run()
-			{
-				if (clan.getDissolvingExpiryTime() != 0)
-					destroyClan(clan);
-			}
+			if (clan.getDissolvingExpiryTime() != 0)
+				destroyClan(clan);
 		}, Math.max(clan.getDissolvingExpiryTime() - System.currentTimeMillis(), 60000));
 	}
 	
@@ -390,12 +387,12 @@ public class ClanTable
 			
 			// Load all wars.
 			ps = con.prepareStatement("SELECT * FROM clan_wars");
-			ResultSet rset = ps.executeQuery();
-			while (rset.next())
+			ResultSet rs = ps.executeQuery();
+			while (rs.next())
 			{
-				final int clan1 = rset.getInt("clan1");
-				final int clan2 = rset.getInt("clan2");
-				final long expiryTime = rset.getLong("expiry_time");
+				final int clan1 = rs.getInt("clan1");
+				final int clan2 = rs.getInt("clan2");
+				final long expiryTime = rs.getLong("expiry_time");
 				
 				// Expiry timer is found, add a penalty. Otherwise, add the regular war.
 				if (expiryTime > 0)
@@ -406,7 +403,7 @@ public class ClanTable
 					_clans.get(clan2).setAttackerClan(clan1);
 				}
 			}
-			rset.close();
+			rs.close();
 			ps.close();
 		}
 		catch (Exception e)

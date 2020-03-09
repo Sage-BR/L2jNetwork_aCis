@@ -6,11 +6,11 @@ import net.sf.l2j.commons.math.MathUtil;
 import net.sf.l2j.commons.random.Rnd;
 
 import net.sf.l2j.Config;
-import net.sf.l2j.gameserver.instancemanager.CastleManager;
+import net.sf.l2j.gameserver.data.manager.CastleManager;
+import net.sf.l2j.gameserver.data.manager.ZoneManager;
 import net.sf.l2j.gameserver.instancemanager.ClanHallManager;
 import net.sf.l2j.gameserver.instancemanager.SevenSigns.CabalType;
 import net.sf.l2j.gameserver.instancemanager.SevenSignsFestival;
-import net.sf.l2j.gameserver.instancemanager.ZoneManager;
 import net.sf.l2j.gameserver.model.L2Skill;
 import net.sf.l2j.gameserver.model.actor.Creature;
 import net.sf.l2j.gameserver.model.actor.Npc;
@@ -26,7 +26,7 @@ import net.sf.l2j.gameserver.model.item.kind.Item;
 import net.sf.l2j.gameserver.model.item.kind.Weapon;
 import net.sf.l2j.gameserver.model.item.type.WeaponType;
 import net.sf.l2j.gameserver.model.zone.ZoneId;
-import net.sf.l2j.gameserver.model.zone.type.L2MotherTreeZone;
+import net.sf.l2j.gameserver.model.zone.type.MotherTreeZone;
 import net.sf.l2j.gameserver.network.SystemMessageId;
 import net.sf.l2j.gameserver.network.serverpackets.SystemMessage;
 import net.sf.l2j.gameserver.skills.effects.EffectTemplate;
@@ -257,7 +257,7 @@ public final class Formulas
 			// Mother Tree effect is calculated at last
 			if (player.isInsideZone(ZoneId.MOTHER_TREE))
 			{
-				L2MotherTreeZone zone = ZoneManager.getInstance().getZone(player, L2MotherTreeZone.class);
+				MotherTreeZone zone = ZoneManager.getInstance().getZone(player, MotherTreeZone.class);
 				int hpBonus = zone == null ? 0 : zone.getHpRegenBonus();
 				hpRegenBonus += hpBonus;
 			}
@@ -303,7 +303,7 @@ public final class Formulas
 			// Mother Tree effect is calculated at last
 			if (player.isInsideZone(ZoneId.MOTHER_TREE))
 			{
-				L2MotherTreeZone zone = ZoneManager.getInstance().getZone(player, L2MotherTreeZone.class);
+				MotherTreeZone zone = ZoneManager.getInstance().getZone(player, MotherTreeZone.class);
 				int mpBonus = zone == null ? 0 : zone.getMpRegenBonus();
 				mpRegenBonus += mpBonus;
 			}
@@ -399,7 +399,7 @@ public final class Formulas
 		if (activeChar == null || activeChar.getClan() == null)
 			return false;
 		
-		final Siege siege = CastleManager.getInstance().getSiege(activeChar);
+		final Siege siege = CastleManager.getInstance().getActiveSiege(activeChar);
 		if (siege == null || !siege.checkSide(activeChar.getClan(), SiegeSide.ATTACKER))
 			return false;
 		
@@ -441,7 +441,9 @@ public final class Formulas
 				power *= skill.getSSBoost();
 		}
 		
-		damage += attacker.calcStat(Stats.CRITICAL_DAMAGE, (damage + power), target, skill);
+		damage += power;
+		damage *= attacker.calcStat(Stats.CRITICAL_DAMAGE, 1, target, skill);
+		damage *= ((attacker.calcStat(Stats.CRITICAL_DAMAGE_POS, 1, target, skill) - 1) / 2 + 1);
 		damage += attacker.calcStat(Stats.CRITICAL_DAMAGE_ADD, 0, target, skill) * 6.5;
 		damage *= target.calcStat(Stats.CRIT_VULN, 1, target, skill);
 		
@@ -482,8 +484,7 @@ public final class Formulas
 		switch (shld)
 		{
 			case SHIELD_DEFENSE_SUCCEED:
-				if (!Config.ALT_GAME_SHIELD_BLOCKS)
-					defence += target.getShldDef();
+				defence += target.getShldDef();
 				break;
 			
 			case SHIELD_DEFENSE_PERFECT_BLOCK: // perfect block
@@ -557,7 +558,7 @@ public final class Formulas
 		if (crit)
 		{
 			// Finally retail like formula
-			damage = 2 * attacker.calcStat(Stats.CRITICAL_DAMAGE, 1, target, skill) * target.calcStat(Stats.CRIT_VULN, 1, target, null) * (70 * damage / defence);
+			damage = 2 * attacker.calcStat(Stats.CRITICAL_DAMAGE, 1, target, skill) * attacker.calcStat(Stats.CRITICAL_DAMAGE_POS, 1, target, skill) * target.calcStat(Stats.CRIT_VULN, 1, target, null) * (70 * damage / defence);
 			// Crit dmg add is almost useless in normal hits...
 			damage += (attacker.calcStat(Stats.CRITICAL_DAMAGE_ADD, 0, target, skill) * 70 / defence);
 		}
@@ -570,13 +571,6 @@ public final class Formulas
 		// Weapon random damage ; invalid for CHARGEDAM skills.
 		if (skill == null || skill.getEffectType() != L2SkillType.CHARGEDAM)
 			damage *= attacker.getRandomDamageMultiplier();
-		
-		if (shld > 0 && Config.ALT_GAME_SHIELD_BLOCKS)
-		{
-			damage -= target.getShldDef();
-			if (damage < 0)
-				damage = 0;
-		}
 		
 		if (target instanceof Npc)
 		{
@@ -670,7 +664,7 @@ public final class Formulas
 		double damage = 91 * Math.sqrt(mAtk) / mDef * skill.getPower(attacker);
 		
 		// Failure calculation
-		if (Config.ALT_GAME_MAGICFAILURES && !calcMagicSuccess(attacker, target, skill))
+		if (Config.MAGIC_FAILURES && !calcMagicSuccess(attacker, target, skill))
 		{
 			if (attacker instanceof Player)
 			{
@@ -732,7 +726,7 @@ public final class Formulas
 		Player owner = attacker.getOwner();
 		
 		// Failure calculation
-		if (Config.ALT_GAME_MAGICFAILURES && !calcMagicSuccess(owner, target, skill))
+		if (Config.MAGIC_FAILURES && !calcMagicSuccess(owner, target, skill))
 		{
 			if (calcMagicSuccess(owner, target, skill) && (target.getLevel() - skill.getMagicLevel()) <= 9)
 			{
@@ -1023,7 +1017,7 @@ public final class Formulas
 		if (attacker.getAttackType() == WeaponType.BOW)
 			shldRate *= 1.3;
 		
-		if (shldRate > 0 && 100 - Config.ALT_PERFECT_SHLD_BLOCK < Rnd.get(100))
+		if (shldRate > 0 && 100 - Config.PERFECT_SHIELD_BLOCK_RATE < Rnd.get(100))
 			shldSuccess = SHIELD_DEFENSE_PERFECT_BLOCK;
 		else if (shldRate > Rnd.get(100))
 			shldSuccess = SHIELD_DEFENSE_SUCCEED;

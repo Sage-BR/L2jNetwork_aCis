@@ -6,13 +6,13 @@ import net.sf.l2j.commons.math.MathUtil;
 import net.sf.l2j.commons.random.Rnd;
 
 import net.sf.l2j.Config;
-import net.sf.l2j.gameserver.data.DoorTable;
+import net.sf.l2j.gameserver.data.manager.ZoneManager;
+import net.sf.l2j.gameserver.data.xml.DoorData;
 import net.sf.l2j.gameserver.instancemanager.GrandBossManager;
-import net.sf.l2j.gameserver.instancemanager.ZoneManager;
 import net.sf.l2j.gameserver.model.actor.Npc;
 import net.sf.l2j.gameserver.model.actor.instance.Player;
 import net.sf.l2j.gameserver.model.location.Location;
-import net.sf.l2j.gameserver.model.zone.type.L2BossZone;
+import net.sf.l2j.gameserver.model.zone.type.BossZone;
 import net.sf.l2j.gameserver.scripting.Quest;
 import net.sf.l2j.gameserver.scripting.QuestState;
 import net.sf.l2j.gameserver.scripting.ScriptManager;
@@ -94,7 +94,7 @@ public class GrandBossTeleporters extends Quest
 				st.takeItems(4295, 1);
 				
 				// allow entry for the player for the next 30 secs.
-				ZoneManager.getInstance().getZoneById(110002, L2BossZone.class).allowPlayerEntry(player, 30);
+				ZoneManager.getInstance().getZoneById(110002, BossZone.class).allowPlayerEntry(player, 30);
 				player.teleToLocation(BAIUM_IN, 0);
 			}
 		}
@@ -170,7 +170,7 @@ public class GrandBossTeleporters extends Quest
 					if (st.hasQuestItems(3865))
 					{
 						st.takeItems(3865, 1);
-						ZoneManager.getInstance().getZoneById(110001, L2BossZone.class).allowPlayerEntry(player, 30);
+						ZoneManager.getInstance().getZoneById(110001, BossZone.class).allowPlayerEntry(player, 30);
 						
 						player.teleToLocation(175300 + Rnd.get(-350, 350), 115180 + Rnd.get(-1000, 1000), -7709, 0);
 						
@@ -198,7 +198,7 @@ public class GrandBossTeleporters extends Quest
 					else if (st.getInt("allowEnter") == 1)
 					{
 						st.unset("allowEnter");
-						ZoneManager.getInstance().getZoneById(110010, L2BossZone.class).allowPlayerEntry(player, 30);
+						ZoneManager.getInstance().getZoneById(110010, BossZone.class).allowPlayerEntry(player, 30);
 						
 						player.teleToLocation(204328, -111874, 70, 300);
 						
@@ -220,15 +220,15 @@ public class GrandBossTeleporters extends Quest
 				break;
 			
 			case 31384:
-				DoorTable.getInstance().getDoor(24210004).openMe();
+				DoorData.getInstance().getDoor(24210004).openMe();
 				break;
 			
 			case 31686:
-				DoorTable.getInstance().getDoor(24210006).openMe();
+				DoorData.getInstance().getDoor(24210006).openMe();
 				break;
 			
 			case 31687:
-				DoorTable.getInstance().getDoor(24210005).openMe();
+				DoorData.getInstance().getDoor(24210005).openMe();
 				break;
 			
 			case 31540:
@@ -279,7 +279,7 @@ public class GrandBossTeleporters extends Quest
 							// Take item from party leader.
 							st.takeItems(8784, 1);
 							
-							final L2BossZone nest = ZoneManager.getInstance().getZoneById(110015, L2BossZone.class);
+							final BossZone nest = ZoneManager.getInstance().getZoneById(110011, BossZone.class);
 							
 							// Teleport players.
 							for (Player member : party)

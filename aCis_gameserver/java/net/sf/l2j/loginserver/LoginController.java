@@ -163,7 +163,8 @@ public class LoginController
 			byte[] raw = password.getBytes(StandardCharsets.UTF_8);
 			String hashBase64 = Base64.getEncoder().encodeToString(md.digest(raw));
 			
-			try (Connection con = L2DatabaseFactory.getInstance().getConnection(); PreparedStatement ps = con.prepareStatement(USER_INFO_SELECT))
+			try (Connection con = L2DatabaseFactory.getInstance().getConnection();
+				PreparedStatement ps = con.prepareStatement(USER_INFO_SELECT))
 			{
 				ps.setString(1, login);
 				try (ResultSet rset = ps.executeQuery())

@@ -6,6 +6,7 @@ import java.util.Set;
 import net.sf.l2j.Config;
 import net.sf.l2j.gameserver.model.ItemRequest;
 import net.sf.l2j.gameserver.model.World;
+import net.sf.l2j.gameserver.model.actor.Npc;
 import net.sf.l2j.gameserver.model.actor.instance.Player;
 import net.sf.l2j.gameserver.model.actor.instance.Player.StoreType;
 import net.sf.l2j.gameserver.model.tradelist.TradeList;
@@ -47,21 +48,21 @@ public final class RequestPrivateStoreBuy extends L2GameClientPacket
 	@Override
 	protected void runImpl()
 	{
-		Player player = getClient().getActiveChar();
-		if (player == null)
-			return;
-		
 		if (_items == null)
 			return;
 		
-		Player storePlayer = World.getInstance().getPlayer(_storePlayerId);
-		if (storePlayer == null)
+		final Player player = getClient().getActiveChar();
+		if (player == null)
 			return;
 		
 		if (player.isCursedWeaponEquipped())
 			return;
 		
-		if (!player.isInsideRadius(storePlayer, 150, true, false))
+		final Player storePlayer = World.getInstance().getPlayer(_storePlayerId);
+		if (storePlayer == null)
+			return;
+		
+		if (!player.isInsideRadius(storePlayer, Npc.INTERACTION_DISTANCE, true, false))
 			return;
 		
 		if (player.isSubmitingPin())
@@ -73,7 +74,7 @@ public final class RequestPrivateStoreBuy extends L2GameClientPacket
 		if (!(storePlayer.getStoreType() == StoreType.SELL || storePlayer.getStoreType() == StoreType.PACKAGE_SELL))
 			return;
 		
-		TradeList storeList = storePlayer.getSellList();
+		final TradeList storeList = storePlayer.getSellList();
 		if (storeList == null)
 			return;
 		
@@ -86,15 +87,11 @@ public final class RequestPrivateStoreBuy extends L2GameClientPacket
 		if (storePlayer.getStoreType() == StoreType.PACKAGE_SELL && storeList.getItems().size() > _items.size())
 			return;
 		
-		int result = storeList.privateStoreBuy(player, _items);
-		if (result > 0)
-		{
-			if (result > 1)
-				_log.warning("PrivateStore buy has failed due to invalid list or request. Player: " + player.getName() + ", Private store of: " + storePlayer.getName());
+		if (!storeList.privateStoreBuy(player, _items))
 			return;
-		}
 		
 		if (storeList.getItems().isEmpty())
+		
 		{
 			storePlayer.setStoreType(StoreType.NONE);
 			storePlayer.broadcastUserInfo();

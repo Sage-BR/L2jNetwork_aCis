@@ -9,7 +9,6 @@ import net.sf.l2j.gameserver.handler.ChatHandler;
 import net.sf.l2j.gameserver.handler.IChatHandler;
 import net.sf.l2j.gameserver.model.actor.instance.Player;
 import net.sf.l2j.gameserver.network.SystemMessageId;
-import net.sf.l2j.gameserver.network.serverpackets.ActionFailed;
 import net.sf.l2j.gameserver.taskmanager.AfkTaskManager;
 
 public final class Say2 extends L2GameClientPacket
@@ -113,56 +112,40 @@ public final class Say2 extends L2GameClientPacket
 	@Override
 	protected void runImpl()
 	{
-		final Player activeChar = getClient().getActiveChar();
-		if (activeChar == null)
+		final Player player = getClient().getActiveChar();
+		if (player == null)
 			return;
 		
-		if (activeChar.isAfking())
-			activeChar.setAfking(false);
+		if (player.isAfking())
+			player.setAfking(false);
 		
-		AfkTaskManager.getInstance().add(activeChar);
+		AfkTaskManager.getInstance().add(player);
 		
 		if (_type < 0 || _type >= CHAT_NAMES.length)
-		{
-			_log.warning("Say2: Invalid type: " + _type + " Player : " + activeChar.getName() + " text: " + _text);
-			activeChar.sendPacket(ActionFailed.STATIC_PACKET);
-			activeChar.logout();
 			return;
-		}
 		
-		if (_text.isEmpty())
-		{
-			_log.warning(activeChar.getName() + ": sending empty text. Possible packet hack.");
-			activeChar.sendPacket(ActionFailed.STATIC_PACKET);
-			activeChar.logout();
-			return;
-		}
-		
-		if (_text.length() >= 100)
+		if (_text.isEmpty() || _text.length() > 100)
 			return;
 		
 		if (Config.L2WALKER_PROTECTION && _type == TELL && checkBot(_text))
 			return;
 		
-		if (!activeChar.isGM() && _type == ANNOUNCEMENT)
+		if (!player.isGM() && (_type == ANNOUNCEMENT || _type == CRITICAL_ANNOUNCE))
+			return;
+		
+		if (player.isSubmitingPin())
 		{
-			_log.warning(activeChar.getName() + " tried to use announcements without GM statut.");
+			player.sendMessage("Unable to do any action while PIN is not submitted");
 			return;
 		}
 		
-		if (activeChar.isSubmitingPin())
+		if (player.isChatBanned() || (player.isInJail() && !player.isGM()))
 		{
-			activeChar.sendMessage("Unable to do any action while PIN is not submitted");
+			player.sendPacket(SystemMessageId.CHATTING_PROHIBITED);
 			return;
 		}
 		
-		if (activeChar.isChatBanned() || (activeChar.isInJail() && !activeChar.isGM()))
-		{
-			activeChar.sendPacket(SystemMessageId.CHATTING_PROHIBITED);
-			return;
-		}
-		
-		if (_type == PETITION_PLAYER && activeChar.isGM())
+		if (_type == PETITION_PLAYER && player.isGM())
 			_type = PETITION_GM;
 		
 		if (Config.LOG_CHAT)
@@ -174,13 +157,13 @@ public final class Say2 extends L2GameClientPacket
 				record.setParameters(new Object[]
 				{
 					CHAT_NAMES[_type],
-					"[" + activeChar.getName() + " to " + _target + "]"
+					"[" + player.getName() + " to " + _target + "]"
 				});
 			else
 				record.setParameters(new Object[]
 				{
 					CHAT_NAMES[_type],
-					"[" + activeChar.getName() + "]"
+					"[" + player.getName() + "]"
 				});
 			
 			CHAT_LOG.log(record);
@@ -197,11 +180,14 @@ public final class Say2 extends L2GameClientPacket
 			}
 		}
 		
-		IChatHandler handler = ChatHandler.getInstance().getChatHandler(_type);
-		if (handler != null)
-			handler.handleChat(_type, activeChar, _target, _text);
-		else
-			_log.warning(activeChar.getName() + " tried to use unregistred chathandler type: " + _type + ".");
+		final IChatHandler handler = ChatHandler.getInstance().getHandler(_type);
+		if (handler == null)
+		{
+			LOGGER.warn("{} tried to use unregistred chathandler type: {}.", player.getName(), _type);
+			return;
+		}
+		
+		handler.handleChat(_type, player, _target, _text);
 	}
 	
 	private static boolean checkBot(String text)

@@ -16,7 +16,7 @@ package net.sf.l2j.gameserver.communitybbs.Manager;
 
 import java.util.Calendar;
 
-import net.sf.l2j.gameserver.data.NpcTable;
+import net.sf.l2j.gameserver.data.xml.NpcData;
 import net.sf.l2j.gameserver.instancemanager.RaidBossSpawnManager;
 import net.sf.l2j.gameserver.model.actor.instance.Player;
 import net.sf.l2j.gameserver.network.serverpackets.NpcHtmlMessage;
@@ -59,7 +59,7 @@ public class BossStatusBBSManager extends BaseBBSManager
 			{
 				
 				long delay = RaidBossSpawnManager.getInstance().getRespawntime(rboss);
-				String name = NpcTable.getInstance().getTemplate(rboss).getName().toUpperCase();
+				String name = NpcData.getInstance().getTemplate(rboss).getName().toUpperCase();
 				sb.append("<html><head><title>RaidBoss Manager</title></head><body>");
 				sb.append("<center>");
 				sb.append("<img src=\"L2UI.SquareGray\" width=300 height=1><br>");
@@ -80,7 +80,7 @@ public class BossStatusBBSManager extends BaseBBSManager
 			}
 			
 			long m_delay = RaidBossSpawnManager.getInstance().getRespawntime(MBOSS);
-			String m_name = NpcTable.getInstance().getTemplate(MBOSS).getName().toUpperCase();
+			String m_name = NpcData.getInstance().getTemplate(MBOSS).getName().toUpperCase();
 			
 			String mainBossInfo = "";
 			

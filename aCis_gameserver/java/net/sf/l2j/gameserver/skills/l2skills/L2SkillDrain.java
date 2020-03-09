@@ -1,6 +1,5 @@
 package net.sf.l2j.gameserver.skills.l2skills;
 
-import net.sf.l2j.Config;
 import net.sf.l2j.gameserver.model.L2Effect;
 import net.sf.l2j.gameserver.model.L2Skill;
 import net.sf.l2j.gameserver.model.ShotType;
@@ -132,9 +131,6 @@ public class L2SkillDrain extends L2Skill
 	
 	public void useCubicSkill(Cubic activeCubic, WorldObject[] targets)
 	{
-		if (Config.DEBUG)
-			_log.info("L2SkillDrain: useCubicSkill()");
-		
 		for (WorldObject obj : targets)
 		{
 			if (!(obj instanceof Creature))

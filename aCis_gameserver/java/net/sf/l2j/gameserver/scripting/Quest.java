@@ -15,11 +15,11 @@ import net.sf.l2j.commons.concurrent.ThreadPool;
 import net.sf.l2j.commons.random.Rnd;
 
 import net.sf.l2j.Config;
-import net.sf.l2j.gameserver.cache.HtmCache;
 import net.sf.l2j.gameserver.data.ItemTable;
-import net.sf.l2j.gameserver.data.NpcTable;
-import net.sf.l2j.gameserver.instancemanager.CastleManager;
-import net.sf.l2j.gameserver.instancemanager.ZoneManager;
+import net.sf.l2j.gameserver.data.cache.HtmCache;
+import net.sf.l2j.gameserver.data.manager.CastleManager;
+import net.sf.l2j.gameserver.data.manager.ZoneManager;
+import net.sf.l2j.gameserver.data.xml.NpcData;
 import net.sf.l2j.gameserver.model.L2Skill;
 import net.sf.l2j.gameserver.model.L2Spawn;
 import net.sf.l2j.gameserver.model.WorldObject;
@@ -34,7 +34,7 @@ import net.sf.l2j.gameserver.model.item.kind.Item;
 import net.sf.l2j.gameserver.model.location.SpawnLocation;
 import net.sf.l2j.gameserver.model.pledge.Clan;
 import net.sf.l2j.gameserver.model.pledge.ClanMember;
-import net.sf.l2j.gameserver.model.zone.L2ZoneType;
+import net.sf.l2j.gameserver.model.zone.ZoneType;
 import net.sf.l2j.gameserver.network.serverpackets.ActionFailed;
 import net.sf.l2j.gameserver.network.serverpackets.NpcHtmlMessage;
 import net.sf.l2j.gameserver.scripting.scripts.ai.L2AttackableAIScript;
@@ -580,7 +580,7 @@ public class Quest
 	{
 		try
 		{
-			final NpcTemplate template = NpcTable.getInstance().getTemplate(npcId);
+			final NpcTemplate template = NpcData.getInstance().getTemplate(npcId);
 			if (template == null)
 				return null;
 			
@@ -722,7 +722,7 @@ public class Quest
 	{
 		try
 		{
-			final NpcTemplate t = NpcTable.getInstance().getTemplate(npcId);
+			final NpcTemplate t = NpcData.getInstance().getTemplate(npcId);
 			if (t != null)
 				t.addQuestEvent(eventType, this);
 		}
@@ -741,7 +741,7 @@ public class Quest
 	{
 		try
 		{
-			final NpcTemplate t = NpcTable.getInstance().getTemplate(npcId);
+			final NpcTemplate t = NpcData.getInstance().getTemplate(npcId);
 			if (t != null)
 				for (EventType eventType : eventTypes)
 					t.addQuestEvent(eventType, this);
@@ -988,13 +988,13 @@ public class Quest
 	{
 		for (int zoneId : zoneIds)
 		{
-			final L2ZoneType zone = ZoneManager.getInstance().getZoneById(zoneId);
+			final ZoneType zone = ZoneManager.getInstance().getZoneById(zoneId);
 			if (zone != null)
 				zone.addQuestEvent(EventType.ON_ENTER_ZONE, this);
 		}
 	}
 	
-	public final void notifyEnterZone(Creature character, L2ZoneType zone)
+	public final void notifyEnterZone(Creature character, ZoneType zone)
 	{
 		Player player = character.getActingPlayer();
 		String res = null;
@@ -1014,7 +1014,7 @@ public class Quest
 			showResult(null, player, res);
 	}
 	
-	public String onEnterZone(Creature character, L2ZoneType zone)
+	public String onEnterZone(Creature character, ZoneType zone)
 	{
 		return null;
 	}
@@ -1027,13 +1027,13 @@ public class Quest
 	{
 		for (int zoneId : zoneIds)
 		{
-			final L2ZoneType zone = ZoneManager.getInstance().getZoneById(zoneId);
+			final ZoneType zone = ZoneManager.getInstance().getZoneById(zoneId);
 			if (zone != null)
 				zone.addQuestEvent(EventType.ON_EXIT_ZONE, this);
 		}
 	}
 	
-	public final void notifyExitZone(Creature character, L2ZoneType zone)
+	public final void notifyExitZone(Creature character, ZoneType zone)
 	{
 		Player player = character.getActingPlayer();
 		String res = null;
@@ -1053,7 +1053,7 @@ public class Quest
 			showResult(null, player, res);
 	}
 	
-	public String onExitZone(Creature character, L2ZoneType zone)
+	public String onExitZone(Creature character, ZoneType zone)
 	{
 		return null;
 	}

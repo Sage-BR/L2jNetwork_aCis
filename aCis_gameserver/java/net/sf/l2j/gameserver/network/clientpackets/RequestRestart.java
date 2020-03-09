@@ -1,7 +1,6 @@
 package net.sf.l2j.gameserver.network.clientpackets;
 
 import net.sf.l2j.gameserver.events.TvTEvent;
-import net.sf.l2j.gameserver.events.phoenixevents.EventManager;
 import net.sf.l2j.gameserver.instancemanager.SevenSignsFestival;
 import net.sf.l2j.gameserver.model.actor.instance.Player;
 import net.sf.l2j.gameserver.model.zone.ZoneId;
@@ -29,13 +28,6 @@ public final class RequestRestart extends L2GameClientPacket
 		
 		if (player.getActiveEnchantItem() != null || player.isLocked() || player.isInStoreMode())
 		{
-			sendPacket(RestartResponse.valueOf(false));
-			return;
-		}
-		
-		if (EventManager.getInstance().isRegistered(player))
-		{
-			player.sendMessage("You cannot restart while you are a participant of an event.");
 			sendPacket(RestartResponse.valueOf(false));
 			return;
 		}
@@ -68,7 +60,6 @@ public final class RequestRestart extends L2GameClientPacket
 			return;
 		}
 		
-		player.setAutoCpMpHpSystem(false);
 		player.removeFromBossZone();
 		AfkTaskManager.getInstance().remove(player);
 		
@@ -88,6 +79,6 @@ public final class RequestRestart extends L2GameClientPacket
 		// send char list
 		final CharSelectInfo cl = new CharSelectInfo(client.getAccountName(), client.getSessionId().playOkID1);
 		sendPacket(cl);
-		client.setCharSelection(cl.getCharInfo());
+		client.setCharSelectSlot(cl.getCharacterSlots());
 	}
 }

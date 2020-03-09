@@ -49,16 +49,11 @@ public final class Config
 	public static final String DONATOR_FILE = "./config/customs/donators.properties";
 	public static final String TVT_FILE = "./config/customs/tvt.properties";
 	public static final String COMMAND_LIST = "./config/customs/commandlist.properties";
-	public static final String RANDOM_ZONE = "./config/customs/randompvpzone.properties";
 	public static final String RAID_FILE = "./config/customs/raidbosses.properties";
 	
 	// --------------------------------------------------
 	// Custom settings
 	// --------------------------------------------------
-	
-	/** RANDOM PVP ZONE */
-	public static int ZONE_TIME;
-	public static int RANGE_SPAWN;
 	
 	/** PVP_LIMITS */
 	public static boolean PVP_LIMITS_OLY_ENABLE;
@@ -84,6 +79,8 @@ public final class Config
 	
 	/** SUB-CLASS LEVEL */
 	public static int SUBCLASS_LEVEL;
+	public static boolean SUBCLASS_MSG;
+	public static int SUBCLASS_MSG_TIME;
 	
 	/** PvP Color System */
 	public static String PVPS_COLORS;
@@ -94,13 +91,12 @@ public final class Config
 	/** Show HP PvP */
 	public static boolean SHOW_HP_CP_PVP;
 	
-	/** Custom Camera On CharacterCreate */
-	public static boolean USE_CUSTOM_CAMERA;
-	public static int USE_CUSTOM_DURATION;
-	public static List<int[]> CUSTOM_CAMERA = new ArrayList<>();
-	
 	/** Starting Level System */
 	public static int START_LEVEL;
+	
+	/** Player P.Atk & M.Atk speed */
+	public static int PATK_SPEED;
+	public static int MATK_SPEED;
 	
 	/** Auto Vote */
 	public static boolean VOTE_SYSTEM_ENABLED;
@@ -115,7 +111,6 @@ public final class Config
 	public static String VOTES_SITE_TOPZONE_LINK_TOP;
 	public static String VOTES_SITE_HOPZONE_LINK_HOP;
 	public static String VOTES_SITE_L2NETWORK_LINK_NET;
-	public static String SERVER_WEB_SITE;
 	
 	/** VoteManager Settings */
 	public static boolean VOTE_MANAGER_ENABLED;
@@ -153,16 +148,6 @@ public final class Config
 	
 	public static boolean STARTING_ITEMS_SYSTEM;
 	public static List<int[]> STARTING_ITEMS = new ArrayList<>();
-	
-	/** Party Teleporter */
-	public static int NPC_ID_PT_TELEPORTER;
-	public static int[] PARTY_TELE_LOCATION = new int[3];
-	public static int NPC_PT_ZONEID;
-	public static int NPC_PT_MINPT_MEMBERS;
-	public static int NPC_PT_ITEMCONSUME_ID;
-	public static int NPC_PT_ITEMCOMSUME_QT;
-	public static boolean NPC_PT_SHOWINSIDE_PLAYERS;
-	public static boolean NPC_PT_SHOWINSIDE_PARTIES;
 	
 	/** Clan Manager */
 	public static int CLAN_ITEM_ID;
@@ -219,15 +204,16 @@ public final class Config
 	/** Clan Item */
 	public static int CLANREPS;
 	
-	/** Infinity SS and Arrows */
+	/** Infinity SS/Arrows/Mana Potion */
 	public static boolean INFINITY_SS;
 	public static boolean INFINITY_ARROWS;
+	public static boolean INFINITY_MANAPOT;
+	public static int MAX_MP;
 	
 	/** Commands List */
 	public static boolean ENABLE_ONLINE;
 	public static boolean EPIC_INFO;
 	public static boolean MENU_PANEL;
-	public static boolean MENU_SEE_STATS;
 	public static boolean SECURE_CMD;
 	public static boolean TVT_CMD;
 	
@@ -301,6 +287,7 @@ public final class Config
 	public static int[] NEWBIE_MAGE_BUFFS;
 	public static String NEWBIE_FIGHTER_SET;
 	public static int[] NEWBIE_FIGHTER_BUFFS;
+	
 	public static int[] TELE_TO_LOCATION = new int[3];
 	
 	/** Unstuck Time */
@@ -349,7 +336,6 @@ public final class Config
 	public static int ALT_CLAN_MEMBERS_FOR_WAR;
 	public static int ALT_CLAN_WAR_PENALTY_WHEN_ENDED;
 	public static boolean ALT_MEMBERS_CAN_WITHDRAW_FROM_CLANWH;
-	public static boolean REMOVE_CASTLE_CIRCLETS;
 	
 	/** Manor */
 	public static int ALT_MANOR_REFRESH_TIME;
@@ -450,7 +436,6 @@ public final class Config
 	public static boolean ALT_OLY_SHOW_MONTHLY_WINNERS;
 	public static boolean ALT_OLY_ALLOW_APPLY_AUGMENT_ON_CHAR;
 	public static List<Integer> ALT_OLY_SKILLS_ALLOW_APPLY_AUGMENT;
-	
 	public static List<Integer> LIST_OLY_RESTRICTED_ITEMS = new ArrayList<>();
 	public static boolean ALT_OLY_GRADE_RESTRICTION_ITEMS;
 	public static List<Integer> ALT_OLY_LIST_OF_GRADE_RESTRICTION_ITEMS;
@@ -526,7 +511,6 @@ public final class Config
 	public static int MAX_OBSTACLE_HEIGHT;
 	
 	/** Path finding */
-	public static boolean PATHFINDING;
 	public static String PATHFIND_BUFFERS;
 	public static int BASE_WEIGHT;
 	public static int DIAGONAL_WEIGHT;
@@ -594,13 +578,10 @@ public final class Config
 	public static int BUFFER_STATIC_BUFF_COST;
 	public static String BUFFER_BUFFS;
 	public static Map<Integer, BuffSkillHolder> BUFFER_BUFFLIST;
-	
 	public static List<Integer> FIGHTER_SKILL_LIST;
 	public static List<Integer> MAGE_SKILL_LIST;
-	
 	public static boolean RESTRICT_USE_BUFFER_ON_PVPFLAG;
 	public static boolean RESTRICT_USE_BUFFER_IN_COMBAT;
-	
 	public static int VOTE_BUFF_ITEM_ID;
 	public static int VOTE_BUFF_ITEM_COUNT;
 	
@@ -672,8 +653,6 @@ public final class Config
 	public static int MAX_NPC_ANIMATION;
 	public static int MIN_MONSTER_ANIMATION;
 	public static int MAX_MONSTER_ANIMATION;
-	
-	public static boolean ALT_GAME_VIEWNPC;
 	
 	// --------------------------------------------------
 	// Players
@@ -765,18 +744,17 @@ public final class Config
 	
 	/** Skills & Classes **/
 	public static boolean AUTO_LEARN_SKILLS;
-	public static boolean ALT_GAME_MAGICFAILURES;
-	public static boolean ALT_GAME_SHIELD_BLOCKS;
-	public static int ALT_PERFECT_SHLD_BLOCK;
+	public static boolean MAGIC_FAILURES;
+	public static int PERFECT_SHIELD_BLOCK_RATE;
 	public static boolean LIFE_CRYSTAL_NEEDED;
 	public static boolean SP_BOOK_NEEDED;
 	public static boolean ES_SP_BOOK_NEEDED;
 	public static boolean DIVINE_SP_BOOK_NEEDED;
-	public static boolean ALT_GAME_SUBCLASS_WITHOUT_QUESTS;
+	public static boolean SUBCLASS_WITHOUT_QUESTS;
 	
 	/** Buffs */
 	public static boolean STORE_SKILL_COOLTIME;
-	public static int BUFFS_MAX_AMOUNT;
+	public static int MAX_BUFFS_AMOUNT;
 	
 	/** Starting Adena */
 	public static int STARTING_ADENA;
@@ -820,8 +798,6 @@ public final class Config
 	/** clients related */
 	public static int DELETE_DAYS;
 	public static int MAXIMUM_ONLINE_USERS;
-	public static int MIN_PROTOCOL_REVISION;
-	public static int MAX_PROTOCOL_REVISION;
 	
 	/** Auto-loot */
 	public static boolean AUTO_LOOT;
@@ -843,7 +819,6 @@ public final class Config
 	public static double RATE_PARTY_XP;
 	public static double RATE_PARTY_SP;
 	public static double RATE_DROP_ADENA;
-	public static double RATE_CONSUMABLE_COST;
 	public static double RATE_DROP_ITEMS;
 	public static double RATE_DROP_ITEMS_BY_RAID;
 	public static double RATE_DROP_SPOIL;
@@ -1035,13 +1010,6 @@ public final class Config
 		return result;
 	}
 	
-	private static final void loadRandom()
-	{
-		final ExProperties random = initProperties(RANDOM_ZONE);
-		ZONE_TIME = random.getProperty("NewZoneTime", 60);
-		RANGE_SPAWN = random.getProperty("RangeSpawnChar", 200);
-	}
-	
 	private static final void loadLimits()
 	{
 		final ExProperties limits = initProperties(CHECK_LIMITS_FILE);
@@ -1109,6 +1077,8 @@ public final class Config
 		DISARM_WEP = customs.getProperty("DisarmWepOnLogin", false);
 		NEW_CHAR_TITLE = customs.getProperty("NewCharTitle", "L2Surrender");
 		SUBCLASS_LEVEL = customs.getProperty("SubclassLevel", 52);
+		SUBCLASS_MSG = customs.getProperty("SubclassMessage", false);
+		SUBCLASS_MSG_TIME = customs.getProperty("SubclassMessageTime", 3000);
 		
 		PVPS_COLORS = customs.getProperty("PvpsColorsName", "");
 		PVPS_COLORS_LIST = new HashMap<>();
@@ -1177,20 +1147,6 @@ public final class Config
 			-5790
 		});
 		
-		USE_CUSTOM_CAMERA = customs.getProperty("UseCustomCamera", true);
-		USE_CUSTOM_DURATION = customs.getProperty("Custom_Camera_Duration", 6000);
-		CUSTOM_CAMERA.clear();
-		for (String reward : customs.getProperty("Custom_Camera", "33333,225,6000").split(";"))
-		{
-			String[] rewardSplit = reward.split(",");
-			CUSTOM_CAMERA.add(new int[]
-			{
-				Integer.parseInt(rewardSplit[0]),
-				Integer.parseInt(rewardSplit[1]),
-				Integer.parseInt(rewardSplit[2])
-			});
-		}
-		
 		ALT_GAME_SUBCLASS_EVERYWHERE = customs.getProperty("SubclassEverywhere", false);
 		
 		/** PvpReward */
@@ -1237,7 +1193,8 @@ public final class Config
 		CLANREPS = Integer.parseInt(customs.getProperty("ClanReps", "5000"));
 		INFINITY_SS = customs.getProperty("InfinitySS", false);
 		INFINITY_ARROWS = customs.getProperty("InfinityArrows", false);
-		
+		INFINITY_MANAPOT = customs.getProperty("InfinityManaPot", false);
+		MAX_MP = Integer.parseInt(customs.getProperty("MaxMpRecovery", "5000"));
 		ENABLE_SKIPPING = customs.getProperty("EnableSkippingItems", false);
 		
 		OLYMPIAD_END_ANNOUNE = customs.getProperty("OlyEndAnnounce", true);
@@ -1281,7 +1238,6 @@ public final class Config
 		PVP_PK_TITLE = Boolean.parseBoolean(customs.getProperty("PvpPkTitle", "True"));
 		PVP_TITLE_PREFIX = customs.getProperty("PvPTitlePrefix", " ");
 		PK_TITLE_PREFIX = customs.getProperty("PkTitlePrefix", " ");
-		
 		UNSTUCK_TIME = customs.getProperty("UnstuckTime", 30);
 	}
 	
@@ -1301,26 +1257,6 @@ public final class Config
 	{
 		// Bank config
 		final ExProperties managers = initProperties(MANAGER_FILE);
-		
-		/** Party Teleproter */
-		NPC_ID_PT_TELEPORTER = managers.getProperty("NpcPtTeleporterId", 36614);
-		String[] propertyPtLoc = managers.getProperty("PartyTeleLocation", "0,0,0").split(",");
-		if (propertyPtLoc.length < 3)
-		{
-			System.out.println("Error : config/customs/npcs_manager.properties \"PartyTeleLocation\" coord locations");
-		}
-		else
-		{
-			PARTY_TELE_LOCATION[0] = Integer.parseInt(propertyPtLoc[0]);
-			PARTY_TELE_LOCATION[1] = Integer.parseInt(propertyPtLoc[1]);
-			PARTY_TELE_LOCATION[2] = Integer.parseInt(propertyPtLoc[2]);
-		}
-		NPC_PT_ZONEID = managers.getProperty("NpcPtZoneID", 155);
-		NPC_PT_MINPT_MEMBERS = managers.getProperty("NpcPtMinPartyMembers", 2);
-		NPC_PT_ITEMCONSUME_ID = managers.getProperty("NpcPtConsumeItemId", 57);
-		NPC_PT_ITEMCOMSUME_QT = managers.getProperty("NpcPtConsumeItemQt", 100);
-		NPC_PT_SHOWINSIDE_PLAYERS = managers.getProperty("NpcPtShowInsidePlayers", true);
-		NPC_PT_SHOWINSIDE_PARTIES = managers.getProperty("NpcPtShowInsideParties", true);
 		
 		/** Clan Manager */
 		CLAN_ITEM_ID = managers.getProperty("ClanItemID", 57);
@@ -1550,7 +1486,6 @@ public final class Config
 	{
 		// vote config
 		final ExProperties vote = initProperties(VOTE_FILE);
-		
 		VOTE_SYSTEM_ENABLED = vote.getProperty("EnableVoteRewardSystem", true);
 		VOTES_FOR_REWARD_TOP = vote.getProperty("VotesRequiredForRewardTop", 100);
 		VOTES_SYSTEM_INITIAL_DELAY_TOP = vote.getProperty("VotesSystemInitialDelayTop", 18);
@@ -1570,7 +1505,6 @@ public final class Config
 		VOTES_SITE_TOPZONE_LINK_TOP = vote.getProperty("VotesSiteTopZoneLinkTop", "");
 		VOTES_SITE_HOPZONE_LINK_HOP = vote.getProperty("VotesSiteHopZoneLinkHop", "");
 		VOTES_SITE_L2NETWORK_LINK_NET = vote.getProperty("VotesSiteNetWorkLinkNet", "");
-		SERVER_WEB_SITE = vote.getProperty("ServerWebSite", "");
 		
 		VOTE_MANAGER_ENABLED = vote.getProperty("EnableVoteManager", false);
 		VOTES_SITE_HOPZONE_URL = vote.getProperty("HopzoneUrl", "");
@@ -1600,7 +1534,6 @@ public final class Config
 		ENABLE_ONLINE = Boolean.parseBoolean(commands.getProperty("OnlineCmd", "true"));
 		EPIC_INFO = Boolean.parseBoolean(commands.getProperty("EpicInfoCmd", "true"));
 		MENU_PANEL = Boolean.parseBoolean(commands.getProperty("MenuPanelCmd", "true"));
-		MENU_SEE_STATS = Boolean.parseBoolean(commands.getProperty("MenuSeeStats", "true"));
 		SECURE_CMD = Boolean.parseBoolean(commands.getProperty("SecureCmd", "true"));
 		TVT_CMD = Boolean.parseBoolean(commands.getProperty("TvTCmd", "true"));
 	}
@@ -1622,7 +1555,6 @@ public final class Config
 		ALT_ACCEPT_CLAN_DAYS_WHEN_DISMISSED = clans.getProperty("DaysBeforeAcceptNewClanWhenDismissed", 1);
 		ALT_CREATE_ALLY_DAYS_WHEN_DISSOLVED = clans.getProperty("DaysBeforeCreateNewAllyWhenDissolved", 10);
 		ALT_MEMBERS_CAN_WITHDRAW_FROM_CLANWH = clans.getProperty("AltMembersCanWithdrawFromClanWH", false);
-		REMOVE_CASTLE_CIRCLETS = clans.getProperty("RemoveCastleCirclets", true);
 		
 		ALT_MANOR_REFRESH_TIME = clans.getProperty("AltManorRefreshTime", 20);
 		ALT_MANOR_REFRESH_MIN = clans.getProperty("AltManorRefreshMin", 0);
@@ -1727,26 +1659,25 @@ public final class Config
 			0
 		});
 		ALT_OLY_RECHARGE_SKILLS = events.getProperty("AltRechargeSkills", false);
-		
 		ALT_OLY_ALLOW_DUALBOX_OLY = events.getProperty("AltOlyAllowSameIPInOly", false);
 		LIST_OLY_RESTRICTED_ITEMS = new ArrayList<>();
 		for (String items : events.getProperty("AltOlyRestrictedItems", "").split(","))
 			LIST_OLY_RESTRICTED_ITEMS.add(Integer.parseInt(items));
 		
 		ALT_OLY_GRADE_RESTRICTION_ITEMS = events.getProperty("AltOlyGradeRestrictionItems", false);
-		ALT_OLY_LIST_OF_GRADE_RESTRICTION_ITEMS = new ArrayList<>();
-		for (String items : events.getProperty("AltOlyGradeRestrictionItemsList", "").split(","))
-			ALT_OLY_LIST_OF_GRADE_RESTRICTION_ITEMS.add(Integer.parseInt(items));
-		ALT_OLY_RESTORE_IN_SECOND_COUNTDOWN = events.getProperty("AltOlyRestoreInSecondCountdown", 20);
 		ALT_OLY_SHOW_MONTHLY_WINNERS = events.getProperty("AltShowMonthlyWinners", false);
 		ALT_OLY_ALLOW_APPLY_AUGMENT_ON_CHAR = events.getProperty("AltOlyAllowApplyAugmentOnChar", false);
-		
 		ALT_OLY_SKILLS_ALLOW_APPLY_AUGMENT = new ArrayList<>();
 		for (String skill : events.getProperty("AltOlySkillsAllowApplyAugment", "").split(","))
 			ALT_OLY_SKILLS_ALLOW_APPLY_AUGMENT.add(Integer.parseInt(skill));
 		
 		PVP_LIMITS_OLY_ENABLE = events.getProperty("PvPKillsOlympiadLimits", true);
 		PVP_LIMITS = events.getProperty("PvPKills", 10);
+		
+		ALT_OLY_LIST_OF_GRADE_RESTRICTION_ITEMS = new ArrayList<>();
+		for (String items : events.getProperty("AltOlyGradeRestrictionItemsList", "").split(","))
+			ALT_OLY_LIST_OF_GRADE_RESTRICTION_ITEMS.add(Integer.parseInt(items));
+		ALT_OLY_RESTORE_IN_SECOND_COUNTDOWN = events.getProperty("AltOlyRestoreInSecondCountdown", 20);
 		
 		ALT_GAME_CASTLE_DAWN = events.getProperty("AltCastleForDawn", true);
 		ALT_GAME_CASTLE_DUSK = events.getProperty("AltCastleForDusk", true);
@@ -1812,7 +1743,6 @@ public final class Config
 		PART_OF_CHARACTER_HEIGHT = geoengine.getProperty("PartOfCharacterHeight", 75);
 		MAX_OBSTACLE_HEIGHT = geoengine.getProperty("MaxObstacleHeight", 32);
 		
-		PATHFINDING = geoengine.getProperty("PathFinding", true);
 		PATHFIND_BUFFERS = geoengine.getProperty("PathFindBuffers", "100x6;128x6;192x6;256x4;320x4;384x4;500x2");
 		BASE_WEIGHT = geoengine.getProperty("BaseWeight", 10);
 		DIAGONAL_WEIGHT = geoengine.getProperty("DiagonalWeight", 14);
@@ -1994,8 +1924,6 @@ public final class Config
 		MAX_NPC_ANIMATION = npcs.getProperty("MaxNPCAnimation", 40);
 		MIN_MONSTER_ANIMATION = npcs.getProperty("MinMonsterAnimation", 10);
 		MAX_MONSTER_ANIMATION = npcs.getProperty("MaxMonsterAnimation", 40);
-		
-		ALT_GAME_VIEWNPC = npcs.getProperty("CustomViewNpc", false);
 	}
 	
 	/**
@@ -2094,21 +2022,23 @@ public final class Config
 		ALT_BLACKSMITH_USE_RECIPES = players.getProperty("AltBlacksmithUseRecipes", true);
 		
 		AUTO_LEARN_SKILLS = players.getProperty("AutoLearnSkills", false);
-		ALT_GAME_MAGICFAILURES = players.getProperty("MagicFailures", true);
-		ALT_GAME_SHIELD_BLOCKS = players.getProperty("AltShieldBlocks", false);
-		ALT_PERFECT_SHLD_BLOCK = players.getProperty("AltPerfectShieldBlockRate", 10);
+		MAGIC_FAILURES = players.getProperty("MagicFailures", true);
+		PERFECT_SHIELD_BLOCK_RATE = players.getProperty("PerfectShieldBlockRate", 5);
 		LIFE_CRYSTAL_NEEDED = players.getProperty("LifeCrystalNeeded", true);
 		SP_BOOK_NEEDED = players.getProperty("SpBookNeeded", true);
 		ES_SP_BOOK_NEEDED = players.getProperty("EnchantSkillSpBookNeeded", true);
 		DIVINE_SP_BOOK_NEEDED = players.getProperty("DivineInspirationSpBookNeeded", true);
-		ALT_GAME_SUBCLASS_WITHOUT_QUESTS = players.getProperty("AltSubClassWithoutQuests", false);
+		SUBCLASS_WITHOUT_QUESTS = players.getProperty("SubClassWithoutQuests", false);
 		
-		BUFFS_MAX_AMOUNT = players.getProperty("MaxBuffsAmount", 20);
+		MAX_BUFFS_AMOUNT = players.getProperty("MaxBuffsAmount", 20);
 		STORE_SKILL_COOLTIME = players.getProperty("StoreSkillCooltime", true);
 		
 		STARTING_ADENA = players.getProperty("StartingAdena", 10000000);
 		KARMA_PLAYER_CAN_USE_BUFFER = players.getProperty("KarmaFlagPlayerCanUseBuffer", false);
 		EXPERTISE_PENALTY = players.getProperty("ExpertisePenalty", true);
+		
+		PATK_SPEED = players.getProperty("PAtkSpeed", 2000);
+		MATK_SPEED = players.getProperty("MAtkSpeed", 2000);
 	}
 	
 	/**
@@ -2158,10 +2088,6 @@ public final class Config
 		
 		DELETE_DAYS = server.getProperty("DeleteCharAfterDays", 7);
 		MAXIMUM_ONLINE_USERS = server.getProperty("MaximumOnlineUsers", 100);
-		MIN_PROTOCOL_REVISION = server.getProperty("MinProtocolRevision", 730);
-		MAX_PROTOCOL_REVISION = server.getProperty("MaxProtocolRevision", 746);
-		if (MIN_PROTOCOL_REVISION > MAX_PROTOCOL_REVISION)
-			throw new Error("MinProtocolRevision is bigger than MaxProtocolRevision in server.properties.");
 		
 		AUTO_LOOT = server.getProperty("AutoLoot", false);
 		AUTO_LOOT_HERBS = server.getProperty("AutoLootHerbs", false);
@@ -2189,7 +2115,6 @@ public final class Config
 		RATE_PARTY_XP = server.getProperty("RatePartyXp", 1.);
 		RATE_PARTY_SP = server.getProperty("RatePartySp", 1.);
 		RATE_DROP_ADENA = server.getProperty("RateDropAdena", 1.);
-		RATE_CONSUMABLE_COST = server.getProperty("RateConsumableCost", 1.);
 		RATE_DROP_ITEMS = server.getProperty("RateDropItems", 1.);
 		RATE_DROP_ITEMS_BY_RAID = server.getProperty("RateRaidDropItems", 1.);
 		RATE_DROP_SPOIL = server.getProperty("RateDropSpoil", 1.);
@@ -2308,10 +2233,6 @@ public final class Config
 		NORMAL_CONNECTION_TIME = server.getProperty("NormalConnectionTime", 700);
 		FAST_CONNECTION_TIME = server.getProperty("FastConnectionTime", 350);
 		MAX_CONNECTION_PER_IP = server.getProperty("MaxConnectionPerIP", 50);
-		
-		DEBUG = server.getProperty("Debug", false);
-		DEVELOPER = server.getProperty("Developer", false);
-		PACKET_HANDLER_DEBUG = server.getProperty("PacketHandlerDebug", false);
 	}
 	
 	public static final void loadGameServer()
@@ -2344,9 +2265,6 @@ public final class Config
 		
 		// TvT Event settings
 		loadTvT();
-		
-		// Random zone settings
-		loadRandom();
 		
 		// limits settings
 		loadLimits();

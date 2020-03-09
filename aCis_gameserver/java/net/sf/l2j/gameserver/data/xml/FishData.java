@@ -31,7 +31,7 @@ public class FishData extends XMLDocument
 	protected void load()
 	{
 		loadDocument("./data/xml/fish.xml");
-		LOG.info("Loaded " + _fish.size() + " fish.");
+		LOGGER.info("Loaded {} fish.", _fish.size());
 	}
 	
 	@Override

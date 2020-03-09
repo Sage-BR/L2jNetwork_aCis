@@ -4,20 +4,15 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.StringTokenizer;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import net.sf.l2j.commons.concurrent.ThreadPool;
 
 import net.sf.l2j.Config;
 import net.sf.l2j.L2DatabaseFactory;
-import net.sf.l2j.gameserver.cache.HtmCache;
 import net.sf.l2j.gameserver.communitybbs.CommunityBoard;
-import net.sf.l2j.gameserver.data.ItemTable;
+import net.sf.l2j.gameserver.data.cache.HtmCache;
 import net.sf.l2j.gameserver.data.xml.AdminData;
-import net.sf.l2j.gameserver.events.phoenixevents.EventBuffer;
-import net.sf.l2j.gameserver.events.phoenixevents.EventManager;
-import net.sf.l2j.gameserver.events.phoenixevents.EventStats;
 import net.sf.l2j.gameserver.handler.AdminCommandHandler;
 import net.sf.l2j.gameserver.handler.IAdminCommandHandler;
 import net.sf.l2j.gameserver.handler.IVoicedCommandHandler;
@@ -56,485 +51,412 @@ public final class RequestBypassToServer extends L2GameClientPacket
 	@Override
 	protected void runImpl()
 	{
+		if (_command.isEmpty())
+			return;
+		
 		if (!FloodProtectors.performAction(getClient(), Action.SERVER_BYPASS))
 			return;
 		
-		final Player activeChar = getClient().getActiveChar();
-		if (activeChar == null)
+		final Player player = getClient().getActiveChar();
+		if (player == null)
 			return;
 		
-		if (_command.isEmpty())
+		if (_command.startsWith("admin_"))
 		{
-			_log.info(activeChar.getName() + " sent an empty requestBypass packet.");
-			activeChar.logout();
-			return;
+			String command = _command.split(" ")[0];
+			
+			final IAdminCommandHandler ach = AdminCommandHandler.getInstance().getHandler(command);
+			if (ach == null)
+			{
+				if (player.isGM())
+					player.sendMessage("The command " + command.substring(6) + " doesn't exist.");
+				LOGGER.warn("No handler registered for admin command '{}'.", command);
+				return;
+			}
+			
+			if (!AdminData.getInstance().hasAccess(command, player.getAccessLevel()))
+			{
+				player.sendMessage("You don't have the access rights to use this command.");
+				LOGGER.warn("{} tried to use admin command '{}' without proper Access Level.", player.getName(), command);
+				return;
+			}
+			
+			if (Config.GMAUDIT)
+				GMAUDIT_LOG.info(player.getName() + " [" + player.getObjectId() + "] used '" + _command + "' command on: " + ((player.getTarget() != null) ? player.getTarget().getName() : "none"));
+			
+			ach.useAdminCommand(_command, player);
+		}
+		else if (_command.startsWith("player_help "))
+		{
+			final String path = _command.substring(12);
+			if (path.indexOf("..") != -1)
+				return;
+			
+			final StringTokenizer st = new StringTokenizer(path);
+			final String[] cmd = st.nextToken().split("#");
+			
+			final NpcHtmlMessage html = new NpcHtmlMessage(0);
+			html.setFile("data/html/help/" + cmd[0]);
+			if (cmd.length > 1)
+				html.setItemId(Integer.parseInt(cmd[1]));
+			html.disableValidation();
+			player.sendPacket(html);
+		}
+		if (_command.startsWith("voiced_"))
+		{
+			String command = _command.split(" ")[0];
+			
+			IVoicedCommandHandler ach = VoicedCommandHandler.getInstance().getHandler(_command.substring(7));
+			
+			if (ach == null)
+			{
+				player.sendMessage("The command " + command.substring(7) + " does not exist!");
+				LOGGER.warn("No handler registered for command '" + _command + "'");
+				return;
+			}
+			
+			ach.useVoicedCommand(_command.substring(7), player, null);
+		}
+		else if (_command.startsWith("voice_"))
+		{
+			String params = "";
+			String command;
+			if (_command.indexOf(" ") != -1)
+			{
+				command = _command.substring(6, _command.indexOf(" "));
+				params = _command.substring(_command.indexOf(" ") + 1);
+			}
+			else
+			{
+				command = _command.substring(6);
+			}
+			
+			IVoicedCommandHandler vc = VoicedCommandHandler.getInstance().getHandler(command);
+			
+			if (vc == null)
+			{
+				return;
+			}
+			vc.useVoicedCommand(command, player, params);
+		}
+		else if (_command.startsWith("aiopanel"))
+		{
+			String value = _command.substring(8);
+			StringTokenizer st = new StringTokenizer(value);
+			String command = st.nextToken();
+			
+			AioMenu.bypass(player, command, st);
+		}
+		else if (_command.startsWith("repairchar "))
+		{
+			String value = _command.substring(11);
+			StringTokenizer st = new StringTokenizer(value);
+			String repairChar = null;
+			
+			try
+			{
+				if (st.hasMoreTokens())
+					repairChar = st.nextToken();
+			}
+			catch (Exception e)
+			{
+				player.sendMessage("You can't put empty box.");
+				return;
+			}
+			
+			if (repairChar == null || repairChar.equals(""))
+				return;
+			
+			if (Repair.checkAcc(player, repairChar))
+			{
+				if (Repair.checkChar(player, repairChar))
+				{
+					String htmContent = HtmCache.getInstance().getHtm("data/html/mods/repair/repair-self.htm");
+					NpcHtmlMessage npcHtmlMessage = new NpcHtmlMessage(5);
+					npcHtmlMessage.setHtml(htmContent);
+					player.sendPacket(npcHtmlMessage);
+					return;
+				}
+				else if (Repair.checkPunish(player, repairChar))
+				{
+					String htmContent = HtmCache.getInstance().getHtm("data/html/mods/repair/repair-jail.htm");
+					NpcHtmlMessage npcHtmlMessage = new NpcHtmlMessage(5);
+					npcHtmlMessage.setHtml(htmContent);
+					player.sendPacket(npcHtmlMessage);
+					return;
+				}
+				else if (Repair.checkKarma(player, repairChar))
+				{
+					player.sendMessage("Selected Char has Karma,Cannot be repaired!");
+					return;
+				}
+				else
+				{
+					Repair.repairBadCharacter(repairChar);
+					String htmContent = HtmCache.getInstance().getHtm("data/html/mods/repair/repair-done.htm");
+					NpcHtmlMessage npcHtmlMessage = new NpcHtmlMessage(5);
+					npcHtmlMessage.setHtml(htmContent);
+					player.sendPacket(npcHtmlMessage);
+					return;
+				}
+			}
+			
+			String htmContent = HtmCache.getInstance().getHtm("data/html/mods/repair/repair-error.htm");
+			NpcHtmlMessage npcHtmlMessage = new NpcHtmlMessage(5);
+			npcHtmlMessage.setHtml(htmContent);
+			npcHtmlMessage.replace("%acc_chars%", Repair.getCharList(player));
+			player.sendPacket(npcHtmlMessage);
 		}
 		
-		try
+		if (OlympiadManager.getInstance().isRegisteredInComp(player))
 		{
-			if (_command.startsWith("admin_"))
+			player.sendPacket(SystemMessageId.WHILE_YOU_ARE_ON_THE_WAITING_LIST_YOU_ARE_NOT_ALLOWED_TO_WATCH_THE_GAME);
+			return;
+		}
+		else if (_command.startsWith("submitpin"))
+		{
+			try
 			{
-				String command = _command.split(" ")[0];
+				String value = _command.substring(9);
+				StringTokenizer s = new StringTokenizer(value, " ");
+				int _pin = player.getPin();
 				
-				IAdminCommandHandler ach = AdminCommandHandler.getInstance().getAdminCommandHandler(command);
-				if (ach == null)
-				{
-					if (activeChar.isGM())
-						activeChar.sendMessage("The command " + command.substring(6) + " doesn't exist.");
-					
-					_log.warning("No handler registered for admin command '" + command + "'");
-					return;
-				}
-				
-				if (!AdminData.getInstance().hasAccess(command, activeChar.getAccessLevel()))
-				{
-					activeChar.sendMessage("You don't have the access rights to use this command.");
-					_log.warning(activeChar.getName() + " tried to use admin command " + command + " without proper Access Level.");
-					return;
-				}
-				
-				if (Config.GMAUDIT)
-					GMAUDIT_LOG.info(activeChar.getName() + " [" + activeChar.getObjectId() + "] used '" + _command + "' command on: " + ((activeChar.getTarget() != null) ? activeChar.getTarget().getName() : "none"));
-				
-				ach.useAdminCommand(_command, activeChar);
-			}
-			else if (_command.startsWith("event_vote"))
-			{
-				EventManager.getInstance().addVote(activeChar, Integer.parseInt(_command.substring(11)));
-			}
-			else if (_command.equals("event_register"))
-			{
-				EventManager.getInstance().registerPlayer(activeChar);
-			}
-			else if (_command.equals("event_unregister"))
-			{
-				EventManager.getInstance().unregisterPlayer(activeChar);
-			}
-			else if (_command.startsWith("eventvote "))
-			{
-				EventManager.getInstance().addVote(activeChar, Integer.parseInt(_command.substring(10)));
-			}
-			else if (_command.startsWith("eventstats "))
-			{
 				try
 				{
-					EventStats.getInstance().showHtml(Integer.parseInt(_command.substring(11)), activeChar);
+					if (player.getPincheck())
+					{
+						_pin = Integer.parseInt(s.nextToken());
+						if (Integer.toString(_pin).length() < 5)
+						{
+							player.sendMessage("You should type more than 5 numbers. ");
+							return;
+						}
+						
+						try (Connection con = L2DatabaseFactory.getInstance().getConnection(); PreparedStatement statement = con.prepareStatement("UPDATE characters SET pin=? WHERE obj_id=?");)
+						{
+							statement.setInt(1, _pin);
+							statement.setInt(2, player.getObjectId());
+							statement.execute();
+							statement.close();
+							player.setPincheck(false);
+							player.updatePincheck();
+							player.sendMessage("You successfully secure your character. Your code is: " + _pin);
+						}
+						catch (Exception e)
+						{
+							e.printStackTrace();
+							LOGGER.warn("could not set char first login:" + e);
+						}
+					}
 				}
 				catch (Exception e)
 				{
-					activeChar.sendMessage("Currently there are no statistics to show.");
+					player.sendMessage("Your code must be more than 5 numbers.");
 				}
 			}
-			else if (_command.startsWith("eventstats_show "))
+			catch (Exception e)
 			{
-				EventStats.getInstance().showPlayerStats(Integer.parseInt(_command.substring(16)), activeChar);
+				player.sendMessage("Your code must be more than 5 numbers.");
 			}
-			else if (_command.equals("eventbuffershow"))
+			
+		}
+		else if (_command.startsWith("removepin"))
+		{
+			try
 			{
-				EventBuffer.getInstance().showHtml(activeChar);
-			}
-			else if (_command.startsWith("eventbuffer "))
-			{
-				EventBuffer.getInstance().changeList(activeChar, Integer.parseInt(_command.substring(12, _command.length() - 2)), (Integer.parseInt(_command.substring(_command.length() - 1)) == 0 ? false : true));
-				EventBuffer.getInstance().showHtml(activeChar);
-			}
-			else if (_command.startsWith("eventinfo "))
-			{
-				int eventId = Integer.valueOf(_command.substring(10));
+				String value = _command.substring(9);
+				StringTokenizer s = new StringTokenizer(value, " ");
+				int dapin = 0;
+				int pin = 0;
+				dapin = Integer.parseInt(s.nextToken());
 				
-				NpcHtmlMessage html = new NpcHtmlMessage(0);
-				html.setFile("data/html/eventinfo/" + eventId + ".htm");
-				html.replace("%amount%", String.valueOf(EventManager.getInstance().getInt(eventId, "rewardAmmount")));
-				html.replace("%item%", ItemTable.getInstance().createDummyItem(EventManager.getInstance().getInt(eventId, "rewardId")).getItemName());
-				html.replace("%minlvl%", String.valueOf(EventManager.getInstance().getInt(eventId, "minLvl")));
-				html.replace("%maxlvl%", String.valueOf(EventManager.getInstance().getInt(eventId, "maxLvl")));
-				html.replace("%time%", String.valueOf(EventManager.getInstance().getInt(eventId, "matchTime") / 60));
-				html.replace("%players%", String.valueOf(EventManager.getInstance().getInt(eventId, "minPlayers")));
-				html.replace("%url%", EventManager.getInstance().getString("siteUrl"));
-				html.replace("%buffs%", EventManager.getInstance().getBoolean(eventId, "removeBuffs") ? "Self" : "Full");
-				activeChar.sendPacket(html);
-				activeChar.sendPacket(ActionFailed.STATIC_PACKET);
-			}
-			else if (_command.startsWith("menu_commands"))
-			{
-				String value = _command.substring(13);
-				StringTokenizer st = new StringTokenizer(value);
-				String command = st.nextToken();
+				PreparedStatement statement = null;
 				
-				Menu.bypass(activeChar, command, st);
+				try (Connection con = L2DatabaseFactory.getInstance().getConnection())
+				{
+					statement = con.prepareStatement("SELECT pin FROM characters WHERE obj_Id=?");
+					statement.setInt(1, player.getObjectId());
+					ResultSet rset = statement.executeQuery();
+					
+					while (rset.next())
+					{
+						pin = rset.getInt("pin");
+					}
+					
+					if (pin == dapin)
+					{
+						player.setPincheck(true);
+						player.setPin(0);
+						player.updatePincheck();
+						player.sendMessage("You successfully remove your pin.");
+					}
+					else
+						player.sendMessage("Code is wrong..");
+				}
+				catch (Exception e)
+				{
+					
+				}
 			}
-			else if (_command.startsWith("aiopanel"))
+			catch (Exception e)
+			{
+				// e.printStackTrace();
+				player.sendMessage("Your code must be more than 5 numbers.");
+			}
+		}
+		else if (_command.startsWith("enterpin"))
+		{
+			try
 			{
 				String value = _command.substring(8);
-				StringTokenizer st = new StringTokenizer(value);
-				String command = st.nextToken();
+				StringTokenizer s = new StringTokenizer(value, " ");
+				int dapin = 0;
+				int pin = 0;
+				dapin = Integer.parseInt(s.nextToken());
 				
-				AioMenu.bypass(activeChar, command, st);
-			}
-			else if (_command.startsWith("player_help "))
-			{
-				playerHelp(activeChar, _command.substring(12));
-			}
-			if (_command.startsWith("voiced_"))
-			{
-				String command = _command.split(" ")[0];
+				PreparedStatement statement = null;
 				
-				IVoicedCommandHandler ach = VoicedCommandHandler.getInstance().getHandler(_command.substring(7));
-				
-				if (ach == null)
+				try (Connection con = L2DatabaseFactory.getInstance().getConnection())
 				{
-					activeChar.sendMessage("The command " + command.substring(7) + " does not exist!");
-					_log.warning("No handler registered for command '" + _command + "'");
-					return;
-				}
-				
-				ach.useVoicedCommand(_command.substring(7), activeChar, null);
-			}
-			else if (_command.startsWith("voice_"))
-			{
-				String params = "";
-				String command;
-				if (_command.indexOf(" ") != -1)
-				{
-					command = _command.substring(6, _command.indexOf(" "));
-					params = _command.substring(_command.indexOf(" ") + 1);
-				}
-				else
-				{
-					command = _command.substring(6);
-				}
-				
-				IVoicedCommandHandler vc = VoicedCommandHandler.getInstance().getHandler(command);
-				
-				if (vc == null)
-				{
-					return;
-				}
-				vc.useVoicedCommand(command, activeChar, params);
-			}
-			else if (_command.startsWith("npc_"))
-			{
-				if (!activeChar.validateBypass(_command))
-					return;
-				
-				int endOfId = _command.indexOf('_', 5);
-				String id;
-				if (endOfId > 0)
-					id = _command.substring(4, endOfId);
-				else
-					id = _command.substring(4);
-				
-				try
-				{
-					final WorldObject object = World.getInstance().getObject(Integer.parseInt(id));
+					statement = con.prepareStatement("SELECT pin FROM characters WHERE obj_Id=?");
+					statement.setInt(1, player.getObjectId());
+					ResultSet rset = statement.executeQuery();
 					
-					if (object != null && object instanceof Npc && endOfId > 0 && ((Npc) object).canInteract(activeChar))
-						((Npc) object).onBypassFeedback(activeChar, _command.substring(endOfId + 1));
+					while (rset.next())
+					{
+						pin = rset.getInt("pin");
+					}
 					
-					activeChar.sendPacket(ActionFailed.STATIC_PACKET);
-				}
-				catch (NumberFormatException nfe)
-				{
-				}
-			}
-			// Navigate throught Manor windows
-			else if (_command.startsWith("manor_menu_select?"))
-			{
-				WorldObject object = activeChar.getTarget();
-				if (object instanceof Npc)
-					((Npc) object).onBypassFeedback(activeChar, _command);
-			}
-			else if (_command.startsWith("bbs_") || _command.startsWith("_bbs") || _command.startsWith("_friend") || _command.startsWith("_mail") || _command.startsWith("_block"))
-			{
-				CommunityBoard.getInstance().handleCommands(getClient(), _command);
-			}
-			else if (_command.startsWith("Quest "))
-			{
-				if (!activeChar.validateBypass(_command))
-					return;
-				
-				String[] str = _command.substring(6).trim().split(" ", 2);
-				if (str.length == 1)
-					activeChar.processQuestEvent(str[0], "");
-				else
-					activeChar.processQuestEvent(str[0], str[1]);
-			}
-			else if (_command.startsWith("repairchar "))
-			{
-				String value = _command.substring(11);
-				StringTokenizer st = new StringTokenizer(value);
-				String repairChar = null;
-				
-				try
-				{
-					if (st.hasMoreTokens())
-						repairChar = st.nextToken();
-				}
-				catch (Exception e)
-				{
-					activeChar.sendMessage("You can't put empty box.");
-					return;
-				}
-				
-				if (repairChar == null || repairChar.equals(""))
-					return;
-				
-				if (Repair.checkAcc(activeChar, repairChar))
-				{
-					if (Repair.checkChar(activeChar, repairChar))
+					if (pin == dapin)
 					{
-						String htmContent = HtmCache.getInstance().getHtm("data/html/mods/repair/repair-self.htm");
-						NpcHtmlMessage npcHtmlMessage = new NpcHtmlMessage(5);
-						npcHtmlMessage.setHtml(htmContent);
-						activeChar.sendPacket(npcHtmlMessage);
-						return;
-					}
-					else if (Repair.checkPunish(activeChar, repairChar))
-					{
-						String htmContent = HtmCache.getInstance().getHtm("data/html/mods/repair/repair-jail.htm");
-						NpcHtmlMessage npcHtmlMessage = new NpcHtmlMessage(5);
-						npcHtmlMessage.setHtml(htmContent);
-						activeChar.sendPacket(npcHtmlMessage);
-						return;
-					}
-					else if (Repair.checkKarma(activeChar, repairChar))
-					{
-						activeChar.sendMessage("Selected Char has Karma,Cannot be repaired!");
-						return;
+						player.sendMessage("Code Authenticated!");
+						player.setIsImmobilized(false);
+						player.setIsSubmitingPin(false);
 					}
 					else
 					{
-						Repair.repairBadCharacter(repairChar);
-						String htmContent = HtmCache.getInstance().getHtm("data/html/mods/repair/repair-done.htm");
-						NpcHtmlMessage npcHtmlMessage = new NpcHtmlMessage(5);
-						npcHtmlMessage.setHtml(htmContent);
-						activeChar.sendPacket(npcHtmlMessage);
-						return;
-					}
-				}
-				
-				String htmContent = HtmCache.getInstance().getHtm("data/html/mods/repair/repair-error.htm");
-				NpcHtmlMessage npcHtmlMessage = new NpcHtmlMessage(5);
-				npcHtmlMessage.setHtml(htmContent);
-				npcHtmlMessage.replace("%acc_chars%", Repair.getCharList(activeChar));
-				activeChar.sendPacket(npcHtmlMessage);
-			}
-			
-			else if (_command.startsWith("_match"))
-			{
-				String params = _command.substring(_command.indexOf("?") + 1);
-				StringTokenizer st = new StringTokenizer(params, "&");
-				int heroclass = Integer.parseInt(st.nextToken().split("=")[1]);
-				int heropage = Integer.parseInt(st.nextToken().split("=")[1]);
-				int heroid = Hero.getInstance().getHeroByClass(heroclass);
-				if (heroid > 0)
-					Hero.getInstance().showHeroFights(activeChar, heroclass, heroid, heropage);
-			}
-			else if (_command.startsWith("_diary"))
-			{
-				String params = _command.substring(_command.indexOf("?") + 1);
-				StringTokenizer st = new StringTokenizer(params, "&");
-				int heroclass = Integer.parseInt(st.nextToken().split("=")[1]);
-				int heropage = Integer.parseInt(st.nextToken().split("=")[1]);
-				int heroid = Hero.getInstance().getHeroByClass(heroclass);
-				if (heroid > 0)
-					Hero.getInstance().showHeroDiary(activeChar, heroclass, heroid, heropage);
-			}
-			else if (_command.startsWith("submitpin"))
-			{
-				try
-				{
-					String value = _command.substring(9);
-					StringTokenizer s = new StringTokenizer(value, " ");
-					int _pin = activeChar.getPin();
-					
-					try
-					{
-						if (activeChar.getPincheck())
-						{
-							_pin = Integer.parseInt(s.nextToken());
-							if (Integer.toString(_pin).length() < 5)
-							{
-								activeChar.sendMessage("You should type more than 5 numbers. ");
-								return;
-							}
-							
-							try (Connection con = L2DatabaseFactory.getInstance().getConnection(); PreparedStatement statement = con.prepareStatement("UPDATE characters SET pin=? WHERE obj_id=?");)
-							{
-								statement.setInt(1, _pin);
-								statement.setInt(2, activeChar.getObjectId());
-								statement.execute();
-								statement.close();
-								activeChar.setPincheck(false);
-								activeChar.updatePincheck();
-								activeChar.sendMessage("You successfully secure your character. Your code is: " + _pin);
-							}
-							catch (Exception e)
-							{
-								e.printStackTrace();
-								_log.warning("could not set char first login:" + e);
-							}
-						}
-					}
-					catch (Exception e)
-					{
-						activeChar.sendMessage("Your code must be more than 5 numbers.");
+						player.sendMessage("Code is wrong.. You will now get disconnected!");
+						ThreadPool.schedule(() -> player.logout(false), 3000);
 					}
 				}
 				catch (Exception e)
 				{
-					activeChar.sendMessage("Your code must be more than 5 numbers.");
-				}
-				
-			}
-			else if (_command.startsWith("removepin"))
-			{
-				try
-				{
-					String value = _command.substring(9);
-					StringTokenizer s = new StringTokenizer(value, " ");
-					int dapin = 0;
-					int pin = 0;
-					dapin = Integer.parseInt(s.nextToken());
-					
-					PreparedStatement statement = null;
-					
-					try (Connection con = L2DatabaseFactory.getInstance().getConnection())
-					{
-						statement = con.prepareStatement("SELECT pin FROM characters WHERE obj_Id=?");
-						statement.setInt(1, activeChar.getObjectId());
-						ResultSet rset = statement.executeQuery();
-						
-						while (rset.next())
-						{
-							pin = rset.getInt("pin");
-						}
-						
-						if (pin == dapin)
-						{
-							activeChar.setPincheck(true);
-							activeChar.setPin(0);
-							activeChar.updatePincheck();
-							activeChar.sendMessage("You successfully remove your pin.");
-						}
-						else
-							activeChar.sendMessage("Code is wrong..");
-					}
-					catch (Exception e)
-					{
-						
-					}
-				}
-				catch (Exception e)
-				{
-					// e.printStackTrace();
-					activeChar.sendMessage("Your code must be more than 5 numbers.");
 				}
 			}
-			else if (_command.startsWith("enterpin"))
+			catch (Exception e)
 			{
-				try
-				{
-					String value = _command.substring(8);
-					StringTokenizer s = new StringTokenizer(value, " ");
-					int dapin = 0;
-					int pin = 0;
-					dapin = Integer.parseInt(s.nextToken());
-					
-					PreparedStatement statement = null;
-					
-					try (Connection con = L2DatabaseFactory.getInstance().getConnection())
-					{
-						statement = con.prepareStatement("SELECT pin FROM characters WHERE obj_Id=?");
-						statement.setInt(1, activeChar.getObjectId());
-						ResultSet rset = statement.executeQuery();
-						
-						while (rset.next())
-						{
-							pin = rset.getInt("pin");
-						}
-						
-						if (pin == dapin)
-						{
-							activeChar.sendMessage("Code Authenticated!");
-							activeChar.setIsImmobilized(false);
-							activeChar.setIsSubmitingPin(false);
-						}
-						else
-						{
-							activeChar.sendMessage("Code is wrong.. You will now get disconnected!");
-							ThreadPool.schedule(() -> activeChar.logout(false), 3000);
-						}
-					}
-					catch (Exception e)
-					{
-						
-					}
-				}
-				catch (Exception e)
-				{
-					// e.printStackTrace();
-					activeChar.sendMessage("Your code must be more than 5 numbers.");
-				}
-			}
-			else if (_command.startsWith("mageclass"))
-				StartupManager.getInstance().MageClasses(_command, activeChar);
-			else if (_command.startsWith("fighterclass"))
-				StartupManager.getInstance().FighterClasses(_command, activeChar);
-			else if (_command.startsWith("lightclass"))
-				StartupManager.getInstance().LightClasses(_command, activeChar);
-			else if (_command.startsWith("class"))
-				StartupManager.getInstance().Classes(_command, activeChar);
-			else if (_command.startsWith("base"))
-				MultiNpc.Classes(_command, activeChar);
-			else if (_command.startsWith("report"))
-				BotsPreventionManager.getInstance().AnalyseBypass(_command, activeChar);
-			
-			else if (_command.startsWith("arenachange")) // change
-			{
-				final boolean isManager = activeChar.getCurrentFolkNPC() instanceof OlympiadManagerNpc;
-				if (!isManager)
-				{
-					// Without npc, command can be used only in observer mode on arena
-					if (!activeChar.inObserverMode() || activeChar.isInOlympiadMode() || activeChar.getOlympiadGameId() < 0)
-						return;
-				}
-				
-				if (OlympiadManager.getInstance().isRegisteredInComp(activeChar))
-				{
-					activeChar.sendPacket(SystemMessageId.WHILE_YOU_ARE_ON_THE_WAITING_LIST_YOU_ARE_NOT_ALLOWED_TO_WATCH_THE_GAME);
-					return;
-				}
-				
-				if (EventManager.getInstance().players.contains(activeChar))
-				{
-					activeChar.sendMessage("You can not observe games while registered for an event!");
-					return;
-				}
-				
-				final int arenaId = Integer.parseInt(_command.substring(12).trim());
-				activeChar.enterOlympiadObserverMode(arenaId);
+				// e.printStackTrace();
+				player.sendMessage("Your code must be more than 5 numbers.");
 			}
 		}
-		catch (Exception e)
+		else if (_command.startsWith("page1"))
+			Menu.mainHtml(player);
+		else if (_command.startsWith("buffprot"))
 		{
-			_log.log(Level.WARNING, "Bad RequestBypassToServer: " + e, e);
+			if (player.isBuffProtected())
+			{
+				player.setIsBuffProtected(false);
+				player.sendMessage("Buff protection is disabled.");
+				Menu.mainHtml(player);
+			}
+			else
+			{
+				player.setIsBuffProtected(true);
+				player.sendMessage("Buff protection is enabled.");
+				Menu.mainHtml(player);
+			}
 		}
-	}
-	
-	private static void playerHelp(Player activeChar, String path)
-	{
-		if (path.indexOf("..") != -1)
-			return;
-		
-		final StringTokenizer st = new StringTokenizer(path);
-		final String[] cmd = st.nextToken().split("#");
-		
-		final NpcHtmlMessage html = new NpcHtmlMessage(0);
-		html.setFile("data/html/help/" + cmd[0]);
-		if (cmd.length > 1)
-			html.setItemId(Integer.parseInt(cmd[1]));
-		html.disableValidation();
-		activeChar.sendPacket(html);
+		else if (_command.startsWith("mageclass"))
+			StartupManager.getInstance().MageClasses(_command, player);
+		else if (_command.startsWith("fighterclass"))
+			StartupManager.getInstance().FighterClasses(_command, player);
+		else if (_command.startsWith("lightclass"))
+			StartupManager.getInstance().LightClasses(_command, player);
+		else if (_command.startsWith("class"))
+			StartupManager.getInstance().Classes(_command, player);
+		else if (_command.startsWith("base"))
+			MultiNpc.Classes(_command, player);
+		else if (_command.startsWith("report"))
+			BotsPreventionManager.getInstance().AnalyseBypass(_command, player);
+		else if (_command.startsWith("npc_"))
+		{
+			if (!player.validateBypass(_command))
+				return;
+			
+			int endOfId = _command.indexOf('_', 5);
+			String id;
+			if (endOfId > 0)
+				id = _command.substring(4, endOfId);
+			else
+				id = _command.substring(4);
+			
+			try
+			{
+				final WorldObject object = World.getInstance().getObject(Integer.parseInt(id));
+				
+				if (object != null && object instanceof Npc && endOfId > 0 && ((Npc) object).canInteract(player))
+					((Npc) object).onBypassFeedback(player, _command.substring(endOfId + 1));
+				
+				player.sendPacket(ActionFailed.STATIC_PACKET);
+			}
+			catch (NumberFormatException nfe)
+			{
+			}
+		}
+		// Navigate throught Manor windows
+		else if (_command.startsWith("manor_menu_select?"))
+		{
+			WorldObject object = player.getTarget();
+			if (object instanceof Npc)
+				((Npc) object).onBypassFeedback(player, _command);
+		}
+		else if (_command.startsWith("bbs_") || _command.startsWith("_bbs") || _command.startsWith("_friend") || _command.startsWith("_mail") || _command.startsWith("_block"))
+		{
+			CommunityBoard.getInstance().handleCommands(getClient(), _command);
+		}
+		else if (_command.startsWith("Quest "))
+		{
+			if (!player.validateBypass(_command))
+				return;
+			
+			String[] str = _command.substring(6).trim().split(" ", 2);
+			if (str.length == 1)
+				player.processQuestEvent(str[0], "");
+			else
+				player.processQuestEvent(str[0], str[1]);
+		}
+		else if (_command.startsWith("_match"))
+		{
+			String params = _command.substring(_command.indexOf("?") + 1);
+			StringTokenizer st = new StringTokenizer(params, "&");
+			int heroclass = Integer.parseInt(st.nextToken().split("=")[1]);
+			int heropage = Integer.parseInt(st.nextToken().split("=")[1]);
+			int heroid = Hero.getInstance().getHeroByClass(heroclass);
+			if (heroid > 0)
+				Hero.getInstance().showHeroFights(player, heroclass, heroid, heropage);
+		}
+		else if (_command.startsWith("_diary"))
+		{
+			String params = _command.substring(_command.indexOf("?") + 1);
+			StringTokenizer st = new StringTokenizer(params, "&");
+			int heroclass = Integer.parseInt(st.nextToken().split("=")[1]);
+			int heropage = Integer.parseInt(st.nextToken().split("=")[1]);
+			int heroid = Hero.getInstance().getHeroByClass(heroclass);
+			if (heroid > 0)
+				Hero.getInstance().showHeroDiary(player, heroclass, heroid, heropage);
+		}
+		else if (_command.startsWith("arenachange")) // change
+		{
+			final boolean isManager = player.getCurrentFolk() instanceof OlympiadManagerNpc;
+			if (!isManager)
+			{
+				// Without npc, command can be used only in observer mode on arena
+				if (!player.inObserverMode() || player.isInOlympiadMode() || player.getOlympiadGameId() < 0)
+					return;
+			}
+			
+			final int arenaId = Integer.parseInt(_command.substring(12).trim());
+			player.enterOlympiadObserverMode(arenaId);
+		}
 	}
 }

@@ -1,6 +1,6 @@
 package net.sf.l2j.gameserver.network.clientpackets;
 
-import net.sf.l2j.gameserver.model.CharSelectInfoPackage;
+import net.sf.l2j.gameserver.model.CharSelectSlot;
 import net.sf.l2j.gameserver.model.actor.instance.Player;
 import net.sf.l2j.gameserver.network.FloodProtectors;
 import net.sf.l2j.gameserver.network.FloodProtectors.Action;
@@ -47,7 +47,7 @@ public class CharacterSelected extends L2GameClientPacket
 				// should always be null but if not then this is repeated packet and nothing should be done here
 				if (client.getActiveChar() == null)
 				{
-					final CharSelectInfoPackage info = client.getCharSelection(_charSlot);
+					final CharSelectSlot info = client.getCharSelectSlot(_charSlot);
 					if (info == null || info.getAccessLevel() < 0)
 						return;
 					

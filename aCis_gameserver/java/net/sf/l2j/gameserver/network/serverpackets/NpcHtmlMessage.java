@@ -1,6 +1,6 @@
 package net.sf.l2j.gameserver.network.serverpackets;
 
-import net.sf.l2j.gameserver.cache.HtmCache;
+import net.sf.l2j.gameserver.data.cache.HtmCache;
 import net.sf.l2j.gameserver.model.actor.instance.Player;
 
 /**
@@ -77,7 +77,7 @@ public final class NpcHtmlMessage extends L2GameServerPacket
 		if (text.length() > 8192)
 		{
 			_html = "<html><body>Html was too long.</body></html>";
-			_log.warning("NpcHtmlMessage: html is too long");
+			LOGGER.warn("An html content was too long.");
 			return;
 		}
 		_html = text;

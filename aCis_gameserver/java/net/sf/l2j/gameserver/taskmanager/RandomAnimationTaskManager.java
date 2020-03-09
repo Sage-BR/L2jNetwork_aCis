@@ -17,25 +17,10 @@ public final class RandomAnimationTaskManager implements Runnable
 {
 	private final Map<Npc, Long> _characters = new ConcurrentHashMap<>();
 	
-	public static final RandomAnimationTaskManager getInstance()
-	{
-		return SingletonHolder._instance;
-	}
-	
 	protected RandomAnimationTaskManager()
 	{
 		// Run task each second.
 		ThreadPool.scheduleAtFixedRate(this, 1000, 1000);
-	}
-	
-	/**
-	 * Adds {@link Npc} to the RandomAnimationTask with additional interval.
-	 * @param character : {@link Npc} to be added.
-	 * @param interval : Interval in seconds, after which the decay task is triggered.
-	 */
-	public final void add(Npc character, int interval)
-	{
-		_characters.put(character, System.currentTimeMillis() + interval * 1000);
 	}
 	
 	@Override
@@ -85,8 +70,23 @@ public final class RandomAnimationTaskManager implements Runnable
 		}
 	}
 	
+	/**
+	 * Adds {@link Npc} to the RandomAnimationTask with additional interval.
+	 * @param character : {@link Npc} to be added.
+	 * @param interval : Interval in seconds, after which the decay task is triggered.
+	 */
+	public final void add(Npc character, int interval)
+	{
+		_characters.put(character, System.currentTimeMillis() + interval * 1000);
+	}
+	
+	public static final RandomAnimationTaskManager getInstance()
+	{
+		return SingletonHolder.INSTANCE;
+	}
+	
 	private static final class SingletonHolder
 	{
-		protected static final RandomAnimationTaskManager _instance = new RandomAnimationTaskManager();
+		protected static final RandomAnimationTaskManager INSTANCE = new RandomAnimationTaskManager();
 	}
 }

@@ -87,7 +87,9 @@ public class TopicBBSManager extends BaseBBSManager
 	{
 		if (command.equals("_bbsmemo"))
 		{
-			showTopics(activeChar.getMemo(), activeChar, 1, activeChar.getMemo().getID());
+			final Forum forum = activeChar.getMemo();
+			if (forum != null)
+				showTopics(forum, activeChar, 1, forum.getID());
 		}
 		else if (command.startsWith("_bbstopics;read"))
 		{

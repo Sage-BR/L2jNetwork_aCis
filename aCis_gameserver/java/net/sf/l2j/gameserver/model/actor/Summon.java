@@ -4,7 +4,6 @@ import java.util.List;
 
 import net.sf.l2j.Config;
 import net.sf.l2j.gameserver.data.ItemTable;
-import net.sf.l2j.gameserver.events.phoenixevents.EventManager;
 import net.sf.l2j.gameserver.geoengine.GeoEngine;
 import net.sf.l2j.gameserver.handler.IItemHandler;
 import net.sf.l2j.gameserver.handler.ItemHandler;
@@ -62,10 +61,6 @@ public abstract class Summon extends Playable
 		
 		_showSummonAnimation = true;
 		_owner = owner;
-		
-		if (EventManager.getInstance().isRunning() && EventManager.getInstance().isRegistered(owner))
-			for (L2Skill skill : EventManager.getInstance().getCurrentEvent().getSummonBuffs(owner))
-				skill.getEffects(owner, this);
 	}
 	
 	@Override
@@ -149,6 +144,10 @@ public abstract class Summon extends Playable
 			}
 			else
 			{
+				// Stop moving if we're already in interact range.
+				if (player.isMoving() || player.isInCombat())
+					player.getAI().setIntention(CtrlIntention.IDLE);
+				
 				// Rotate the player to face the instance
 				player.sendPacket(new MoveToPawn(player, this, Npc.INTERACTION_DISTANCE));
 				
@@ -842,14 +841,14 @@ public abstract class Summon extends Playable
 			{
 				if (magic && item.getItem().getDefaultAction() == ActionType.summon_spiritshot)
 				{
-					IItemHandler handler = ItemHandler.getInstance().getItemHandler(item.getEtcItem());
+					final IItemHandler handler = ItemHandler.getInstance().getHandler(item.getEtcItem());
 					if (handler != null)
 						handler.useItem(getOwner(), item, false);
 				}
 				
 				if (physical && item.getItem().getDefaultAction() == ActionType.summon_soulshot)
 				{
-					IItemHandler handler = ItemHandler.getInstance().getItemHandler(item.getEtcItem());
+					final IItemHandler handler = ItemHandler.getInstance().getHandler(item.getEtcItem());
 					if (handler != null)
 						handler.useItem(getOwner(), item, false);
 				}
@@ -868,7 +867,7 @@ public abstract class Summon extends Playable
 				if (skill.getId() == skillId)
 					return skill.getLevel();
 		}
-		return -1;
+		return 0;
 	}
 	
 	@Override

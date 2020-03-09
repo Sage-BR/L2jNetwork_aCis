@@ -10,9 +10,9 @@ import net.sf.l2j.commons.concurrent.ThreadPool;
 import net.sf.l2j.commons.random.Rnd;
 
 import net.sf.l2j.gameserver.data.SkillTable;
+import net.sf.l2j.gameserver.data.manager.DuelManager;
 import net.sf.l2j.gameserver.handler.ISkillHandler;
 import net.sf.l2j.gameserver.handler.SkillHandler;
-import net.sf.l2j.gameserver.instancemanager.DuelManager;
 import net.sf.l2j.gameserver.model.L2Effect;
 import net.sf.l2j.gameserver.model.L2Skill;
 import net.sf.l2j.gameserver.model.ShotType;
@@ -411,7 +411,7 @@ public class Cubic
 							_owner.broadcastPacket(new MagicSkillUse(_owner, target, skill.getId(), skill.getLevel(), 0, 0));
 							
 							final L2SkillType type = skill.getSkillType();
-							final ISkillHandler handler = SkillHandler.getInstance().getSkillHandler(skill.getSkillType());
+							final ISkillHandler handler = SkillHandler.getInstance().getHandler(skill.getSkillType());
 							final Creature[] targets =
 							{
 								target
@@ -734,7 +734,7 @@ public class Cubic
 								target
 							};
 							
-							final ISkillHandler handler = SkillHandler.getInstance().getSkillHandler(skill.getSkillType());
+							final ISkillHandler handler = SkillHandler.getInstance().getHandler(skill.getSkillType());
 							if (handler != null)
 								handler.useSkill(_owner, skill, targets);
 							else

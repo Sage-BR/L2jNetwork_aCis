@@ -3,7 +3,7 @@ package net.sf.l2j.gameserver.skills.effects;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.sf.l2j.gameserver.data.NpcTable;
+import net.sf.l2j.gameserver.data.xml.NpcData;
 import net.sf.l2j.gameserver.idfactory.IdFactory;
 import net.sf.l2j.gameserver.model.L2Effect;
 import net.sf.l2j.gameserver.model.L2Skill;
@@ -44,7 +44,7 @@ public class EffectSignetMDam extends L2Effect
 	{
 		NpcTemplate template;
 		if (getSkill() instanceof L2SkillSignetCasttime)
-			template = NpcTable.getInstance().getTemplate(((L2SkillSignetCasttime) getSkill())._effectNpcId);
+			template = NpcData.getInstance().getTemplate(((L2SkillSignetCasttime) getSkill())._effectNpcId);
 		else
 			return false;
 		

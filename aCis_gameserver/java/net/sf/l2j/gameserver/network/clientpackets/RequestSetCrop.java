@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.sf.l2j.Config;
-import net.sf.l2j.gameserver.instancemanager.CastleManorManager;
+import net.sf.l2j.gameserver.data.manager.CastleManorManager;
 import net.sf.l2j.gameserver.model.actor.instance.Player;
 import net.sf.l2j.gameserver.model.manor.CropProcure;
 import net.sf.l2j.gameserver.model.manor.Seed;
@@ -60,7 +60,7 @@ public class RequestSetCrop extends L2GameClientPacket
 		
 		// Check player privileges
 		final Player player = getClient().getActiveChar();
-		if (player == null || player.getClan() == null || player.getClan().getCastleId() != _manorId || ((player.getClanPrivileges() & Clan.CP_CS_MANOR_ADMIN) != Clan.CP_CS_MANOR_ADMIN) || !player.getCurrentFolkNPC().canInteract(player))
+		if (player == null || player.getClan() == null || player.getClan().getCastleId() != _manorId || ((player.getClanPrivileges() & Clan.CP_CS_MANOR_ADMIN) != Clan.CP_CS_MANOR_ADMIN) || !player.getCurrentFolk().canInteract(player))
 		{
 			sendPacket(ActionFailed.STATIC_PACKET);
 			return;

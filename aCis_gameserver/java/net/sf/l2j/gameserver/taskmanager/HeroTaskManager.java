@@ -56,10 +56,13 @@ public class HeroTaskManager implements Runnable
 		{
 			final Player player = entry.getKey();
 			
-			if (player.getMemos().getLong("TimeOfHero") < System.currentTimeMillis())
+			if (player.getMemos().containsKey("TimeOfHero"))
 			{
-				HeroItem.RemoveHeroStatus(player);
-				remove(player);
+				if (player.getMemos().getLong("TimeOfHero") < System.currentTimeMillis())
+				{
+					HeroItem.RemoveHeroStatus(player);
+					remove(player);
+				}
 			}
 		}
 	}

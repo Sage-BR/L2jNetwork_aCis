@@ -5,23 +5,23 @@ import java.util.StringTokenizer;
 import net.sf.l2j.commons.lang.StringUtil;
 
 import net.sf.l2j.Config;
-import net.sf.l2j.gameserver.cache.CrestCache;
-import net.sf.l2j.gameserver.cache.HtmCache;
-import net.sf.l2j.gameserver.data.DoorTable;
 import net.sf.l2j.gameserver.data.ItemTable;
-import net.sf.l2j.gameserver.data.NpcTable;
 import net.sf.l2j.gameserver.data.SkillTable;
+import net.sf.l2j.gameserver.data.cache.CrestCache;
+import net.sf.l2j.gameserver.data.cache.HtmCache;
+import net.sf.l2j.gameserver.data.manager.CursedWeaponManager;
+import net.sf.l2j.gameserver.data.manager.ZoneManager;
 import net.sf.l2j.gameserver.data.xml.AdminData;
 import net.sf.l2j.gameserver.data.xml.AnnouncementData;
+import net.sf.l2j.gameserver.data.xml.DoorData;
 import net.sf.l2j.gameserver.data.xml.FakePcsData;
 import net.sf.l2j.gameserver.data.xml.ItemRestrictionData;
 import net.sf.l2j.gameserver.data.xml.MultisellData;
+import net.sf.l2j.gameserver.data.xml.NpcData;
 import net.sf.l2j.gameserver.data.xml.SkipDropData;
 import net.sf.l2j.gameserver.data.xml.TeleportLocationData;
 import net.sf.l2j.gameserver.data.xml.WalkerRouteData;
 import net.sf.l2j.gameserver.handler.IAdminCommandHandler;
-import net.sf.l2j.gameserver.instancemanager.CursedWeaponsManager;
-import net.sf.l2j.gameserver.instancemanager.ZoneManager;
 import net.sf.l2j.gameserver.model.World;
 import net.sf.l2j.gameserver.model.WorldObject;
 import net.sf.l2j.gameserver.model.actor.Creature;
@@ -188,12 +188,12 @@ public class AdminAdmin implements IAdminCommandHandler
 					}
 					else if (type.startsWith("cw"))
 					{
-						CursedWeaponsManager.getInstance().reload();
+						CursedWeaponManager.getInstance().reload();
 						activeChar.sendMessage("Cursed weapons have been reloaded.");
 					}
 					else if (type.startsWith("door"))
 					{
-						DoorTable.getInstance().reload();
+						DoorData.getInstance().reload();
 						activeChar.sendMessage("Doors instance has been reloaded.");
 					}
 					else if (type.startsWith("fpc"))
@@ -223,7 +223,7 @@ public class AdminAdmin implements IAdminCommandHandler
 					}
 					else if (type.equals("npc"))
 					{
-						NpcTable.getInstance().reloadAllNpc();
+						NpcData.getInstance().reload();
 						activeChar.sendMessage("NPCs templates have been reloaded.");
 					}
 					else if (type.startsWith("npcwalker"))

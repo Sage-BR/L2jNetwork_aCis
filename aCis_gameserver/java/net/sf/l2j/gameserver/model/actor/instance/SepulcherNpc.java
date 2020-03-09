@@ -6,7 +6,7 @@ import java.util.concurrent.Future;
 import net.sf.l2j.commons.concurrent.ThreadPool;
 import net.sf.l2j.commons.random.Rnd;
 
-import net.sf.l2j.gameserver.data.DoorTable;
+import net.sf.l2j.gameserver.data.xml.DoorData;
 import net.sf.l2j.gameserver.instancemanager.FourSepulchersManager;
 import net.sf.l2j.gameserver.model.actor.Npc;
 import net.sf.l2j.gameserver.model.actor.ai.CtrlIntention;
@@ -111,6 +111,10 @@ public class SepulcherNpc extends Folk
 				}
 				else
 				{
+					// Stop moving if we're already in interact range.
+					if (player.isMoving() || player.isInCombat())
+						player.getAI().setIntention(CtrlIntention.IDLE);
+					
 					// Rotate the player to face the instance
 					player.sendPacket(new MoveToPawn(player, this, Npc.INTERACTION_DISTANCE));
 					
@@ -282,7 +286,7 @@ public class SepulcherNpc extends Folk
 	public void openNextDoor(int npcId)
 	{
 		int doorId = FourSepulchersManager.getInstance().getHallGateKeepers().get(npcId);
-		DoorTable _doorTable = DoorTable.getInstance();
+		DoorData _doorTable = DoorData.getInstance();
 		_doorTable.getDoor(doorId).openMe();
 		
 		if (_closeTask != null)
@@ -328,7 +332,7 @@ public class SepulcherNpc extends Folk
 		{
 			try
 			{
-				DoorTable.getInstance().getDoor(_doorId).closeMe();
+				DoorData.getInstance().getDoor(_doorId).closeMe();
 			}
 			catch (Exception e)
 			{

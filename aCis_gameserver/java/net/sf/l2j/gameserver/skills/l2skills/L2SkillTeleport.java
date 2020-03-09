@@ -1,9 +1,8 @@
 package net.sf.l2j.gameserver.skills.l2skills;
 
 import net.sf.l2j.Config;
-import net.sf.l2j.gameserver.data.MapRegionTable;
-import net.sf.l2j.gameserver.data.MapRegionTable.TeleportType;
-import net.sf.l2j.gameserver.instancemanager.ZoneManager;
+import net.sf.l2j.gameserver.data.xml.MapRegionData;
+import net.sf.l2j.gameserver.data.xml.MapRegionData.TeleportType;
 import net.sf.l2j.gameserver.model.L2Skill;
 import net.sf.l2j.gameserver.model.ShotType;
 import net.sf.l2j.gameserver.model.WorldObject;
@@ -11,7 +10,6 @@ import net.sf.l2j.gameserver.model.actor.Creature;
 import net.sf.l2j.gameserver.model.actor.instance.Player;
 import net.sf.l2j.gameserver.model.location.Location;
 import net.sf.l2j.gameserver.model.zone.ZoneId;
-import net.sf.l2j.gameserver.model.zone.type.L2BossZone;
 import net.sf.l2j.gameserver.templates.StatsSet;
 import net.sf.l2j.gameserver.templates.skills.L2SkillType;
 
@@ -41,7 +39,7 @@ public class L2SkillTeleport extends L2Skill
 		if (activeChar instanceof Player)
 		{
 			// Check invalid states.
-			if (activeChar.isAfraid() || ((Player) activeChar).isInOlympiadMode() || ((Player) activeChar).isInFunEvent() || ((Player) activeChar).isAio() || ((Player) activeChar).isInsideZone(ZoneId.PVP) || ((Player) activeChar).isInsideZone(ZoneId.RANDOM_PVP_ZONE))
+			if (activeChar.isAfraid() || ((Player) activeChar).isInOlympiadMode() || ((Player) activeChar).isInFunEvent() || ((Player) activeChar).isAio() || ((Player) activeChar).isInsideZone(ZoneId.PVP))
 				return;
 		}
 		
@@ -67,7 +65,7 @@ public class L2SkillTeleport extends L2Skill
 					if (targetChar.isInOlympiadMode())
 						continue;
 					
-					if (ZoneManager.getInstance().getZone(targetChar, L2BossZone.class) != null)
+					if (targetChar.isInsideZone(ZoneId.BOSS))
 						continue;
 				}
 			}
@@ -84,13 +82,13 @@ public class L2SkillTeleport extends L2Skill
 			else
 			{
 				if (_recallType.equalsIgnoreCase("Castle"))
-					loc = MapRegionTable.getInstance().getLocationToTeleport(target, TeleportType.CASTLE);
+					loc = MapRegionData.getInstance().getLocationToTeleport(target, TeleportType.CASTLE);
 				else if (_recallType.equalsIgnoreCase("ClanHall"))
-					loc = MapRegionTable.getInstance().getLocationToTeleport(target, TeleportType.CLAN_HALL);
-				else if (Config.SOE_TO_MAINTOWN && !target.isInsideZone(ZoneId.RANDOM_PVP_ZONE))
+					loc = MapRegionData.getInstance().getLocationToTeleport(target, TeleportType.CLAN_HALL);
+				else if (Config.SOE_TO_MAINTOWN)
 					loc = new Location(Config.SOE_LOCATION[0], Config.SOE_LOCATION[1], Config.SOE_LOCATION[2]);
 				else
-					loc = MapRegionTable.getInstance().getLocationToTeleport(target, TeleportType.TOWN);
+					loc = MapRegionData.getInstance().getLocationToTeleport(target, TeleportType.TOWN);
 			}
 			
 			if (loc != null)

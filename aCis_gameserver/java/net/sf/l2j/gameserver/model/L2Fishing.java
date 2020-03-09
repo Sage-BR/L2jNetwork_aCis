@@ -5,9 +5,9 @@ import java.util.concurrent.Future;
 import net.sf.l2j.commons.concurrent.ThreadPool;
 import net.sf.l2j.commons.random.Rnd;
 
-import net.sf.l2j.gameserver.data.NpcTable;
+import net.sf.l2j.gameserver.data.manager.FishingChampionshipManager;
+import net.sf.l2j.gameserver.data.xml.NpcData;
 import net.sf.l2j.gameserver.idfactory.IdFactory;
-import net.sf.l2j.gameserver.instancemanager.FishingChampionshipManager;
 import net.sf.l2j.gameserver.model.actor.instance.PenaltyMonster;
 import net.sf.l2j.gameserver.model.actor.instance.Player;
 import net.sf.l2j.gameserver.network.SystemMessageId;
@@ -132,7 +132,7 @@ public class L2Fishing implements Runnable
 			{
 				int npcId = 18319 + Math.min(_fisher.getLevel() / 11, 7); // 18319-18326
 				
-				PenaltyMonster npc = new PenaltyMonster(IdFactory.getInstance().getNextId(), NpcTable.getInstance().getTemplate(npcId));
+				PenaltyMonster npc = new PenaltyMonster(IdFactory.getInstance().getNextId(), NpcData.getInstance().getTemplate(npcId));
 				npc.setXYZ(_fisher.getX(), _fisher.getY(), _fisher.getZ() + 20);
 				npc.setCurrentHpMp(npc.getMaxHp(), npc.getMaxMp());
 				npc.setHeading(_fisher.getHeading());

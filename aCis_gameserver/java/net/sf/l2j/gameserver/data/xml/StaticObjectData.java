@@ -30,7 +30,7 @@ public class StaticObjectData extends XMLDocument
 	protected void load()
 	{
 		loadDocument("./data/xml/staticObjects.xml");
-		LOG.info("Loaded " + _objects.size() + " static objects.");
+		LOGGER.info("Loaded {} static objects.", _objects.size());
 	}
 	
 	@Override

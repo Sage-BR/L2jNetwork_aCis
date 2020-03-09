@@ -4,9 +4,6 @@ import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-/**
- * @author Hasha
- */
 public class BlockComplex extends ABlock
 {
 	protected byte[] _buffer;

@@ -13,7 +13,7 @@ public final class AttackRequest extends L2GameClientPacket
 	@SuppressWarnings("unused")
 	private int _originX, _originY, _originZ;
 	@SuppressWarnings("unused")
-	private int _attackId;
+	private boolean _isShiftAction;
 	
 	@Override
 	protected void readImpl()
@@ -22,7 +22,7 @@ public final class AttackRequest extends L2GameClientPacket
 		_originX = readD();
 		_originY = readD();
 		_originZ = readD();
-		_attackId = readC(); // 0 for simple click 1 for shift-click
+		_isShiftAction = readC() != 0;
 	}
 	
 	@Override
@@ -53,7 +53,10 @@ public final class AttackRequest extends L2GameClientPacket
 			target = World.getInstance().getObject(_objectId);
 		
 		if (target == null)
+		{
+			activeChar.sendPacket(ActionFailed.STATIC_PACKET);
 			return;
+		}
 		
 		if (activeChar.getTarget() != target)
 			target.onAction(activeChar);

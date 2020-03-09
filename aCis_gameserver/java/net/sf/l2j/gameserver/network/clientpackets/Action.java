@@ -11,7 +11,7 @@ public final class Action extends L2GameClientPacket
 	private int _objectId;
 	@SuppressWarnings("unused")
 	private int _originX, _originY, _originZ;
-	private int _actionId;
+	private boolean _isShiftAction;
 	
 	@Override
 	protected void readImpl()
@@ -20,7 +20,7 @@ public final class Action extends L2GameClientPacket
 		_originX = readD();
 		_originY = readD();
 		_originZ = readD();
-		_actionId = readC();
+		_isShiftAction = readC() != 0;
 	}
 	
 	@Override
@@ -50,22 +50,10 @@ public final class Action extends L2GameClientPacket
 			return;
 		}
 		
-		switch (_actionId)
-		{
-			case 0:
-				obj.onAction(activeChar);
-				break;
-			
-			case 1:
-				obj.onActionShift(activeChar);
-				break;
-			
-			default:
-				// Invalid action detected (probably client cheating), log this
-				_log.warning(activeChar.getName() + " requested invalid action: " + _actionId);
-				activeChar.sendPacket(ActionFailed.STATIC_PACKET);
-				break;
-		}
+		if (_isShiftAction)
+			obj.onActionShift(activeChar);
+		else
+			obj.onAction(activeChar);
 	}
 	
 	@Override

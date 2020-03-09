@@ -40,7 +40,7 @@ public class MultisellData extends XMLDocument
 	protected void load()
 	{
 		loadDocument("./data/xml/multisell");
-		LOG.info("Loaded " + _entries.size() + " multisell.");
+		LOGGER.info("Loaded {} multisell.", _entries.size());
 	}
 	
 	@Override
@@ -154,6 +154,11 @@ public class MultisellData extends XMLDocument
 		while (index < list.getEntries().size());
 		
 		player.setMultiSell(list);
+	}
+	
+	public ListContainer getList(String listName)
+	{
+		return _entries.get(listName.hashCode());
 	}
 	
 	public static MultisellData getInstance()

@@ -13,8 +13,8 @@ import java.util.logging.Logger;
 import net.sf.l2j.commons.random.Rnd;
 
 import net.sf.l2j.Config;
-import net.sf.l2j.gameserver.data.NpcTable;
 import net.sf.l2j.gameserver.data.SpawnTable;
+import net.sf.l2j.gameserver.data.xml.NpcData;
 import net.sf.l2j.gameserver.model.L2Spawn;
 import net.sf.l2j.gameserver.model.actor.Npc;
 import net.sf.l2j.gameserver.model.actor.instance.Player;
@@ -101,7 +101,7 @@ public class DimensionalRiftManager
 											int delay = Integer.parseInt(attrs.getNamedItem("delay").getNodeValue());
 											int count = Integer.parseInt(attrs.getNamedItem("count").getNodeValue());
 											
-											NpcTemplate template = NpcTable.getInstance().getTemplate(mobId);
+											NpcTemplate template = NpcData.getInstance().getTemplate(mobId);
 											if (template == null)
 												_log.log(Level.WARNING, "Template " + mobId + " not found!");
 											if (!_rooms.containsKey(type))

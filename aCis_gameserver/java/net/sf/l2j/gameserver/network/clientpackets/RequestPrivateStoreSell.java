@@ -3,6 +3,7 @@ package net.sf.l2j.gameserver.network.clientpackets;
 import net.sf.l2j.Config;
 import net.sf.l2j.gameserver.model.ItemRequest;
 import net.sf.l2j.gameserver.model.World;
+import net.sf.l2j.gameserver.model.actor.Npc;
 import net.sf.l2j.gameserver.model.actor.instance.Player;
 import net.sf.l2j.gameserver.model.actor.instance.Player.StoreType;
 import net.sf.l2j.gameserver.model.tradelist.TradeList;
@@ -46,18 +47,21 @@ public final class RequestPrivateStoreSell extends L2GameClientPacket
 	@Override
 	protected void runImpl()
 	{
-		Player player = getClient().getActiveChar();
-		if (player == null)
-			return;
-		
 		if (_items == null)
 			return;
 		
-		Player storePlayer = World.getInstance().getPlayer(_storePlayerId);
+		final Player player = getClient().getActiveChar();
+		if (player == null)
+			return;
+		
+		if (player.isCursedWeaponEquipped())
+			return;
+		
+		final Player storePlayer = World.getInstance().getPlayer(_storePlayerId);
 		if (storePlayer == null)
 			return;
 		
-		if (!player.isInsideRadius(storePlayer, 150, true, false))
+		if (!player.isInsideRadius(storePlayer, Npc.INTERACTION_DISTANCE, true, false))
 			return;
 		
 		if (player.isSubmitingPin())
@@ -69,10 +73,7 @@ public final class RequestPrivateStoreSell extends L2GameClientPacket
 		if (storePlayer.getStoreType() != StoreType.BUY)
 			return;
 		
-		if (player.isCursedWeaponEquipped())
-			return;
-		
-		TradeList storeList = storePlayer.getBuyList();
+		final TradeList storeList = storePlayer.getBuyList();
 		if (storeList == null)
 			return;
 		
@@ -83,10 +84,7 @@ public final class RequestPrivateStoreSell extends L2GameClientPacket
 		}
 		
 		if (!storeList.privateStoreSell(player, _items))
-		{
-			_log.warning("PrivateStore sell has failed due to invalid list or request. Player: " + player.getName() + ", Private store of: " + storePlayer.getName());
 			return;
-		}
 		
 		if (storeList.getItems().isEmpty())
 		{

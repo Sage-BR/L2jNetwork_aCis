@@ -423,13 +423,13 @@
 
 	<!-- Tasks -->
 
-	<script path="tasks.ClansLadder" schedule="DAILY" start="00:05:00"/>
-	<script path="tasks.OlympiadSave"/>
-	<script path="tasks.RaidPointsReset" schedule="WEEKLY" start="MON 00:00:00"/>
-	<script path="tasks.Recommendation" schedule="DAILY" start="06:30:00"/>
-<!--	<script path="tasks.ServerRestart" schedule="DAILY" start="04:00:00"/> -->
-<!--	<script path="tasks.ServerShutdown" schedule="DAILY" start="04:00:00"/> -->
-	<script path="tasks.SevenSignsUpdate"/>
+	<script path="tasks.ClanLadderRefresh" schedule="DAILY" start="00:05:00"/>
+	<script path="tasks.ClanLeaderTransfer" schedule="WEEKLY" start="THU 16:55:00"/>
+	<script path="tasks.RaidPointReset" schedule="WEEKLY" start="MON 00:00:00"/>
+	<script path="tasks.RecommendationUpdate" schedule="DAILY" start="13:00:00"/>
+<!--	<script path="tasks.ServerRestart" schedule="WEEKLY" start="THU 17:00:00"/> -->
+<!--	<script path="tasks.ServerShutdown" schedule="WEEKLY" start="THU 17:00:00"/> -->
+	<script path="tasks.SevenSignsUpdate" schedule="HOURLY" start="00:00"/>
 
 <!--
 WHAT IS SCHEDULED SCRIPT?

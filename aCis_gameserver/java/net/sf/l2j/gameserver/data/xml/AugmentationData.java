@@ -101,7 +101,7 @@ public class AugmentationData extends XMLDocument
 	protected void load()
 	{
 		loadDocument("./data/xml/augmentation");
-		LOG.info("Loaded " + _augStats.size() + " sets of augmentation stats.");
+		LOGGER.info("Loaded {} sets of augmentation stats.", _augStats.size());
 		
 		int blue = 0, purple = 0, red = 0;
 		for (int i = 0; i < 10; i++)
@@ -110,7 +110,7 @@ public class AugmentationData extends XMLDocument
 			purple += _purpleSkills.get(i).size();
 			red += _redSkills.get(i).size();
 		}
-		LOG.info("Loaded " + blue + " blue, " + purple + " purple and " + red + " red Life-Stone skills.");
+		LOGGER.info("Loaded {} blue, {} purple and {} red Life-Stone skills.", blue, purple, red);
 	}
 	
 	@Override

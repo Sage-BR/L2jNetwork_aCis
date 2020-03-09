@@ -8,7 +8,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import net.sf.l2j.commons.data.xml.XMLDocument;
 import net.sf.l2j.commons.lang.StringUtil;
 
-import net.sf.l2j.gameserver.cache.HtmCache;
+import net.sf.l2j.gameserver.data.cache.HtmCache;
 import net.sf.l2j.gameserver.model.Announcement;
 import net.sf.l2j.gameserver.model.actor.instance.Player;
 import net.sf.l2j.gameserver.network.clientpackets.Say2;
@@ -38,7 +38,7 @@ public class AnnouncementData extends XMLDocument
 	protected void load()
 	{
 		loadDocument("./data/xml/announcements.xml");
-		LOG.info("Loaded " + _announcements.size() + " announcements.");
+		LOGGER.info("Loaded {} announcements.", _announcements.size());
 	}
 	
 	@Override
@@ -58,7 +58,7 @@ public class AnnouncementData extends XMLDocument
 			final String message = o.getAttributes().getNamedItem("message").getNodeValue();
 			if (message == null || message.isEmpty())
 			{
-				LOG.warning("The message is empty on an announcement. Ignoring it!");
+				LOGGER.warn("The message is empty on an announcement. Ignoring it.");
 				continue;
 			}
 			

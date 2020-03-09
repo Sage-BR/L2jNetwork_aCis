@@ -28,7 +28,7 @@ public class TeleportLocationData extends XMLDocument
 	protected void load()
 	{
 		loadDocument("./data/xml/teleportLocations.xml");
-		LOG.info("Loaded " + _teleports.size() + " teleport locations.");
+		LOGGER.info("Loaded {} teleport locations.", _teleports.size());
 	}
 	
 	@Override

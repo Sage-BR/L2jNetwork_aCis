@@ -1,6 +1,5 @@
 package net.sf.l2j.gameserver.network.clientpackets;
 
-import net.sf.l2j.gameserver.events.phoenixevents.EventManager;
 import net.sf.l2j.gameserver.model.actor.instance.Player;
 import net.sf.l2j.gameserver.model.pledge.Clan;
 import net.sf.l2j.gameserver.model.pledge.ClanMember;
@@ -25,12 +24,6 @@ public class RequestGiveNickName extends L2GameClientPacket
 		final Player activeChar = getClient().getActiveChar();
 		if (activeChar == null)
 			return;
-		
-		if (EventManager.getInstance().isRunning() && EventManager.getInstance().isRegistered(activeChar))
-		{
-			activeChar.sendMessage("You cannot change title while participating in an event.");
-			return;
-		}
 		
 		// Noblesse can bestow a title to themselves
 		if (activeChar.isNoble() && _target.matches(activeChar.getName()))

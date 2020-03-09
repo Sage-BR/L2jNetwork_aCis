@@ -69,14 +69,8 @@
 				<include name="offlineshop.properties" />
 				<include name="protection.properties" />
 				<include name="raidbosses.properties" />
-				<include name="randompvpzone.properties" />
 				<include name="tvt.properties" />
 				<include name="vote.properties" />
-			</fileset>
-			</copy>
-		<copy todir="${build.dist.game}/config/events">
-			<fileset dir="config/events">
-				<include name="events.xml" />
 			</fileset>
 			</copy>
 		<copy todir="${build.dist.login}/config">

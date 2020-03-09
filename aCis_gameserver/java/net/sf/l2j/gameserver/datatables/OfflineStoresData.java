@@ -11,11 +11,11 @@ import java.util.logging.Logger;
 import net.sf.l2j.Config;
 import net.sf.l2j.L2DatabaseFactory;
 import net.sf.l2j.gameserver.LoginServerThread;
-import net.sf.l2j.gameserver.model.L2ManufactureItem;
-import net.sf.l2j.gameserver.model.L2ManufactureList;
 import net.sf.l2j.gameserver.model.World;
 import net.sf.l2j.gameserver.model.actor.instance.Player;
 import net.sf.l2j.gameserver.model.actor.instance.Player.StoreType;
+import net.sf.l2j.gameserver.model.craft.ManufactureItem;
+import net.sf.l2j.gameserver.model.craft.ManufactureList;
 import net.sf.l2j.gameserver.model.tradelist.TradeItem;
 import net.sf.l2j.gameserver.model.zone.ZoneId;
 import net.sf.l2j.gameserver.network.L2GameClient;
@@ -87,12 +87,12 @@ public class OfflineStoresData
 									continue;
 								
 								save_offline_status.setString(4, pc.getCreateList().getStoreName());
-								for (L2ManufactureItem i : pc.getCreateList().getList())
+								for (ManufactureItem i : pc.getCreateList().getList())
 								{
 									save_items.setInt(1, pc.getObjectId());
-									save_items.setInt(2, i.getRecipeId());
+									save_items.setInt(2, i.getId());
 									save_items.setLong(3, 0);
-									save_items.setLong(4, i.getCost());
+									save_items.setLong(4, i.getValue());
 									save_items.addBatch();
 								}
 								break;
@@ -196,10 +196,10 @@ public class OfflineStoresData
 								player.getSellList().setPackaged(type == StoreType.PACKAGE_SELL);
 								break;
 							case MANUFACTURE:
-								final L2ManufactureList createList = new L2ManufactureList();
+								final ManufactureList createList = new ManufactureList();
 								createList.setStoreName(rs.getString("title"));
 								while (items.next())
-									createList.add(new L2ManufactureItem(items.getInt(2), items.getInt(4)));
+									createList.add(new ManufactureItem(items.getInt(2), items.getInt(4)));
 								
 								player.setCreateList(createList);
 								break;
@@ -242,7 +242,7 @@ public class OfflineStoresData
 	
 	public static boolean offlineMode(Player player)
 	{
-		if (player.isInOlympiadMode() || player.isFestivalParticipant() || player.isInJail() || player.getVehicle() != null)
+		if (player.isInOlympiadMode() || player.isFestivalParticipant() || player.isInJail() || player.getBoat() != null)
 			return false;
 		
 		boolean canSetShop = false;

@@ -6,7 +6,7 @@ import java.util.logging.Logger;
 import net.sf.l2j.commons.concurrent.ThreadPool;
 
 import net.sf.l2j.Config;
-import net.sf.l2j.gameserver.model.zone.type.L2OlympiadStadiumZone;
+import net.sf.l2j.gameserver.model.zone.type.OlympiadStadiumZone;
 import net.sf.l2j.gameserver.network.SystemMessageId;
 import net.sf.l2j.gameserver.network.serverpackets.SystemMessage;
 
@@ -61,7 +61,7 @@ public final class OlympiadGameTask implements Runnable
 		0
 	};
 	
-	private final L2OlympiadStadiumZone _zone;
+	private final OlympiadStadiumZone _zone;
 	private AbstractOlympiadGame _game;
 	private GameState _state = GameState.IDLE;
 	private boolean _needAnnounce = false;
@@ -81,7 +81,7 @@ public final class OlympiadGameTask implements Runnable
 		IDLE
 	}
 	
-	public OlympiadGameTask(L2OlympiadStadiumZone zone)
+	public OlympiadGameTask(OlympiadStadiumZone zone)
 	{
 		_zone = zone;
 		zone.registerTask(this);
@@ -122,7 +122,7 @@ public final class OlympiadGameTask implements Runnable
 		return false;
 	}
 	
-	public final L2OlympiadStadiumZone getZone()
+	public final OlympiadStadiumZone getZone()
 	{
 		return _zone;
 	}

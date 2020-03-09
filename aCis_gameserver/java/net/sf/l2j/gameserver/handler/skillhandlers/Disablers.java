@@ -18,12 +18,9 @@ import net.sf.l2j.gameserver.network.serverpackets.SystemMessage;
 import net.sf.l2j.gameserver.skills.Env;
 import net.sf.l2j.gameserver.skills.Formulas;
 import net.sf.l2j.gameserver.skills.Stats;
+import net.sf.l2j.gameserver.templates.skills.L2EffectType;
 import net.sf.l2j.gameserver.templates.skills.L2SkillType;
 
-/**
- * This Handles Disabler skills
- * @author _drunk_
- */
 public class Disablers implements ISkillHandler
 {
 	private static final L2SkillType[] SKILL_IDS =
@@ -61,6 +58,9 @@ public class Disablers implements ISkillHandler
 			
 			Creature target = (Creature) obj;
 			if (target.isDead() || (target.isInvul() && !target.isParalyzed())) // bypass if target is dead or invul (excluding invul from Petrification)
+				continue;
+			
+			if (skill.isOffensive() && target.getFirstEffect(L2EffectType.BLOCK_DEBUFF) != null)
 				continue;
 			
 			byte shld = Formulas.calcShldUse(activeChar, target, skill);

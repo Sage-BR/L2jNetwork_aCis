@@ -134,7 +134,8 @@ public class DimensionalRift
 			long jumpTime = calcTimeToNextJump();
 			_teleporterTimer.schedule(_teleporterTimerTask, jumpTime); // Teleporter task, 8-10 minutes
 			
-			_earthQuakeTask = ThreadPool.schedule(() -> {
+			_earthQuakeTask = ThreadPool.schedule(() ->
+			{
 				for (Player member : _party.getMembers())
 				{
 					if (!_revivedInWaitingRoom.contains(member))

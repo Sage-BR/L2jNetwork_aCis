@@ -29,7 +29,7 @@ public class WyvernManagerNpc extends CastleChamberlain
 	@Override
 	public void onBypassFeedback(Player player, String command)
 	{
-		if (player.getCurrentFolkNPC() == null || player.getCurrentFolkNPC().getObjectId() != getObjectId())
+		if (player.getCurrentFolk() == null || player.getCurrentFolk().getObjectId() != getObjectId())
 			return;
 		
 		if (command.startsWith("RideWyvern"))

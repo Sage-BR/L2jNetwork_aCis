@@ -23,7 +23,7 @@ public enum AbnormalEffect
 	UNKNOWN_13("unknown13", 0x001000),
 	BIG_HEAD("bighead", 0x002000),
 	FLAME("flame", 0x004000),
-	UNKNOWN_16("unknown16", 0x008000),
+	CHANGE_TEXTURE("changetexture", 0x008000),
 	GROW("grow", 0x010000),
 	FLOATING_ROOT("floatroot", 0x020000),
 	DANCE_STUNNED("dancestun", 0x040000),

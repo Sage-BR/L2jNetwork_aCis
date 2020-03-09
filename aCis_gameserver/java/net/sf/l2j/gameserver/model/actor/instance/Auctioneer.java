@@ -10,7 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import net.sf.l2j.commons.lang.StringUtil;
 import net.sf.l2j.commons.math.MathUtil;
 
-import net.sf.l2j.gameserver.data.MapRegionTable;
+import net.sf.l2j.gameserver.data.xml.MapRegionData;
 import net.sf.l2j.gameserver.instancemanager.AuctionManager;
 import net.sf.l2j.gameserver.instancemanager.ClanHallManager;
 import net.sf.l2j.gameserver.model.actor.template.NpcTemplate;
@@ -87,7 +87,7 @@ public final class Auctioneer extends Folk
 		{
 			final NpcHtmlMessage html = new NpcHtmlMessage(getObjectId());
 			html.setFile("data/html/auction/location.htm");
-			html.replace("%location%", MapRegionTable.getInstance().getClosestTownName(player.getX(), player.getY()));
+			html.replace("%location%", MapRegionData.getInstance().getClosestTownName(player.getX(), player.getY()));
 			html.replace("%LOCATION%", getPictureName(player));
 			html.replace("%AGIT_LINK_BACK%", "bypass -h npc_" + getObjectId() + "_start");
 			player.sendPacket(html);
@@ -507,7 +507,7 @@ public final class Auctioneer extends Folk
 	
 	private static String getPictureName(Player plyr)
 	{
-		switch (MapRegionTable.getInstance().getMapRegion(plyr.getX(), plyr.getY()))
+		switch (MapRegionData.getInstance().getMapRegion(plyr.getX(), plyr.getY()))
 		{
 			case 5:
 				return "GLUDIO";

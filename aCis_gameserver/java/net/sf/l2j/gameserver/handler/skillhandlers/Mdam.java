@@ -11,6 +11,7 @@ import net.sf.l2j.gameserver.network.SystemMessageId;
 import net.sf.l2j.gameserver.network.serverpackets.SystemMessage;
 import net.sf.l2j.gameserver.skills.Env;
 import net.sf.l2j.gameserver.skills.Formulas;
+import net.sf.l2j.gameserver.templates.skills.L2EffectType;
 import net.sf.l2j.gameserver.templates.skills.L2SkillType;
 
 public class Mdam implements ISkillHandler
@@ -60,7 +61,7 @@ public class Mdam implements ISkillHandler
 					target.reduceCurrentHp(damage, activeChar, skill);
 				}
 				
-				if (skill.hasEffects())
+				if (skill.hasEffects() && target.getFirstEffect(L2EffectType.BLOCK_DEBUFF) == null)
 				{
 					if ((reflect & Formulas.SKILL_REFLECT_SUCCEED) != 0) // reflect skill effects
 					{

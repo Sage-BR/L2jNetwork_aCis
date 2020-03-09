@@ -30,7 +30,7 @@ public class SpellbookData extends XMLDocument
 	protected void load()
 	{
 		loadDocument("./data/xml/spellbooks.xml");
-		LOG.info("Loaded " + _books.size() + " spellbooks.");
+		LOGGER.info("Loaded {} spellbooks.", _books.size());
 	}
 	
 	@Override

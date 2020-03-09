@@ -10,11 +10,11 @@ import java.util.logging.Logger;
 
 import net.sf.l2j.commons.geometry.Polygon;
 
+import net.sf.l2j.gameserver.data.manager.CastleManager;
 import net.sf.l2j.gameserver.geoengine.GeoEngine;
 import net.sf.l2j.gameserver.geoengine.geodata.ABlock;
 import net.sf.l2j.gameserver.geoengine.geodata.GeoStructure;
 import net.sf.l2j.gameserver.idfactory.IdFactory;
-import net.sf.l2j.gameserver.instancemanager.CastleManager;
 import net.sf.l2j.gameserver.model.actor.instance.Door;
 import net.sf.l2j.gameserver.model.actor.template.DoorTemplate;
 import net.sf.l2j.gameserver.model.actor.template.DoorTemplate.DoorType;

@@ -5,7 +5,7 @@ import java.util.List;
 
 import net.sf.l2j.Config;
 import net.sf.l2j.gameserver.model.L2Augmentation;
-import net.sf.l2j.gameserver.model.actor.Npc;
+import net.sf.l2j.gameserver.model.actor.instance.Folk;
 import net.sf.l2j.gameserver.model.actor.instance.Player;
 import net.sf.l2j.gameserver.model.item.instance.ItemInstance;
 import net.sf.l2j.gameserver.model.itemcontainer.PcInventory;
@@ -63,14 +63,14 @@ public class MultiSellChoose extends L2GameClientPacket
 			return;
 		}
 		
-		final Npc npc = player.getCurrentFolkNPC();
-		if ((npc != null && !list.isNpcAllowed(npc.getNpcId())) || (npc == null && list.isNpcOnly()))
+		final Folk folk = player.getCurrentFolk();
+		if ((folk != null && !list.isNpcAllowed(folk.getNpcId())) || (folk == null && list.isNpcOnly()))
 		{
 			player.setMultiSell(null);
 			return;
 		}
 		
-		if (npc != null && !npc.canInteract(player))
+		if (folk != null && !folk.canInteract(player))
 		{
 			player.setMultiSell(null);
 			return;
@@ -335,8 +335,8 @@ public class MultiSellChoose extends L2GameClientPacket
 				player.sendPacket(su);
 				
 				// finally, give the tax to the castle...
-				if (npc != null && entry.getTaxAmount() > 0)
-					npc.getCastle().addToTreasury(entry.getTaxAmount() * _amount);
+				if (folk != null && entry.getTaxAmount() > 0)
+					folk.getCastle().addToTreasury(entry.getTaxAmount() * _amount);
 				
 				break;
 			}

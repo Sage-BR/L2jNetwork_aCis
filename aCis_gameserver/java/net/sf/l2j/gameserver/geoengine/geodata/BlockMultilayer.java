@@ -6,9 +6,6 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Arrays;
 
-/**
- * @author Hasha
- */
 public class BlockMultilayer extends ABlock
 {
 	private static final int MAX_LAYERS = Byte.MAX_VALUE;

@@ -31,7 +31,7 @@ public class HennaData extends XMLDocument
 	protected void load()
 	{
 		loadDocument("./data/xml/hennas.xml");
-		LOG.info("Loaded " + _hennas.size() + " hennas.");
+		LOGGER.info("Loaded {} hennas.", _hennas.size());
 	}
 	
 	@Override

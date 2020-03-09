@@ -20,9 +20,10 @@ import net.sf.l2j.commons.random.Rnd;
 
 import net.sf.l2j.Config;
 import net.sf.l2j.L2DatabaseFactory;
-import net.sf.l2j.gameserver.data.DoorTable;
-import net.sf.l2j.gameserver.data.NpcTable;
 import net.sf.l2j.gameserver.data.SpawnTable;
+import net.sf.l2j.gameserver.data.manager.ZoneManager;
+import net.sf.l2j.gameserver.data.xml.DoorData;
+import net.sf.l2j.gameserver.data.xml.NpcData;
 import net.sf.l2j.gameserver.model.L2Spawn;
 import net.sf.l2j.gameserver.model.actor.Npc;
 import net.sf.l2j.gameserver.model.actor.instance.Door;
@@ -32,7 +33,7 @@ import net.sf.l2j.gameserver.model.actor.instance.SepulcherNpc;
 import net.sf.l2j.gameserver.model.actor.template.NpcTemplate;
 import net.sf.l2j.gameserver.model.group.Party;
 import net.sf.l2j.gameserver.model.item.instance.ItemInstance;
-import net.sf.l2j.gameserver.model.zone.type.L2BossZone;
+import net.sf.l2j.gameserver.model.zone.type.BossZone;
 import net.sf.l2j.gameserver.network.SystemMessageId;
 import net.sf.l2j.gameserver.network.serverpackets.NpcHtmlMessage;
 import net.sf.l2j.gameserver.scripting.QuestState;
@@ -371,7 +372,7 @@ public class FourSepulchersManager
 		for (int i = 31921; i < 31925; i++)
 		{
 			final int[] location = _startHallSpawns.get(i);
-			ZoneManager.getInstance().getZone(location[0], location[1], location[2], L2BossZone.class).oustAllPlayers();
+			ZoneManager.getInstance().getZone(location[0], location[1], location[2], BossZone.class).oustAllPlayers();
 		}
 		
 		deleteAllMobs();
@@ -400,7 +401,7 @@ public class FourSepulchersManager
 			if (i < 31921 || i > 31924)
 				continue;
 			
-			final NpcTemplate template = NpcTable.getInstance().getTemplate(i);
+			final NpcTemplate template = NpcData.getInstance().getTemplate(i);
 			if (template == null)
 				continue;
 			
@@ -537,7 +538,7 @@ public class FourSepulchersManager
 			
 			while (rset.next())
 			{
-				final NpcTemplate template = NpcTable.getInstance().getTemplate(rset.getInt("npc_templateid"));
+				final NpcTemplate template = NpcData.getInstance().getTemplate(rset.getInt("npc_templateid"));
 				if (template != null)
 				{
 					final L2Spawn spawn = new L2Spawn(template);
@@ -569,7 +570,7 @@ public class FourSepulchersManager
 		{
 			try
 			{
-				final NpcTemplate template = NpcTable.getInstance().getTemplate(keyNpc.getValue());
+				final NpcTemplate template = NpcData.getInstance().getTemplate(keyNpc.getValue());
 				if (template != null)
 				{
 					final L2Spawn spawn = new L2Spawn(template);
@@ -612,7 +613,7 @@ public class FourSepulchersManager
 				
 				while (rset2.next())
 				{
-					final NpcTemplate template = NpcTable.getInstance().getTemplate(rset2.getInt("npc_templateid"));
+					final NpcTemplate template = NpcData.getInstance().getTemplate(rset2.getInt("npc_templateid"));
 					if (template != null)
 					{
 						final L2Spawn spawn = new L2Spawn(template);
@@ -669,7 +670,7 @@ public class FourSepulchersManager
 				
 				while (rset2.next())
 				{
-					final NpcTemplate template = NpcTable.getInstance().getTemplate(rset2.getInt("npc_templateid"));
+					final NpcTemplate template = NpcData.getInstance().getTemplate(rset2.getInt("npc_templateid"));
 					if (template != null)
 					{
 						final L2Spawn spawn = new L2Spawn(template);
@@ -727,7 +728,7 @@ public class FourSepulchersManager
 				
 				while (rset2.next())
 				{
-					final NpcTemplate template = NpcTable.getInstance().getTemplate(rset2.getInt("npc_templateid"));
+					final NpcTemplate template = NpcData.getInstance().getTemplate(rset2.getInt("npc_templateid"));
 					if (template != null)
 					{
 						final L2Spawn spawn = new L2Spawn(template);
@@ -786,7 +787,7 @@ public class FourSepulchersManager
 				
 				while (rset2.next())
 				{
-					final NpcTemplate template = NpcTable.getInstance().getTemplate(rset2.getInt("npc_templateid"));
+					final NpcTemplate template = NpcData.getInstance().getTemplate(rset2.getInt("npc_templateid"));
 					if (template != null)
 					{
 						final L2Spawn spawn = new L2Spawn(template);
@@ -833,7 +834,7 @@ public class FourSepulchersManager
 		
 		for (int i = 0; i <= 3; i++)
 		{
-			final NpcTemplate template = NpcTable.getInstance().getTemplate(_shadowSpawnLoc[locNo][i][0]);
+			final NpcTemplate template = NpcData.getInstance().getTemplate(_shadowSpawnLoc[locNo][i][0]);
 			if (template != null)
 			{
 				try
@@ -861,7 +862,7 @@ public class FourSepulchersManager
 		{
 			try
 			{
-				final NpcTemplate template = NpcTable.getInstance().getTemplate(victimNpc.getValue());
+				final NpcTemplate template = NpcData.getInstance().getTemplate(victimNpc.getValue());
 				if (template != null)
 				{
 					final L2Spawn spawn = new L2Spawn(template);
@@ -958,7 +959,7 @@ public class FourSepulchersManager
 		
 		for (Player member : party.getMembers().stream().filter(m -> !m.isDead() && MathUtil.checkIfInRange(700, player, m, true)).collect(Collectors.toList()))
 		{
-			ZoneManager.getInstance().getZone(location[0], location[1], location[2], L2BossZone.class).allowPlayerEntry(member, 30);
+			ZoneManager.getInstance().getZone(location[0], location[1], location[2], BossZone.class).allowPlayerEntry(member, 30);
 			
 			member.teleToLocation(location[0] + Rnd.get(-80, 80), location[1] + Rnd.get(-80, 80), location[2], 0);
 			member.destroyItemByItemId("Quest", ENTRANCE_PASS, 1, member, true);
@@ -1033,7 +1034,7 @@ public class FourSepulchersManager
 				{
 					try
 					{
-						NpcTemplate template = NpcTable.getInstance().getTemplate(18149);
+						NpcTemplate template = NpcData.getInstance().getTemplate(18149);
 						if (template != null)
 						{
 							L2Spawn keyBoxMobSpawn = new L2Spawn(template);
@@ -1270,7 +1271,7 @@ public class FourSepulchersManager
 		{
 			try
 			{
-				Door door = DoorTable.getInstance().getDoor(doorId);
+				Door door = DoorData.getInstance().getDoor(doorId);
 				if (door != null)
 					door.closeMe();
 				else

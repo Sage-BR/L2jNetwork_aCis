@@ -7,12 +7,13 @@ import net.sf.l2j.gameserver.network.serverpackets.RecipeShopItemInfo;
 
 public final class RequestRecipeShopMakeInfo extends L2GameClientPacket
 {
-	private int _playerObjectId, _recipeId;
+	private int _objectId;
+	private int _recipeId;
 	
 	@Override
 	protected void readImpl()
 	{
-		_playerObjectId = readD();
+		_objectId = readD();
 		_recipeId = readD();
 	}
 	
@@ -23,10 +24,10 @@ public final class RequestRecipeShopMakeInfo extends L2GameClientPacket
 		if (player == null)
 			return;
 		
-		final Player shop = World.getInstance().getPlayer(_playerObjectId);
-		if (shop == null || shop.getStoreType() != StoreType.MANUFACTURE)
+		final Player manufacturer = World.getInstance().getPlayer(_objectId);
+		if (manufacturer == null || manufacturer.getStoreType() != StoreType.MANUFACTURE)
 			return;
 		
-		player.sendPacket(new RecipeShopItemInfo(shop, _recipeId));
+		player.sendPacket(new RecipeShopItemInfo(manufacturer, _recipeId));
 	}
 }

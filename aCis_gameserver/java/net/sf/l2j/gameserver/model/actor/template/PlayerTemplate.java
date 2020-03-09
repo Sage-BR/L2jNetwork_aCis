@@ -1,16 +1,25 @@
 package net.sf.l2j.gameserver.model.actor.template;
 
-import java.util.ArrayList;
 import java.util.List;
+
+import net.sf.l2j.commons.util.ArraysUtil;
 
 import net.sf.l2j.gameserver.data.ItemTable;
 import net.sf.l2j.gameserver.model.base.ClassId;
 import net.sf.l2j.gameserver.model.base.ClassRace;
 import net.sf.l2j.gameserver.model.base.Sex;
-import net.sf.l2j.gameserver.model.item.kind.Item;
+import net.sf.l2j.gameserver.model.holder.skillnode.GeneralSkillNode;
+import net.sf.l2j.gameserver.model.item.kind.Weapon;
 import net.sf.l2j.gameserver.model.location.Location;
 import net.sf.l2j.gameserver.templates.StatsSet;
 
+/**
+ * A datatype extending {@link CreatureTemplate}, used to retain Player template informations such as classId, specific collision values for female, hp/mp/cp tables, etc.<br>
+ * <br>
+ * Since each PlayerTemplate is associated to a {@link ClassId}, it is also used as a container for {@link GeneralSkillNode}s this class can use.<br>
+ * <br>
+ * Finally, it holds starter equipment (under an int array of itemId) and initial spawn {@link Location} for newbie templates.
+ */
 public class PlayerTemplate extends CreatureTemplate
 {
 	private final ClassId _classId;
@@ -30,17 +39,20 @@ public class PlayerTemplate extends CreatureTemplate
 	private final double[] _mpTable;
 	private final double[] _cpTable;
 	
-	private final List<Item> _items = new ArrayList<>();
+	private final int[] _items;
+	private final List<GeneralSkillNode> _skills;
 	
-	public PlayerTemplate(ClassId classId, StatsSet set)
+	private final Weapon _fists;
+	
+	public PlayerTemplate(StatsSet set)
 	{
 		super(set);
 		
-		_classId = classId;
-		
-		_baseSwimSpd = set.getInteger("swimSpd", 1);
+		_classId = ClassId.VALUES[set.getInteger("id")];
 		
 		_fallingHeight = set.getInteger("falling_height", 333);
+		
+		_baseSwimSpd = set.getInteger("swimSpd", 1);
 		
 		_collisionRadiusFemale = set.getDouble("radiusFemale");
 		_collisionHeightFemale = set.getDouble("heightFemale");
@@ -49,45 +61,15 @@ public class PlayerTemplate extends CreatureTemplate
 		
 		_classBaseLevel = set.getInteger("baseLvl");
 		
-		// Feed HPs array from a String split.
-		final String[] hpTable = set.getString("hpTable").split(";");
+		_hpTable = set.getDoubleArray("hpTable");
+		_mpTable = set.getDoubleArray("mpTable");
+		_cpTable = set.getDoubleArray("cpTable");
 		
-		_hpTable = new double[hpTable.length];
-		for (int i = 0; i < hpTable.length; i++)
-			_hpTable[i] = Double.parseDouble(hpTable[i]);
+		_items = set.getIntegerArray("items", ArraysUtil.EMPTY_INT_ARRAY);
 		
-		// Feed MPs array from a String split.
-		final String[] mpTable = set.getString("mpTable").split(";");
+		_skills = set.getList("skills");
 		
-		_mpTable = new double[mpTable.length];
-		for (int i = 0; i < mpTable.length; i++)
-			_mpTable[i] = Double.parseDouble(mpTable[i]);
-		
-		// Feed CPs array from a String split.
-		final String[] cpTable = set.getString("cpTable").split(";");
-		
-		_cpTable = new double[cpTable.length];
-		for (int i = 0; i < cpTable.length; i++)
-			_cpTable[i] = Double.parseDouble(cpTable[i]);
-	}
-	
-	/**
-	 * Add starter equipement.
-	 * @param itemId the item to add if template is found
-	 */
-	public final void addItem(int itemId)
-	{
-		final Item item = ItemTable.getInstance().getTemplate(itemId);
-		if (item != null)
-			_items.add(item);
-	}
-	
-	/**
-	 * @return itemIds of all the starter equipment
-	 */
-	public final List<Item> getItems()
-	{
-		return _items;
+		_fists = (Weapon) ItemTable.getInstance().getTemplate(set.getInteger("fists"));
 	}
 	
 	public final ClassId getClassId()
@@ -158,5 +140,40 @@ public class PlayerTemplate extends CreatureTemplate
 	public final double getBaseCpMax(int level)
 	{
 		return _cpTable[level - 1];
+	}
+	
+	/**
+	 * @return the itemIds of all the starter equipment under an integer array.
+	 */
+	public final int[] getItemIds()
+	{
+		return _items;
+	}
+	
+	/**
+	 * @return the {@link List} of all available {@link GeneralSkillNode} for this {@link PlayerTemplate}.
+	 */
+	public final List<GeneralSkillNode> getSkills()
+	{
+		return _skills;
+	}
+	
+	/**
+	 * Find if the skill exists on skill tree.
+	 * @param id : The skill id to check.
+	 * @param level : The skill level to check.
+	 * @return the associated {@link GeneralSkillNode} if a matching id/level is found on this {@link PlayerTemplate}, or null.
+	 */
+	public GeneralSkillNode findSkill(int id, int level)
+	{
+		return _skills.stream().filter(s -> s.getId() == id && s.getValue() == level).findFirst().orElse(null);
+	}
+	
+	/**
+	 * @return the {@link Weapon} used as fists for this {@link PlayerTemplate}.
+	 */
+	public final Weapon getFists()
+	{
+		return _fists;
 	}
 }

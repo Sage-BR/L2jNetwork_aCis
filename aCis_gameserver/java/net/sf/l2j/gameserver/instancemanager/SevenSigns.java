@@ -15,8 +15,9 @@ import net.sf.l2j.commons.concurrent.ThreadPool;
 
 import net.sf.l2j.Config;
 import net.sf.l2j.L2DatabaseFactory;
-import net.sf.l2j.gameserver.data.MapRegionTable.TeleportType;
 import net.sf.l2j.gameserver.data.SkillTable;
+import net.sf.l2j.gameserver.data.manager.CastleManager;
+import net.sf.l2j.gameserver.data.xml.MapRegionData.TeleportType;
 import net.sf.l2j.gameserver.instancemanager.AutoSpawnManager.AutoSpawnInstance;
 import net.sf.l2j.gameserver.model.World;
 import net.sf.l2j.gameserver.model.actor.instance.Player;
@@ -53,7 +54,7 @@ public class SevenSigns
 			return _fullName;
 		}
 		
-		public static final CabalType VALUES[] = values();
+		public static final CabalType[] VALUES = values();
 	}
 	
 	public enum SealType
@@ -82,7 +83,7 @@ public class SevenSigns
 			return _fullName;
 		}
 		
-		public static final SealType VALUES[] = values();
+		public static final SealType[] VALUES = values();
 	}
 	
 	public enum PeriodType
@@ -111,7 +112,7 @@ public class SevenSigns
 			return _smId;
 		}
 		
-		public static final PeriodType VALUES[] = values();
+		public static final PeriodType[] VALUES = values();
 	}
 	
 	protected static final Logger _log = Logger.getLogger(SevenSigns.class.getName());
@@ -220,7 +221,6 @@ public class SevenSigns
 		// Schedule a time for the next period change.
 		ThreadPool.schedule(new SevenSignsPeriodChange(), milliToChange);
 		
-		// Thanks to http://rainbow.arch.scriptmania.com/scripts/timezone_countdown.html for help with this.
 		double numSecs = (milliToChange / 1000) % 60;
 		double countDown = ((milliToChange / 1000) - numSecs) / 60;
 		int numMins = (int) Math.floor(countDown % 60);
@@ -702,7 +702,8 @@ public class SevenSigns
 	 */
 	public void saveSevenSignsData()
 	{
-		try (Connection con = L2DatabaseFactory.getInstance().getConnection(); PreparedStatement st = con.prepareStatement(UPDATE_PLAYER))
+		try (Connection con = L2DatabaseFactory.getInstance().getConnection();
+			PreparedStatement st = con.prepareStatement(UPDATE_PLAYER))
 		{
 			for (StatsSet set : _playersData.values())
 			{
@@ -726,7 +727,8 @@ public class SevenSigns
 	
 	public final void saveSevenSignsStatus()
 	{
-		try (Connection con = L2DatabaseFactory.getInstance().getConnection(); PreparedStatement st = con.prepareStatement(UPDATE_STATUS))
+		try (Connection con = L2DatabaseFactory.getInstance().getConnection();
+			PreparedStatement st = con.prepareStatement(UPDATE_STATUS))
 		{
 			st.setInt(1, _currentCycle);
 			st.setString(2, _activePeriod.toString());
@@ -804,7 +806,8 @@ public class SevenSigns
 			_playersData.put(objectId, set);
 			
 			// Update data in database, as we have a new player signing up.
-			try (Connection con = L2DatabaseFactory.getInstance().getConnection(); PreparedStatement st = con.prepareStatement(INSERT_PLAYER))
+			try (Connection con = L2DatabaseFactory.getInstance().getConnection();
+				PreparedStatement st = con.prepareStatement(INSERT_PLAYER))
 			{
 				st.setInt(1, objectId);
 				st.setString(2, cabal.toString());
@@ -1212,9 +1215,9 @@ public class SevenSigns
 			if (cabal != CabalType.NORMAL)
 			{
 				if (cabal == strifeOwner)
-					player.addSkill(SkillTable.FrequentSkill.THE_VICTOR_OF_WAR.getSkill());
+					player.addSkill(SkillTable.FrequentSkill.THE_VICTOR_OF_WAR.getSkill(), false);
 				else
-					player.addSkill(SkillTable.FrequentSkill.THE_VANQUISHED_OF_WAR.getSkill());
+					player.addSkill(SkillTable.FrequentSkill.THE_VANQUISHED_OF_WAR.getSkill(), false);
 			}
 		}
 	}
@@ -1226,8 +1229,8 @@ public class SevenSigns
 	{
 		for (Player player : World.getInstance().getPlayers())
 		{
-			player.removeSkill(SkillTable.FrequentSkill.THE_VICTOR_OF_WAR.getSkill());
-			player.removeSkill(SkillTable.FrequentSkill.THE_VANQUISHED_OF_WAR.getSkill());
+			player.removeSkill(SkillTable.FrequentSkill.THE_VICTOR_OF_WAR.getSkill().getId(), false);
+			player.removeSkill(SkillTable.FrequentSkill.THE_VANQUISHED_OF_WAR.getSkill().getId(), false);
 		}
 	}
 	

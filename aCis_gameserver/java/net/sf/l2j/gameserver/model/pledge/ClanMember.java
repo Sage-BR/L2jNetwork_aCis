@@ -100,7 +100,7 @@ public class ClanMember
 			
 			if (_clan.getReputationScore() >= 0)
 			{
-				for (L2Skill sk : _clan.getClanSkills())
+				for (L2Skill sk : _clan.getClanSkills().values())
 				{
 					if (sk.getMinPledgeClass() <= player.getPledgeClass())
 						player.addSkill(sk, false);
@@ -128,6 +128,12 @@ public class ClanMember
 	public int getLevel()
 	{
 		return (_player != null) ? _player.getLevel() : _level;
+	}
+	
+	public void refreshLevel()
+	{
+		if (_player != null)
+			_level = _player.getLevel();
 	}
 	
 	public String getName()

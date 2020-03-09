@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <list>
 	<!-- Castle Siege Zones -->
-	<zone type="SiegeZone" shape="NPoly" minZ="-4448" maxZ="3551"><!-- gludio_castle_battlefield_territory -->
+	<zone shape="NPoly" minZ="-4448" maxZ="3551"><!-- gludio_castle_battlefield_territory -->
 		<stat name="castleId" val="1" />
 		<node X="-22615" Y="104510" />
 		<node X="-13290" Y="104564" />
@@ -39,7 +39,7 @@
 		<spawn X="-81780" Y="152880" Z="-3170" />
 		<spawn X="-81780" Y="152640" Z="-3170" />
 	</zone>
-	<zone type="SiegeZone" shape="NPoly" minZ="-4642" maxZ="4000"><!-- dion_castle_battlefield_territory -->
+	<zone shape="NPoly" minZ="-4642" maxZ="4000"><!-- dion_castle_battlefield_territory -->
 		<stat name="castleId" val="2" />
 		<node X="26575" Y="165240" />
 		<node X="17250" Y="165186" />
@@ -77,7 +77,7 @@
 		<spawn X="-81780" Y="152880" Z="-3170" />
 		<spawn X="-81780" Y="152640" Z="-3170" />
 	</zone>
-	<zone type="SiegeZone" shape="NPoly" minZ="-4515" maxZ="19935"><!-- giran_castle_battlefield_territory -->
+	<zone shape="NPoly" minZ="-4515" maxZ="19935"><!-- giran_castle_battlefield_territory -->
 		<stat name="castleId" val="3" />
 		<node X="121412" Y="140594" />
 		<node X="121358" Y="149919" />
@@ -111,7 +111,7 @@
 		<spawn X="115193" Y="77594" Z="-2670" />
 		<spawn X="116158" Y="77443" Z="-2660" />
 	</zone>
-	<zone type="SiegeZone" shape="NPoly" minZ="-4242" maxZ="19935"><!-- oren_castle_battlefield_territory -->
+	<zone shape="NPoly" minZ="-4242" maxZ="19935"><!-- oren_castle_battlefield_territory -->
 		<stat name="castleId" val="4" />
 		<node X="87488" Y="32689" />
 		<node X="87434" Y="42014" />
@@ -145,7 +145,7 @@
 		<spawn X="115193" Y="77594" Z="-2670" />
 		<spawn X="116158" Y="77443" Z="-2660" />
 	</zone>
-	<zone type="SiegeZone" shape="NPoly" minZ="-3184" maxZ="6816"><!-- aden_castle_battlefield_territory -->
+	<zone shape="NPoly" minZ="-3184" maxZ="6816"><!-- aden_castle_battlefield_territory -->
 		<stat name="castleId" val="5" />
 		<node X="142431" Y="362" />
 		<node X="152319" Y="344" />
@@ -179,7 +179,7 @@
 		<spawn X="115193" Y="77594" Z="-2670" />
 		<spawn X="116158" Y="77443" Z="-2660" />
 	</zone>
-	<zone type="SiegeZone" shape="NPoly" minZ="-2738" maxZ="4000"><!-- innadrile_castle_battlefield_territory -->
+	<zone shape="NPoly" minZ="-2738" maxZ="4000"><!-- innadrile_castle_battlefield_territory -->
 		<stat name="castleId" val="6" />
 		<node X="120526" Y="254019" />
 		<node X="111201" Y="253965" />
@@ -213,7 +213,7 @@
 		<spawn X="115193" Y="77594" Z="-2670" />
 		<spawn X="116158" Y="77443" Z="-2660" />
 	</zone>
-	<zone type="SiegeZone" shape="NPoly" minZ="-3397" maxZ="2103"><!-- goddard_castle_battlefield_territory -->
+	<zone shape="NPoly" minZ="-3397" maxZ="2103"><!-- goddard_castle_battlefield_territory -->
 		<stat name="castleId" val="7" />
 		<node X="141457" Y="-51510" />
 		<node X="151949" Y="-51510" />
@@ -251,7 +251,7 @@
 		<spawn X="43744" Y="-47920" Z="-800" />
 		<spawn X="43792" Y="-48928" Z="-800" />
 	</zone>
-	<zone type="SiegeZone" shape="NPoly" minZ="-5000" maxZ="6000"><!-- rune_castle_battlefield_territory -->
+	<zone shape="NPoly" minZ="-5000" maxZ="6000"><!-- rune_castle_battlefield_territory -->
 		<stat name="castleId" val="8" />
 		<node X="7176" Y="-56808" />
 		<node X="30168" Y="-56808" />
@@ -279,7 +279,7 @@
 		<spawn X="150400" Y="-56752" Z="-2979" />
 		<spawn X="149872" Y="-57424" Z="-2979" />
 	</zone>
-	<zone type="SiegeZone" shape="NPoly" minZ="-1200" maxZ="2811"><!-- schuttgart_castle_battlefield_territory -->
+	<zone shape="NPoly" minZ="-1200" maxZ="2811"><!-- schuttgart_castle_battlefield_territory -->
 		<stat name="castleId" val="9" />
 		<node X="72910" Y="-156527" />
 		<node X="83515" Y="-155592" />
@@ -322,7 +322,7 @@
 		<spawn X="43792" Y="-48928" Z="-800" />
 	</zone>
 	<!-- Clan Hall Siege Zones -->
-	<zone type="SiegeZone" shape="NPoly" minZ="-2344" maxZ="-1544"><!-- partisan_agit001 -->
+	<zone shape="NPoly" minZ="-2344" maxZ="-1544"><!-- partisan_agit001 -->
 		<stat name="clanHallId" val="21" />
 		<!-- battlefield_territory -->
 		<node X="42768" Y="109156" />
@@ -333,7 +333,7 @@
 		<node X="44092" Y="113504" />
 		<node X="43180" Y="112736" />
 	</zone>
-	<zone type="SiegeZone" shape="NPoly" minZ="-2634" maxZ="366"><!-- devastated_castle -->
+	<zone shape="NPoly" minZ="-2634" maxZ="366"><!-- devastated_castle -->
 		<stat name="clanHallId" val="34" />
 		<!-- battlefield_territory -->
 		<node X="176367" Y="-19559" />
@@ -341,7 +341,7 @@
 		<node X="180367" Y="-13059" />
 		<node X="176367" Y="-13059" />
 	</zone>
-	<zone type="SiegeZone" shape="NPoly" minZ="-2920" maxZ="80"><!-- bandits_stronghold -->
+	<zone shape="NPoly" minZ="-2920" maxZ="80"><!-- bandits_stronghold -->
 		<stat name="clanHallId" val="35" />
 		<!-- battlefield_territory -->
 		<node X="79028" Y="-17588" />
@@ -350,7 +350,7 @@
 		<node X="83636" Y="-13448" />
 		<node X="79196" Y="-13584" />
 	</zone>
-	<zone type="SiegeZone" shape="NPoly" minZ="-2460" maxZ="-1860"><!-- rainbow_spring -->
+	<zone shape="NPoly" minZ="-2460" maxZ="-1860"><!-- rainbow_spring -->
 		<stat name="clanHallId" val="62" />
 		<!-- battlefield_territory -->
 		<node X="150253" Y="-127587" />
@@ -359,7 +359,7 @@
 		<node X="154870" Y="-123511" />
 		<node X="150933" Y="-124975" />
 	</zone>
-	<zone type="SiegeZone" shape="NPoly" minZ="-1407" maxZ="-907"><!-- beast_farm_guildhall -->
+	<zone shape="NPoly" minZ="-1407" maxZ="-907"><!-- beast_farm_guildhall -->
 		<stat name="clanHallId" val="63" />
 		<!-- battlefield_territory -->
 		<node X="59997" Y="-96111" />
@@ -370,7 +370,7 @@
 		<node X="55344" Y="-93295" />
 		<node X="56049" Y="-94619" />
 	</zone>
-	<zone type="SiegeZone" shape="NPoly" minZ="-193" maxZ="1687"><!-- fortress_of_dead -->
+	<zone shape="NPoly" minZ="-193" maxZ="1687"><!-- fortress_of_dead -->
 		<stat name="clanHallId" val="64" />
 		<!-- battlefield_territory -->
 		<node X="59775" Y="-31402" />

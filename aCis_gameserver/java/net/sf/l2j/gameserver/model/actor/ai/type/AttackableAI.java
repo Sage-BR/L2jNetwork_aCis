@@ -170,10 +170,6 @@ public class AttackableAI extends CreatureAI implements Runnable
 		// The actor is a L2FriendlyMobInstance
 		else if (me instanceof FriendlyMonster)
 		{
-			// Check if the target isn't another L2Npc
-			if (target instanceof Npc)
-				return false;
-			
 			// Check if the Player target has karma (=PK)
 			if (target instanceof Player && ((Player) target).getKarma() > 0)
 				return GeoEngine.getInstance().canSeeTarget(me, target); // Los Check

@@ -59,17 +59,15 @@ public class NetWorkAuto extends AutoVoteMain
 				if (l2network_votes != -1)
 				{
 					LOGGER.info("[NETWORK] Votes: " + l2network_votes);
-					Announcement.VoteAnnouncements("Network - Votes are " + l2network_votes + "...");
+					Announcement.VoteAnnouncements("Votes on Network are " + l2network_votes + ".");
 					if ((l2network_votes != 0) && (l2network_votes >= getL2NetworkVoteCount() + Config.VOTES_FOR_REWARD_NET))
 					{
 						rewardPlayer();
-						Announcement.VoteAnnouncements("Network: Thanks For Voting..Players Rewarded!");
+						Announcement.VoteAnnouncements("Network: Thanks for voting. You have been rewarded!");
 					}
 					setL2NetworkVoteCount(l2network_votes);
 				}
-				Announcement.VoteAnnouncements("Network - Next Reward at " + (getL2NetworkVoteCount() + Config.VOTES_FOR_REWARD_NET) + " Votes!!");
-				
-				Announcement.VoteAnnouncements("Website - " + Config.SERVER_WEB_SITE);
+				Announcement.VoteAnnouncements("Next Reward at " + (getL2NetworkVoteCount() + Config.VOTES_FOR_REWARD_NET) + " votes!");
 			}
 		}
 	}

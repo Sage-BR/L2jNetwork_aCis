@@ -1,7 +1,7 @@
 package net.sf.l2j.gameserver.network.clientpackets;
 
-import net.sf.l2j.gameserver.cache.CrestCache;
-import net.sf.l2j.gameserver.cache.CrestCache.CrestType;
+import net.sf.l2j.gameserver.data.cache.CrestCache;
+import net.sf.l2j.gameserver.data.cache.CrestCache.CrestType;
 import net.sf.l2j.gameserver.network.serverpackets.AllyCrest;
 
 public final class RequestAllyCrest extends L2GameClientPacket

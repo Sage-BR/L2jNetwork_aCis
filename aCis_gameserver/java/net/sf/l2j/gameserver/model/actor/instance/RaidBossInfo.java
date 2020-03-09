@@ -16,8 +16,8 @@ package net.sf.l2j.gameserver.model.actor.instance;
 
 import java.text.SimpleDateFormat;
 
-import net.sf.l2j.gameserver.cache.HtmCache;
-import net.sf.l2j.gameserver.data.NpcTable;
+import net.sf.l2j.gameserver.data.cache.HtmCache;
+import net.sf.l2j.gameserver.data.xml.NpcData;
 import net.sf.l2j.gameserver.instancemanager.RaidBossSpawnManager;
 import net.sf.l2j.gameserver.model.actor.Npc;
 import net.sf.l2j.gameserver.model.actor.template.NpcTemplate;
@@ -55,27 +55,26 @@ public class RaidBossInfo extends Npc
 	public void generateFirstWindow(Player activeChar)
 	{
 		final StringBuilder sb = new StringBuilder();
+		NpcHtmlMessage html = new NpcHtmlMessage(0);
 		
 		for (int rboss : RBOSSES)
 		{
-			
-			String name = NpcTable.getInstance().getTemplate(rboss).getName();
+			String name = NpcData.getInstance().getTemplate(rboss).getName();
 			long delay = RaidBossSpawnManager.getInstance().getRespawntime(rboss);
+			sb.append("<html><head><title>Raidboss Manager</title></head><body>");
+			sb.append("<center>");
+			sb.append("<img src=\"L2UI.SquareGray\" width=300 height=1><br>");
 			
 			if (delay <= System.currentTimeMillis())
-			{
-				sb.append("" + name + "&nbsp;<font color=\"4d94ff\">IS ALIVE!</font><br1>");
-			}
+				sb.append("" + name + ":&nbsp;<font color=\"4d94ff\">Is Alive!</font><br1>");
 			else
 			{
-				sb.append("" + name + "&nbsp;<br1>");
+				sb.append("" + name + ":&nbsp;<br1>");
 				sb.append("&nbsp;<font color=\"FFFFFF\">" + " " + "Respawn at:</font>" + "" + "<font color=\"FF9900\"> " + new SimpleDateFormat("dd-MM-yyyy HH:mm").format(delay) + "</font><br>");
 			}
 		}
 		
-		NpcHtmlMessage html = new NpcHtmlMessage(1);
-		html.setFile(getHtmlPath(getNpcId(), 0));
-		html.replace("%objectId%", getObjectId());
+		html.setHtml(sb.toString());
 		html.replace("%bosslist%", sb.toString());
 		activeChar.sendPacket(html);
 	}

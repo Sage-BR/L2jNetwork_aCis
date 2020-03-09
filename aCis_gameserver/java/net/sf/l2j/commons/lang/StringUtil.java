@@ -171,4 +171,18 @@ public final class StringUtil
 		
 		return result;
 	}
+	
+	/**
+	 * Format a {@link String} to delete its extension ("castles.xml" > "castles"), if any.
+	 * @param fileName : The String to edit, which is a former file name.
+	 * @return a left-side truncated String to the first "." encountered.
+	 */
+	public static String getNameWithoutExtension(String fileName)
+	{
+		final int pos = fileName.lastIndexOf(".");
+		if (pos > 0)
+			fileName = fileName.substring(0, pos);
+		
+		return fileName;
+	}
 }

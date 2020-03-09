@@ -46,10 +46,10 @@ public final class AdminData extends XMLDocument
 	protected void load()
 	{
 		loadDocument("./data/xml/admin/accessLevels.xml");
-		LOG.info("Loaded " + _accessLevels.size() + " access levels.");
+		LOGGER.info("Loaded {} access levels.", _accessLevels.size());
 		
 		loadDocument("./data/xml/admin/adminCommands.xml");
-		LOG.info("Loaded " + _adminCommandAccessRights.size() + " admin command rights.");
+		LOGGER.info("Loaded {} admin command rights.", _adminCommandAccessRights.size());
 	}
 	
 	@Override
@@ -137,7 +137,7 @@ public final class AdminData extends XMLDocument
 		final Integer level = _adminCommandAccessRights.get(command);
 		if (level == null)
 		{
-			LOG.severe("No rights defined for admin command " + command + " !");
+			LOGGER.warn("No rights defined for admin command '{}'.", command);
 			return false;
 		}
 		

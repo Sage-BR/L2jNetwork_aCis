@@ -11,30 +11,26 @@ import net.sf.l2j.commons.lang.StringUtil;
 import net.sf.l2j.commons.random.Rnd;
 
 import net.sf.l2j.Config;
-import net.sf.l2j.gameserver.cache.HtmCache;
 import net.sf.l2j.gameserver.data.ItemTable;
 import net.sf.l2j.gameserver.data.SkillTable;
 import net.sf.l2j.gameserver.data.SkillTable.FrequentSkill;
+import net.sf.l2j.gameserver.data.cache.HtmCache;
+import net.sf.l2j.gameserver.data.manager.LotteryManager;
 import net.sf.l2j.gameserver.data.sql.ClanTable;
 import net.sf.l2j.gameserver.data.xml.FakePcsData;
 import net.sf.l2j.gameserver.data.xml.MultisellData;
 import net.sf.l2j.gameserver.data.xml.NewbieBuffData;
-import net.sf.l2j.gameserver.events.phoenixevents.EventManager;
+import net.sf.l2j.gameserver.geoengine.GeoEngine;
 import net.sf.l2j.gameserver.idfactory.IdFactory;
 import net.sf.l2j.gameserver.instancemanager.DimensionalRiftManager;
-import net.sf.l2j.gameserver.instancemanager.SevenSigns;
-import net.sf.l2j.gameserver.instancemanager.games.Lottery;
 import net.sf.l2j.gameserver.model.L2Skill;
 import net.sf.l2j.gameserver.model.L2Spawn;
 import net.sf.l2j.gameserver.model.NewbieBuff;
 import net.sf.l2j.gameserver.model.ShotType;
 import net.sf.l2j.gameserver.model.WorldObject;
 import net.sf.l2j.gameserver.model.actor.ai.CtrlIntention;
-import net.sf.l2j.gameserver.model.actor.instance.Fisherman;
-import net.sf.l2j.gameserver.model.actor.instance.Gatekeeper;
 import net.sf.l2j.gameserver.model.actor.instance.Merchant;
 import net.sf.l2j.gameserver.model.actor.instance.Player;
-import net.sf.l2j.gameserver.model.actor.instance.WarehouseKeeper;
 import net.sf.l2j.gameserver.model.actor.stat.NpcStat;
 import net.sf.l2j.gameserver.model.actor.status.NpcStatus;
 import net.sf.l2j.gameserver.model.actor.template.NpcTemplate;
@@ -69,7 +65,7 @@ import net.sf.l2j.gameserver.templates.skills.L2SkillType;
 import net.sf.l2j.gameserver.util.Broadcast;
 
 /**
- * This class represents a Non Playable Character (or NPC) in the world.
+ * An instance type extending {@link Creature}, which represents a Non Playable Character (or NPC) in the world.
  */
 public class Npc extends Creature
 {
@@ -197,7 +193,6 @@ public class Npc extends Creature
 		return (NpcStatus) super.getStatus();
 	}
 	
-	/** Return the L2NpcTemplate of the L2Npc. */
 	@Override
 	public final NpcTemplate getTemplate()
 	{
@@ -218,9 +213,6 @@ public class Npc extends Creature
 		return true;
 	}
 	
-	/**
-	 * Return the Level of this L2Npc contained in the L2NpcTemplate.
-	 */
 	@Override
 	public final int getLevel()
 	{
@@ -259,10 +251,6 @@ public class Npc extends Creature
 		}
 	}
 	
-	/**
-	 * Set the Title of the Creature. Concatens it if length > 16.
-	 * @param value The String to test.
-	 */
 	@Override
 	public final void setTitle(String value)
 	{
@@ -341,11 +329,46 @@ public class Npc extends Creature
 				}
 				else
 				{
+					// Stop moving if we're already in interact range.
+					if (player.isMoving() || player.isInCombat())
+						player.getAI().setIntention(CtrlIntention.IDLE);
+					
 					// Rotate the player to face the instance
 					player.sendPacket(new MoveToPawn(player, this, Npc.INTERACTION_DISTANCE));
 					
 					// Send ActionFailed to the player in order to avoid he stucks
-					player.sendPacket(ActionFailed.STATIC_PACKET);
+					{
+						if (isAutoAttackable(player))
+						{
+							if (player.isInsideRadius(this, player.getPhysicalAttackRange(), false, false) && GeoEngine.getInstance().canSeeTarget(player, this))
+								player.getAI().setIntention(CtrlIntention.ATTACK, this);
+							else
+								player.sendPacket(ActionFailed.STATIC_PACKET);
+						}
+						else if (canInteract(player))
+						{
+							// Rotate the player to face the instance
+							player.sendPacket(new MoveToPawn(player, this, Npc.INTERACTION_DISTANCE));
+							
+							// Send ActionFailed to the player in order to avoid he stucks
+							player.sendPacket(ActionFailed.STATIC_PACKET);
+							
+							if (hasRandomAnimation())
+								onRandomAnimation(Rnd.get(8));
+							
+							List<Quest> qlsa = getTemplate().getEventQuests(EventType.QUEST_START);
+							if (qlsa != null && !qlsa.isEmpty())
+								player.setLastQuestNpcObject(getObjectId());
+							
+							List<Quest> qlst = getTemplate().getEventQuests(EventType.ON_FIRST_TALK);
+							if (qlst != null && qlst.size() == 1)
+								qlst.get(0).notifyFirstTalk(this, player);
+							else
+								showChatWindow(player);
+						}
+						else
+							player.sendPacket(ActionFailed.STATIC_PACKET);
+					}
 					
 					if (hasRandomAnimation())
 						onRandomAnimation(Rnd.get(8));
@@ -452,56 +475,6 @@ public class Npc extends Creature
 			player.setTarget(this);
 		else
 			player.sendPacket(ActionFailed.STATIC_PACKET);
-		
-		if (Config.ALT_GAME_VIEWNPC && !player.isGM())
-		{
-			final NpcHtmlMessage html = new NpcHtmlMessage(getObjectId());
-			html.setFile("data/html/custom/mobinfo.htm");
-			
-			html.replace("%class%", getClass().getSimpleName());
-			html.replace("%id%", getTemplate().getNpcId());
-			html.replace("%lvl%", getTemplate().getLevel());
-			html.replace("%name%", getTemplate().getName());
-			html.replace("%race%", getTemplate().getRace().toString());
-			html.replace("%tmplid%", getTemplate().getIdTemplate());
-			html.replace("%castle%", (getCastle() != null) ? getCastle().getName() : "none");
-			html.replace("%aggro%", (this instanceof Attackable) ? ((Attackable) this).getTemplate().getAggroRange() : 0);
-			html.replace("%corpse%", getTemplate().getCorpseTime());
-			html.replace("%enchant%", getTemplate().getEnchantEffect());
-			html.replace("%hp%", (int) getCurrentHp());
-			html.replace("%hpmax%", getMaxHp());
-			html.replace("%mp%", (int) getCurrentMp());
-			html.replace("%mpmax%", getMaxMp());
-			
-			html.replace("%patk%", getPAtk(null));
-			html.replace("%matk%", getMAtk(null, null));
-			html.replace("%pdef%", getPDef(null));
-			html.replace("%mdef%", getMDef(null, null));
-			html.replace("%accu%", getAccuracy());
-			html.replace("%evas%", getEvasionRate(null));
-			html.replace("%crit%", getCriticalHit(null, null));
-			html.replace("%rspd%", getMoveSpeed());
-			html.replace("%aspd%", getPAtkSpd());
-			html.replace("%cspd%", getMAtkSpd());
-			html.replace("%str%", getSTR());
-			html.replace("%dex%", getDEX());
-			html.replace("%con%", getCON());
-			html.replace("%int%", getINT());
-			html.replace("%wit%", getWIT());
-			html.replace("%men%", getMEN());
-			html.replace("%loc%", getX() + " " + getY() + " " + getZ());
-			html.replace("%dist%", (int) Math.sqrt(player.getDistanceSq(this)));
-			
-			html.replace("%ele_dfire%", getDefenseElementValue((byte) 2));
-			html.replace("%ele_dwater%", getDefenseElementValue((byte) 3));
-			html.replace("%ele_dwind%", getDefenseElementValue((byte) 1));
-			html.replace("%ele_dearth%", getDefenseElementValue((byte) 4));
-			html.replace("%ele_dholy%", getDefenseElementValue((byte) 5));
-			html.replace("%ele_ddark%", getDefenseElementValue((byte) 6));
-			
-			player.sendPacket(html);
-			player.sendPacket(ActionFailed.STATIC_PACKET);
-		}
 	}
 	
 	/**
@@ -656,16 +629,6 @@ public class Npc extends Creature
 			{
 			}
 		}
-		else if (command.startsWith("ChangeRiftRoom"))
-		{
-			if (player.isInParty() && player.getParty().isInDimensionalRift())
-				player.getParty().getDimensionalRift().manualTeleport(player, this);
-		}
-		else if (command.startsWith("ExitRift"))
-		{
-			if (player.isInParty() && player.getParty().isInDimensionalRift())
-				player.getParty().getDimensionalRift().manualExitRift(player, this);
-		}
 	}
 	
 	/**
@@ -792,19 +755,12 @@ public class Npc extends Creature
 		player.sendPacket(ActionFailed.STATIC_PACKET);
 	}
 	
-	/**
-	 * Return null (regular NPCs don't have weapons instancies).<BR>
-	 * <BR>
-	 */
 	@Override
 	public ItemInstance getActiveWeaponInstance()
 	{
 		return null;
 	}
 	
-	/**
-	 * Return the weapon item equipped in the right hand of the L2Npc or null.
-	 */
 	@Override
 	public Weapon getActiveWeaponItem()
 	{
@@ -821,18 +777,12 @@ public class Npc extends Creature
 		return (Weapon) item;
 	}
 	
-	/**
-	 * Return null (regular NPCs don't have weapons instancies).
-	 */
 	@Override
 	public ItemInstance getSecondaryWeaponInstance()
 	{
 		return null;
 	}
 	
-	/**
-	 * Return the item equipped in the left hand of the L2Npc or null.
-	 */
 	@Override
 	public Item getSecondaryWeaponItem()
 	{
@@ -846,18 +796,14 @@ public class Npc extends Creature
 	}
 	
 	/**
-	 * <B><U> Format of the pathfile </U> :</B><BR>
-	 * <BR>
+	 * Generate the complete path to retrieve a htm, based on npcId.
+	 * <ul>
 	 * <li>if the file exists on the server (page number = 0) : <B>data/html/default/12006.htm</B> (npcId-page number)</li>
 	 * <li>if the file exists on the server (page number > 0) : <B>data/html/default/12006-1.htm</B> (npcId-page number)</li>
-	 * <li>if the file doesn't exist on the server : <B>data/html/npcdefault.htm</B> (message : "I have nothing to say to you")</li><BR>
-	 * <BR>
-	 * <B><U> Overriden in </U> :</B><BR>
-	 * <BR>
-	 * <li>L2GuardInstance : Set the pathfile to data/html/guard/12006-1.htm (npcId-page number)</li><BR>
-	 * <BR>
-	 * @param npcId The Identifier of the L2Npc whose text must be display
-	 * @param val The number of the page to display
+	 * <li>if the file doesn't exist on the server : <B>data/html/npcdefault.htm</B> (message : "I have nothing to say to you")</li>
+	 * </ul>
+	 * @param npcId : The id of the Npc whose text must be displayed.
+	 * @param val : The number of the page to display.
 	 * @return the pathfile of the selected HTML file in function of the npcId and of the page number.
 	 */
 	public String getHtmlPath(int npcId, int val)
@@ -908,13 +854,13 @@ public class Npc extends Creature
 		}
 		else if (val >= 1 && val <= 21) // 1-20 - buttons, 21 - second buy lottery ticket window
 		{
-			if (!Lottery.getInstance().isStarted())
+			if (!LotteryManager.getInstance().isStarted())
 			{
 				// tickets can't be sold
 				player.sendPacket(SystemMessageId.NO_LOTTERY_TICKETS_CURRENT_SOLD);
 				return;
 			}
-			if (!Lottery.getInstance().isSellableTickets())
+			if (!LotteryManager.getInstance().isSellableTickets())
 			{
 				// tickets can't be sold
 				player.sendPacket(SystemMessageId.NO_LOTTERY_TICKETS_AVAILABLE);
@@ -972,13 +918,13 @@ public class Npc extends Creature
 		}
 		else if (val == 22) // 22 - selected ticket with 5 numbers
 		{
-			if (!Lottery.getInstance().isStarted())
+			if (!LotteryManager.getInstance().isStarted())
 			{
 				// tickets can't be sold
 				player.sendPacket(SystemMessageId.NO_LOTTERY_TICKETS_CURRENT_SOLD);
 				return;
 			}
-			if (!Lottery.getInstance().isSellableTickets())
+			if (!LotteryManager.getInstance().isSellableTickets())
 			{
 				// tickets can't be sold
 				player.sendPacket(SystemMessageId.NO_LOTTERY_TICKETS_AVAILABLE);
@@ -986,7 +932,7 @@ public class Npc extends Creature
 			}
 			
 			int price = Config.ALT_LOTTERY_TICKET_PRICE;
-			int lotonumber = Lottery.getInstance().getId();
+			int lotonumber = LotteryManager.getInstance().getId();
 			int enchant = 0;
 			int type2 = 0;
 			
@@ -1004,7 +950,7 @@ public class Npc extends Creature
 			if (!player.reduceAdena("Loto", price, this, true))
 				return;
 			
-			Lottery.getInstance().increasePrize(price);
+			LotteryManager.getInstance().increasePrize(price);
 			
 			ItemInstance item = new ItemInstance(IdFactory.getInstance().getNextId(), 4442);
 			item.setCount(1);
@@ -1023,7 +969,7 @@ public class Npc extends Creature
 		}
 		else if (val == 24) // 24 - Previous winning numbers/Prize claim
 		{
-			final int lotoNumber = Lottery.getInstance().getId();
+			final int lotoNumber = LotteryManager.getInstance().getId();
 			
 			final StringBuilder sb = new StringBuilder();
 			for (ItemInstance item : player.getInventory().getItems())
@@ -1035,11 +981,11 @@ public class Npc extends Creature
 				{
 					StringUtil.append(sb, "<a action=\"bypass -h npc_%objectId%_Loto ", item.getObjectId(), "\">", item.getCustomType1(), " Event Number ");
 					
-					int[] numbers = Lottery.decodeNumbers(item.getEnchantLevel(), item.getCustomType2());
+					int[] numbers = LotteryManager.decodeNumbers(item.getEnchantLevel(), item.getCustomType2());
 					for (int i = 0; i < 5; i++)
 						StringUtil.append(sb, numbers[i], " ");
 					
-					int[] check = Lottery.checkTicket(item);
+					int[] check = LotteryManager.checkTicket(item);
 					if (check[0] > 0)
 					{
 						switch (check[0])
@@ -1079,25 +1025,23 @@ public class Npc extends Creature
 		}
 		else if (val > 25) // >25 - check lottery ticket by item object id
 		{
-			int lotonumber = Lottery.getInstance().getId();
-			ItemInstance item = player.getInventory().getItemByObjectId(val);
-			if (item == null || item.getItemId() != 4442 || item.getCustomType1() >= lotonumber)
+			final ItemInstance item = player.getInventory().getItemByObjectId(val);
+			if (item == null || item.getItemId() != 4442 || item.getCustomType1() >= LotteryManager.getInstance().getId())
 				return;
-			int[] check = Lottery.checkTicket(item);
 			
-			player.sendPacket(SystemMessage.getSystemMessage(SystemMessageId.S2_S1_DISAPPEARED).addItemName(4442));
-			
-			int adena = check[1];
-			if (adena > 0)
-				player.addAdena("Loto", adena, this, true);
-			player.destroyItem("Loto", item, this, false);
+			if (player.destroyItem("Loto", item, this, true))
+			{
+				final int adena = LotteryManager.checkTicket(item)[1];
+				if (adena > 0)
+					player.addAdena("Loto", adena, this, true);
+			}
 			return;
 		}
 		html.replace("%objectId%", getObjectId());
-		html.replace("%race%", Lottery.getInstance().getId());
-		html.replace("%adena%", Lottery.getInstance().getPrize());
+		html.replace("%race%", LotteryManager.getInstance().getId());
+		html.replace("%adena%", LotteryManager.getInstance().getPrize());
 		html.replace("%ticket_price%", Config.ALT_LOTTERY_TICKET_PRICE);
-		html.replace("%enddate%", DateFormat.getDateInstance().format(Lottery.getInstance().getEndDate()));
+		html.replace("%enddate%", DateFormat.getDateInstance().format(LotteryManager.getInstance().getEndDate()));
 		player.sendPacket(html);
 		
 		// Send a Server->Client ActionFailed to the Player in order to avoid that the client wait another packet
@@ -1116,7 +1060,7 @@ public class Npc extends Creature
 		}
 		
 		// Consume 100 adenas
-		if (player.reduceAdena("RestoreCP", 100, player.getCurrentFolkNPC(), true))
+		if (player.reduceAdena("RestoreCP", 100, player.getCurrentFolk(), true))
 		{
 			setTarget(player);
 			doCast(FrequentSkill.ARENA_CP_RECOVERY.getSkill());
@@ -1191,23 +1135,24 @@ public class Npc extends Creature
 	}
 	
 	/**
-	 * Returns true if html exists
-	 * @param player
-	 * @param type
-	 * @return boolean
+	 * Research the pk chat window htm related to this {@link Npc}, based on a String folder and npcId.<br>
+	 * Send the content to the {@link Player} passed as parameter.
+	 * @param player : The player to send the HTM.
+	 * @param type : The folder to search on.
+	 * @return true if such HTM exists.
 	 */
-	private boolean showPkDenyChatWindow(Player player, String type)
+	protected boolean showPkDenyChatWindow(Player player, String type)
 	{
-		String content = HtmCache.getInstance().getHtm("data/html/" + type + "/" + getNpcId() + "-pk.htm");
+		final String content = HtmCache.getInstance().getHtm("data/html/" + type + "/" + getNpcId() + "-pk.htm");
 		if (content != null)
 		{
 			final NpcHtmlMessage html = new NpcHtmlMessage(getObjectId());
 			html.setHtml(content);
 			player.sendPacket(html);
+			
 			player.sendPacket(ActionFailed.STATIC_PACKET);
 			return true;
 		}
-		
 		return false;
 	}
 	
@@ -1220,68 +1165,19 @@ public class Npc extends Creature
 		showChatWindow(player, 0);
 	}
 	
+	/**
+	 * Open a chat window on client with the text specified by {@link #getHtmlPath} and val parameter.
+	 * @param player : The player that talk with the Npc.
+	 * @param val : The current htm page to show.
+	 */
 	public void showChatWindow(Player player, int val)
 	{
-		if (player.getKarma() > 0)
-		{
-			if (!Config.KARMA_PLAYER_CAN_SHOP)
-			{
-				if (this instanceof Fisherman)
-				{
-					if (showPkDenyChatWindow(player, "fisherman"))
-						return;
-				}
-				else if (this instanceof Merchant)
-				{
-					if (showPkDenyChatWindow(player, "merchant"))
-						return;
-				}
-			}
-			else if (!Config.KARMA_PLAYER_CAN_USE_GK && this instanceof Gatekeeper)
-			{
-				if (showPkDenyChatWindow(player, "teleporter"))
-					return;
-			}
-			else if (!Config.KARMA_PLAYER_CAN_USE_WH && this instanceof WarehouseKeeper)
-			{
-				if (showPkDenyChatWindow(player, "warehouse"))
-					return;
-			}
-		}
-		
-		final int npcId = getNpcId();
-		String filename;
-		
-		if (npcId >= 31865 && npcId <= 31918)
-			filename = SevenSigns.SEVEN_SIGNS_HTML_PATH + "rift/GuardianOfBorder.htm";
-		else
-			filename = getHtmlPath(npcId, val);
-		
-		final NpcHtmlMessage html = new NpcHtmlMessage(getObjectId());
-		html.setFile(filename);
-		html.replace("%objectId%", getObjectId());
-		player.sendPacket(html);
-		
-		if (npcId == EventManager.getInstance().getInt("managerNpcId"))
-		{
-			EventManager.getInstance().showFirstHtml(player, getObjectId());
-			player.sendPacket(ActionFailed.STATIC_PACKET);
-			return;
-		}
-		
-		if (EventManager.getInstance().isRunning() && EventManager.getInstance().isRegistered(player) && EventManager.getInstance().getCurrentEvent().onTalkNpc(this, player))
-		{
-			player.sendPacket(ActionFailed.STATIC_PACKET);
-			return;
-		}
-		
-		// Send a Server->Client ActionFailed to the Player in order to avoid that the client wait another packet
-		player.sendPacket(ActionFailed.STATIC_PACKET);
+		showChatWindow(player, getHtmlPath(getNpcId(), val));
 	}
 	
 	/**
-	 * Open a chat window on client with the text specified by the given file name and path, relative to the datapack root.
-	 * @param player : The player that talk with the L2Npc.
+	 * Open a chat window on client with the text specified by the given file name and path.
+	 * @param player : The player that talk with the Npc.
 	 * @param filename : The filename that contains the text to send.
 	 */
 	public void showChatWindow(Player player, String filename)
@@ -1291,7 +1187,6 @@ public class Npc extends Creature
 		html.replace("%objectId%", getObjectId());
 		player.sendPacket(html);
 		
-		// Send a Server->Client ActionFailed to the Player in order to avoid that the client wait another packet
 		player.sendPacket(ActionFailed.STATIC_PACKET);
 	}
 	
@@ -1612,7 +1507,7 @@ public class Npc extends Creature
 				if (skill.getId() == skillId)
 					return skill.getLevel();
 		}
-		return -1;
+		return 0;
 	}
 	
 	@Override

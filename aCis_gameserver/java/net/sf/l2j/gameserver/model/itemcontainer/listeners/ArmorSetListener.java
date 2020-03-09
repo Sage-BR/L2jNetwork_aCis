@@ -137,27 +137,16 @@ public class ArmorSetListener implements OnEquipListener
 		{
 			if (removeSkillId1 != 0)
 			{
-				L2Skill skill = SkillTable.getInstance().getInfo(removeSkillId1, 1);
-				if (skill != null)
-				{
-					player.removeSkill(SkillTable.getInstance().getInfo(3006, 1));
-					player.removeSkill(skill);
-				}
+				player.removeSkill(3006, false);
+				player.removeSkill(removeSkillId1, false);
 			}
 			
 			if (removeSkillId2 != 0)
-			{
-				L2Skill skill = SkillTable.getInstance().getInfo(removeSkillId2, 1);
-				if (skill != null)
-					player.removeSkill(skill);
-			}
+				player.removeSkill(removeSkillId2, false);
 			
 			if (removeSkillId3 != 0)
-			{
-				L2Skill skill = SkillTable.getInstance().getInfo(removeSkillId3, 1);
-				if (skill != null)
-					player.removeSkill(skill);
-			}
+				player.removeSkill(removeSkillId3, false);
+			
 			player.sendSkillList();
 		}
 	}

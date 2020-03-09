@@ -17,9 +17,9 @@ import net.sf.l2j.commons.concurrent.ThreadPool;
 import net.sf.l2j.commons.random.Rnd;
 
 import net.sf.l2j.L2DatabaseFactory;
-import net.sf.l2j.gameserver.data.MapRegionTable;
-import net.sf.l2j.gameserver.data.NpcTable;
 import net.sf.l2j.gameserver.data.SpawnTable;
+import net.sf.l2j.gameserver.data.xml.MapRegionData;
+import net.sf.l2j.gameserver.data.xml.NpcData;
 import net.sf.l2j.gameserver.idfactory.IdFactory;
 import net.sf.l2j.gameserver.model.L2Spawn;
 import net.sf.l2j.gameserver.model.actor.Npc;
@@ -375,7 +375,7 @@ public class AutoSpawnManager
 				final int heading = locationList[locationIndex].getHeading();
 				
 				// Fetch the template for this NPC ID and create a new spawn.
-				NpcTemplate npcTemp = NpcTable.getInstance().getTemplate(spawnInst.getNpcId());
+				NpcTemplate npcTemp = NpcData.getInstance().getTemplate(spawnInst.getNpcId());
 				if (npcTemp == null)
 				{
 					_log.warning("Couldnt find npcId: " + spawnInst.getNpcId() + ".");
@@ -413,7 +413,7 @@ public class AutoSpawnManager
 				
 				// Announce to all players that the spawn has taken place, with the nearest town location.
 				if (npcInst != null && spawnInst.isBroadcasting())
-					Broadcast.announceToOnlinePlayers("The " + npcInst.getName() + " has spawned near " + MapRegionTable.getInstance().getClosestTownName(npcInst.getX(), npcInst.getY()) + "!");
+					Broadcast.announceToOnlinePlayers("The " + npcInst.getName() + " has spawned near " + MapRegionData.getInstance().getClosestTownName(npcInst.getX(), npcInst.getY()) + "!");
 				
 				// If there is no despawn time, do not create a despawn task.
 				if (spawnInst.getDespawnDelay() > 0)

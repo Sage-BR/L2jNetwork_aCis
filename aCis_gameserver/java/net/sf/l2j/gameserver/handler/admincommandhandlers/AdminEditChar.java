@@ -15,10 +15,11 @@ import net.sf.l2j.commons.lang.StringUtil;
 import net.sf.l2j.commons.math.MathUtil;
 
 import net.sf.l2j.L2DatabaseFactory;
-import net.sf.l2j.gameserver.data.CharTemplateTable;
-import net.sf.l2j.gameserver.data.PlayerNameTable;
+import net.sf.l2j.gameserver.data.manager.CastleManager;
+import net.sf.l2j.gameserver.data.sql.PlayerInfoTable;
+import net.sf.l2j.gameserver.data.xml.NpcData;
+import net.sf.l2j.gameserver.data.xml.PlayerData;
 import net.sf.l2j.gameserver.handler.IAdminCommandHandler;
-import net.sf.l2j.gameserver.instancemanager.CastleManager;
 import net.sf.l2j.gameserver.instancemanager.ClanHallManager;
 import net.sf.l2j.gameserver.model.World;
 import net.sf.l2j.gameserver.model.WorldObject;
@@ -101,7 +102,8 @@ public class AdminEditChar implements IAdminCommandHandler
 						onLineChange(activeChar, player, lvl);
 					else
 					{
-						try (Connection con = L2DatabaseFactory.getInstance().getConnection(); PreparedStatement ps = con.prepareStatement("UPDATE characters SET accesslevel=? WHERE char_name=?"))
+						try (Connection con = L2DatabaseFactory.getInstance().getConnection();
+							PreparedStatement ps = con.prepareStatement("UPDATE characters SET accesslevel=? WHERE char_name=?"))
 						{
 							ps.setInt(1, lvl);
 							ps.setString(2, name);
@@ -323,16 +325,31 @@ public class AdminEditChar implements IAdminCommandHandler
 				
 				if (target instanceof Player)
 				{
+					// Invalid pattern.
 					if (!StringUtil.isValidPlayerName(newName))
 					{
-						activeChar.sendMessage("The new name doesn't fit with the regex pattern.");
+						activeChar.sendPacket(SystemMessageId.INCORRECT_NAME_TRY_AGAIN);
+						return false;
+					}
+					
+					// Name is a npc name.
+					if (NpcData.getInstance().getTemplateByName(newName) != null)
+					{
+						activeChar.sendPacket(SystemMessageId.INCORRECT_NAME_TRY_AGAIN);
+						return false;
+					}
+					
+					// Name already exists.
+					if (PlayerInfoTable.getInstance().getPlayerObjectId(newName) > 0)
+					{
+						activeChar.sendPacket(SystemMessageId.INCORRECT_NAME_TRY_AGAIN);
 						return false;
 					}
 					
 					final Player player = (Player) target;
 					
 					player.setName(newName);
-					PlayerNameTable.getInstance().updatePlayerData(player, false);
+					PlayerInfoTable.getInstance().updatePlayerData(player, false);
 					player.sendMessage("Your name has been changed by a GM.");
 					player.broadcastUserInfo();
 					player.store();
@@ -728,7 +745,7 @@ public class AdminEditChar implements IAdminCommandHandler
 		html.replace("%class%", player.getTemplate().getClassName());
 		html.replace("%ordinal%", player.getClassId().ordinal());
 		html.replace("%classid%", player.getClassId().toString());
-		html.replace("%baseclass%", CharTemplateTable.getInstance().getClassNameById(player.getBaseClass()));
+		html.replace("%baseclass%", PlayerData.getInstance().getClassNameById(player.getBaseClass()));
 		html.replace("%x%", player.getX());
 		html.replace("%y%", player.getY());
 		html.replace("%z%", player.getZ());
@@ -917,12 +934,6 @@ public class AdminEditChar implements IAdminCommandHandler
 	 */
 	private static void findCharactersPerAccount(Player activeChar, String characterName)
 	{
-		if (!StringUtil.isValidPlayerName(characterName))
-		{
-			activeChar.sendMessage("Malformed character name.");
-			return;
-		}
-		
 		final Player player = World.getInstance().getPlayer(characterName);
 		if (player == null)
 		{

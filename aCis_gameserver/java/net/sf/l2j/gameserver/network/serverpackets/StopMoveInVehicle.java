@@ -13,7 +13,7 @@ public class StopMoveInVehicle extends L2GameServerPacket
 	{
 		_objectId = player.getObjectId();
 		_boatId = boatId;
-		_loc = player.getVehiclePosition();
+		_loc = player.getBoatPosition();
 	}
 	
 	@Override

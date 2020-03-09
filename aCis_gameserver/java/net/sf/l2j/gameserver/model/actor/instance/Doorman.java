@@ -2,7 +2,7 @@ package net.sf.l2j.gameserver.model.actor.instance;
 
 import java.util.StringTokenizer;
 
-import net.sf.l2j.gameserver.data.DoorTable;
+import net.sf.l2j.gameserver.data.xml.DoorData;
 import net.sf.l2j.gameserver.data.xml.TeleportLocationData;
 import net.sf.l2j.gameserver.model.actor.template.NpcTemplate;
 import net.sf.l2j.gameserver.model.location.TeleportLocation;
@@ -11,7 +11,11 @@ import net.sf.l2j.gameserver.network.serverpackets.ActionFailed;
 import net.sf.l2j.gameserver.network.serverpackets.NpcHtmlMessage;
 
 /**
- * L2Doormen is the mother class of L2ClanHallDoormen and L2CastleDoormen.
+ * An instance type extending {@link Folk}, used to open doors and teleport into specific locations. Used notably by Border Frontier captains, and Doorman (clan halls and castles).<br>
+ * <br>
+ * It has an active siege (false by default) and ownership (true by default) checks, which are overidden on children classes.<br>
+ * <br>
+ * It is the mother class of {@link ClanHallDoorman} and {@link CastleDoorman}.
  */
 public class Doorman extends Folk
 {
@@ -75,7 +79,7 @@ public class Doorman extends Folk
 		st.nextToken();
 		
 		while (st.hasMoreTokens())
-			DoorTable.getInstance().getDoor(Integer.parseInt(st.nextToken())).openMe();
+			DoorData.getInstance().getDoor(Integer.parseInt(st.nextToken())).openMe();
 	}
 	
 	protected void closeDoors(Player player, String command)
@@ -84,7 +88,7 @@ public class Doorman extends Folk
 		st.nextToken();
 		
 		while (st.hasMoreTokens())
-			DoorTable.getInstance().getDoor(Integer.parseInt(st.nextToken())).closeMe();
+			DoorData.getInstance().getDoor(Integer.parseInt(st.nextToken())).closeMe();
 	}
 	
 	protected void cannotManageDoors(Player player)

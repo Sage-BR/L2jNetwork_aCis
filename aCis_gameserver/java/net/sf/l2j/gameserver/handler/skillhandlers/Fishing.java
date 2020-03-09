@@ -3,22 +3,21 @@ package net.sf.l2j.gameserver.handler.skillhandlers;
 import net.sf.l2j.commons.math.MathUtil;
 import net.sf.l2j.commons.random.Rnd;
 
+import net.sf.l2j.gameserver.data.manager.ZoneManager;
 import net.sf.l2j.gameserver.geoengine.GeoEngine;
 import net.sf.l2j.gameserver.handler.ISkillHandler;
-import net.sf.l2j.gameserver.instancemanager.ZoneManager;
 import net.sf.l2j.gameserver.model.L2Skill;
 import net.sf.l2j.gameserver.model.WorldObject;
 import net.sf.l2j.gameserver.model.actor.Creature;
 import net.sf.l2j.gameserver.model.actor.instance.Player;
 import net.sf.l2j.gameserver.model.item.instance.ItemInstance;
-import net.sf.l2j.gameserver.model.item.kind.Weapon;
 import net.sf.l2j.gameserver.model.item.type.WeaponType;
 import net.sf.l2j.gameserver.model.itemcontainer.Inventory;
 import net.sf.l2j.gameserver.model.location.Location;
-import net.sf.l2j.gameserver.model.zone.L2ZoneType;
 import net.sf.l2j.gameserver.model.zone.ZoneId;
-import net.sf.l2j.gameserver.model.zone.type.L2FishingZone;
-import net.sf.l2j.gameserver.model.zone.type.L2WaterZone;
+import net.sf.l2j.gameserver.model.zone.ZoneType;
+import net.sf.l2j.gameserver.model.zone.type.FishingZone;
+import net.sf.l2j.gameserver.model.zone.type.WaterZone;
 import net.sf.l2j.gameserver.network.SystemMessageId;
 import net.sf.l2j.gameserver.network.serverpackets.InventoryUpdate;
 import net.sf.l2j.gameserver.templates.skills.L2SkillType;
@@ -49,9 +48,8 @@ public class Fishing implements ISkillHandler
 			return;
 		}
 		
-		// Fishing poles arent installed
-		Weapon weaponItem = player.getActiveWeaponItem();
-		if ((weaponItem == null || weaponItem.getItemType() != WeaponType.FISHINGROD))
+		// Fishing pole isn't equipped.
+		if (player.getAttackType() != WeaponType.FISHINGROD)
 		{
 			player.sendPacket(SystemMessageId.FISHING_POLE_NOT_EQUIPPED);
 			return;
@@ -109,19 +107,19 @@ public class Fishing implements ISkillHandler
 		/*
 		 * ...and if the spot is in a fishing zone. If it is, it will position the hook on the water surface. If not, you have to be GM to proceed past here... in that case, the hook will be positioned using the old Z lookup method.
 		 */
-		L2FishingZone aimingTo = null;
-		L2WaterZone water = null;
+		FishingZone aimingTo = null;
+		WaterZone water = null;
 		boolean canFish = false;
-		for (L2ZoneType zone : ZoneManager.getInstance().getZones(x, y))
+		for (ZoneType zone : ZoneManager.getInstance().getZones(x, y))
 		{
-			if (zone instanceof L2FishingZone)
+			if (zone instanceof FishingZone)
 			{
-				aimingTo = (L2FishingZone) zone;
+				aimingTo = (FishingZone) zone;
 				continue;
 			}
 			
-			if (zone instanceof L2WaterZone)
-				water = (L2WaterZone) zone;
+			if (zone instanceof WaterZone)
+				water = (WaterZone) zone;
 		}
 		
 		if (aimingTo != null)

@@ -29,7 +29,7 @@ public class ArmorSetData extends XMLDocument
 	protected void load()
 	{
 		loadDocument("./data/xml/armorSets.xml");
-		LOG.info("Loaded " + _armorSets.size() + " armor sets.");
+		LOGGER.info("Loaded {} armor sets.", _armorSets.size());
 	}
 	
 	@Override

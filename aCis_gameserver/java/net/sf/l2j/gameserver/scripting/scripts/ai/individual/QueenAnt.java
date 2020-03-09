@@ -8,7 +8,6 @@ import net.sf.l2j.commons.random.Rnd;
 import net.sf.l2j.Config;
 import net.sf.l2j.gameserver.data.SkillTable.FrequentSkill;
 import net.sf.l2j.gameserver.instancemanager.GrandBossManager;
-import net.sf.l2j.gameserver.instancemanager.ZoneManager;
 import net.sf.l2j.gameserver.model.L2Skill;
 import net.sf.l2j.gameserver.model.actor.Attackable;
 import net.sf.l2j.gameserver.model.actor.Npc;
@@ -18,7 +17,6 @@ import net.sf.l2j.gameserver.model.actor.instance.GrandBoss;
 import net.sf.l2j.gameserver.model.actor.instance.Monster;
 import net.sf.l2j.gameserver.model.actor.instance.Player;
 import net.sf.l2j.gameserver.model.holder.IntIntHolder;
-import net.sf.l2j.gameserver.model.zone.type.L2BossZone;
 import net.sf.l2j.gameserver.network.serverpackets.MagicSkillUse;
 import net.sf.l2j.gameserver.network.serverpackets.PlaySound;
 import net.sf.l2j.gameserver.network.serverpackets.SocialAction;
@@ -28,8 +26,6 @@ import net.sf.l2j.gameserver.templates.StatsSet;
 
 public class QueenAnt extends L2AttackableAIScript
 {
-	private static final L2BossZone AQ_LAIR = ZoneManager.getInstance().getZoneById(110012, L2BossZone.class);
-	
 	private static final int QUEEN = 29001;
 	private static final int LARVA = 29002;
 	private static final int NURSE = 29003;
@@ -90,12 +86,6 @@ public class QueenAnt extends L2AttackableAIScript
 			int heading = info.getInteger("heading");
 			int hp = info.getInteger("currentHP");
 			int mp = info.getInteger("currentMP");
-			if (!AQ_LAIR.isInsideZone(loc_x, loc_y, loc_z))
-			{
-				loc_x = QUEEN_X;
-				loc_y = QUEEN_Y;
-				loc_z = QUEEN_Z;
-			}
 			
 			GrandBoss queen = (GrandBoss) addSpawn(QUEEN, loc_x, loc_y, loc_z, heading, false, 0, false);
 			queen.setCurrentHpMp(hp, mp);
@@ -112,13 +102,6 @@ public class QueenAnt extends L2AttackableAIScript
 	
 	private void spawnBoss(GrandBoss npc)
 	{
-		if (Rnd.get(100) < 33)
-			AQ_LAIR.movePlayersTo(-19480, 187344, -5600);
-		else if (Rnd.get(100) < 50)
-			AQ_LAIR.movePlayersTo(-17928, 180912, -5520);
-		else
-			AQ_LAIR.movePlayersTo(-23808, 182368, -5600);
-		
 		GrandBossManager.getInstance().addBoss(npc);
 		startQuestTimer("action", 10000, npc, null, true);
 		startQuestTimer("heal", 1000, null, null, true);

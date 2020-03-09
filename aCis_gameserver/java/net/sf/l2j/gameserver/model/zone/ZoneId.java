@@ -1,9 +1,5 @@
 package net.sf.l2j.gameserver.model.zone;
 
-/**
- * Zone Ids.
- * @author Zoey76
- */
 public enum ZoneId
 {
 	PVP(0),
@@ -25,8 +21,8 @@ public enum ZoneId
 	CAST_ON_ARTIFACT(16),
 	NO_RESTART(17),
 	SCRIPT(18),
-	FLAG(19),
-	RANDOM_PVP_ZONE(20);
+	BOSS(19),
+	FLAG(20);
 	
 	private final int _id;
 	
@@ -40,8 +36,5 @@ public enum ZoneId
 		return _id;
 	}
 	
-	public static int getZoneCount()
-	{
-		return values().length;
-	}
+	public static final ZoneId[] VALUES = values();
 }

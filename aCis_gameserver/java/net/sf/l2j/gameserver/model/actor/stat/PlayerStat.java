@@ -5,7 +5,7 @@ import java.util.Map;
 import net.sf.l2j.commons.math.MathUtil;
 
 import net.sf.l2j.Config;
-import net.sf.l2j.gameserver.instancemanager.ZoneManager;
+import net.sf.l2j.gameserver.data.manager.ZoneManager;
 import net.sf.l2j.gameserver.model.L2Skill;
 import net.sf.l2j.gameserver.model.RewardInfo;
 import net.sf.l2j.gameserver.model.actor.Creature;
@@ -14,8 +14,9 @@ import net.sf.l2j.gameserver.model.actor.instance.Player;
 import net.sf.l2j.gameserver.model.base.Experience;
 import net.sf.l2j.gameserver.model.group.Party;
 import net.sf.l2j.gameserver.model.pledge.Clan;
+import net.sf.l2j.gameserver.model.pledge.ClanMember;
 import net.sf.l2j.gameserver.model.zone.ZoneId;
-import net.sf.l2j.gameserver.model.zone.type.L2SwampZone;
+import net.sf.l2j.gameserver.model.zone.type.SwampZone;
 import net.sf.l2j.gameserver.network.SystemMessageId;
 import net.sf.l2j.gameserver.network.serverpackets.PledgeShowMemberListUpdate;
 import net.sf.l2j.gameserver.network.serverpackets.SocialAction;
@@ -195,13 +196,16 @@ public class PlayerStat extends PlayableStat
 			getActiveChar().sendPacket(SystemMessageId.YOU_INCREASED_YOUR_LEVEL);
 		}
 		
-		// Give Expertise skill of this level
-		getActiveChar().rewardSkills();
+		// Refresh player skills (autoGet skills or all available skills if Config.AUTO_LEARN_SKILLS is activated).
+		getActiveChar().giveSkills();
 		
 		final Clan clan = getActiveChar().getClan();
 		if (clan != null)
 		{
-			clan.updateClanMember(getActiveChar());
+			final ClanMember member = clan.getClanMember(getActiveChar().getObjectId());
+			if (member != null)
+				member.refreshLevel();
+			
 			clan.broadcastToOnlineMembers(new PledgeShowMemberListUpdate(getActiveChar()));
 		}
 		
@@ -390,7 +394,7 @@ public class PlayerStat extends PlayableStat
 		// apply zone modifier before final calculation
 		if (getActiveChar().isInsideZone(ZoneId.SWAMP))
 		{
-			final L2SwampZone zone = ZoneManager.getInstance().getZone(getActiveChar(), L2SwampZone.class);
+			final SwampZone zone = ZoneManager.getInstance().getZone(getActiveChar(), SwampZone.class);
 			if (zone != null)
 				baseValue *= (100 + zone.getMoveBonus()) / 100.0;
 		}
@@ -425,11 +429,16 @@ public class PlayerStat extends PlayableStat
 	{
 		double base = 333;
 		
+		int val = super.getMAtkSpd();
+		
 		if (getActiveChar().isMounted())
 		{
 			if (getActiveChar().checkFoodState(getActiveChar().getPetTemplate().getHungryLimit()))
 				base /= 2;
 		}
+		
+		if (val > Config.MATK_SPEED)
+			return Config.MATK_SPEED;
 		
 		final int penalty = getActiveChar().getExpertiseArmorPenalty();
 		if (penalty > 0)
@@ -457,6 +466,8 @@ public class PlayerStat extends PlayableStat
 	@Override
 	public int getPAtkSpd()
 	{
+		int val = super.getPAtkSpd();
+		
 		if (getActiveChar().isMounted())
 		{
 			int base = getActiveChar().getPetDataEntry().getMountAtkSpd();
@@ -466,6 +477,9 @@ public class PlayerStat extends PlayableStat
 			
 			return (int) calcStat(Stats.POWER_ATTACK_SPEED, base, null, null);
 		}
+		
+		if (val > Config.PATK_SPEED)
+			return Config.PATK_SPEED;
 		
 		return super.getPAtkSpd();
 	}

@@ -34,7 +34,7 @@ public class SoulCrystalData extends XMLDocument
 	protected void load()
 	{
 		loadDocument("./data/xml/soulCrystals.xml");
-		LOG.info("Loaded " + _soulCrystals.size() + " Soul Crystals data and " + _levelingInfos.size() + " NPCs data.");
+		LOGGER.info("Loaded {} Soul Crystals data and {} NPCs data.", _soulCrystals.size(), _levelingInfos.size());
 	}
 	
 	@Override

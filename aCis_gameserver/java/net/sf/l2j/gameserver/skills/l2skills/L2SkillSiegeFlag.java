@@ -1,7 +1,7 @@
 package net.sf.l2j.gameserver.skills.l2skills;
 
+import net.sf.l2j.gameserver.data.manager.CastleManager;
 import net.sf.l2j.gameserver.idfactory.IdFactory;
-import net.sf.l2j.gameserver.instancemanager.CastleManager;
 import net.sf.l2j.gameserver.model.L2Skill;
 import net.sf.l2j.gameserver.model.WorldObject;
 import net.sf.l2j.gameserver.model.actor.Creature;
@@ -73,7 +73,7 @@ public class L2SkillSiegeFlag extends L2Skill
 	 */
 	public static boolean checkIfOkToPlaceFlag(Player player, boolean isCheckOnly)
 	{
-		final Siege siege = CastleManager.getInstance().getSiege(player);
+		final Siege siege = CastleManager.getInstance().getActiveSiege(player);
 		
 		SystemMessage sm;
 		if (siege == null || !siege.checkSide(player.getClan(), SiegeSide.ATTACKER))

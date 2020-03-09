@@ -2,21 +2,21 @@
 <list>
 	<!-- Castle HQ Zones -->
 	<!-- Gludio Casle HQ Zones -->
-	<zone type="HqZone" shape="NPoly" minZ="-4484" maxZ="3515"><!-- gludio_castle_headquarter_territory1 -->
+	<zone shape="NPoly" minZ="-4484" maxZ="3515"><!-- gludio_castle_headquarter_territory1 -->
 		<!-- headquarter_territory -->
 		<node X="-22052" Y="114025" />
 		<node X="-14221" Y="114007" />
 		<node X="-14197" Y="116558" />
 		<node X="-22032" Y="116566" />
 	</zone>
-	<zone type="HqZone" shape="NPoly" minZ="-4420" maxZ="3579"><!-- gludio_castle_headquarter_territory2 -->
+	<zone shape="NPoly" minZ="-4420" maxZ="3579"><!-- gludio_castle_headquarter_territory2 -->
 		<!-- headquarter_territory -->
 		<node X="-22030" Y="104809" />
 		<node X="-20270" Y="104817" />
 		<node X="-20266" Y="113735" />
 		<node X="-22031" Y="113732" />
 	</zone>
-	<zone type="HqZone" shape="NPoly" minZ="-4388" maxZ="3611"><!-- gludio_castle_headquarter_territory3 -->
+	<zone shape="NPoly" minZ="-4388" maxZ="3611"><!-- gludio_castle_headquarter_territory3 -->
 		<!-- headquarter_territory -->
 		<node X="-15554" Y="104834" />
 		<node X="-13917" Y="104839" />
@@ -24,21 +24,21 @@
 		<node X="-15554" Y="113757" />
 	</zone>
 	<!-- Dion Castle HQ Zones -->
-	<zone type="HqZone" shape="NPoly" minZ="-4678" maxZ="4000"><!-- dion_castle_headquarter_territory1 -->
+	<zone shape="NPoly" minZ="-4678" maxZ="4000"><!-- dion_castle_headquarter_territory1 -->
 		<!-- headquarter_territory -->
 		<node X="26012" Y="155725" />
 		<node X="18181" Y="155743" />
 		<node X="18157" Y="153192" />
 		<node X="25992" Y="153184" />
 	</zone>
-	<zone type="HqZone" shape="NPoly" minZ="-4614" maxZ="4000"><!-- dion_castle_headquarter_territory2 -->
+	<zone shape="NPoly" minZ="-4614" maxZ="4000"><!-- dion_castle_headquarter_territory2 -->
 		<!-- headquarter_territory -->
 		<node X="25990" Y="164941" />
 		<node X="24230" Y="164933" />
 		<node X="24226" Y="156015" />
 		<node X="25991" Y="156018" />
 	</zone>
-	<zone type="HqZone" shape="NPoly" minZ="-4582" maxZ="4000"><!-- dion_castle_headquarter_territory3 -->
+	<zone shape="NPoly" minZ="-4582" maxZ="4000"><!-- dion_castle_headquarter_territory3 -->
 		<!-- headquarter_territory -->
 		<node X="19514" Y="164916" />
 		<node X="17877" Y="164911" />
@@ -46,21 +46,21 @@
 		<node X="19514" Y="155993" />
 	</zone>
 	<!-- Giran Castle HQ Zones -->
-	<zone type="HqZone" shape="NPoly" minZ="-4551" maxZ="19899"><!-- giran_castle_headquarter_territory1 -->
+	<zone shape="NPoly" minZ="-4551" maxZ="19899"><!-- giran_castle_headquarter_territory1 -->
 		<!-- headquarter_territory -->
 		<node X="111897" Y="141157" />
 		<node X="111915" Y="148988" />
 		<node X="109364" Y="149012" />
 		<node X="109356" Y="141177" />
 	</zone>
-	<zone type="HqZone" shape="NPoly" minZ="-4487" maxZ="19963"><!-- giran_castle_headquarter_territory2 -->
+	<zone shape="NPoly" minZ="-4487" maxZ="19963"><!-- giran_castle_headquarter_territory2 -->
 		<!-- headquarter_territory -->
 		<node X="121113" Y="141179" />
 		<node X="121105" Y="142939" />
 		<node X="112187" Y="142943" />
 		<node X="112190" Y="141178" />
 	</zone>
-	<zone type="HqZone" shape="NPoly" minZ="-4455" maxZ="19995"><!-- giran_castle_headquarter_territory3 -->
+	<zone shape="NPoly" minZ="-4455" maxZ="19995"><!-- giran_castle_headquarter_territory3 -->
 		<!-- headquarter_territory -->
 		<node X="121088" Y="147655" />
 		<node X="121083" Y="149292" />
@@ -68,21 +68,21 @@
 		<node X="112165" Y="147655" />
 	</zone>
 	<!-- Oren Castle HQ Zones -->
-	<zone type="HqZone" shape="NPoly" minZ="-4278" maxZ="19899"><!-- oren_castle_headquarter_territory1 -->
+	<zone shape="NPoly" minZ="-4278" maxZ="19899"><!-- oren_castle_headquarter_territory1 -->
 		<!-- headquarter_territory -->
 		<node X="77973" Y="33252" />
 		<node X="77991" Y="41083" />
 		<node X="75440" Y="41107" />
 		<node X="75432" Y="33272" />
 	</zone>
-	<zone type="HqZone" shape="NPoly" minZ="-4214" maxZ="19963"><!-- oren_castle_headquarter_territory2 -->
+	<zone shape="NPoly" minZ="-4214" maxZ="19963"><!-- oren_castle_headquarter_territory2 -->
 		<!-- headquarter_territory -->
 		<node X="87189" Y="33274" />
 		<node X="87181" Y="35034" />
 		<node X="78263" Y="35038" />
 		<node X="78266" Y="33273" />
 	</zone>
-	<zone type="HqZone" shape="NPoly" minZ="-4182" maxZ="19995"><!-- oren_castle_headquarter_territory3 -->
+	<zone shape="NPoly" minZ="-4182" maxZ="19995"><!-- oren_castle_headquarter_territory3 -->
 		<!-- headquarter_territory -->
 		<node X="87164" Y="39750" />
 		<node X="87159" Y="41387" />
@@ -90,7 +90,7 @@
 		<node X="78241" Y="39750" />
 	</zone>
 	<!-- Aden Castle HQ Zones -->
-	<zone type="HqZone" shape="NPoly" minZ="-1158" maxZ="42"><!-- aden_castle_headquarter_territory -->
+	<zone shape="NPoly" minZ="-1158" maxZ="42"><!-- aden_castle_headquarter_territory -->
 		<!-- headquarter_territory -->
 		<node X="144365" Y="9902" />
 		<node X="150572" Y="9919" />
@@ -110,21 +110,21 @@
 		<node X="144053" Y="4830" />
 	</zone>
 	<!-- Innadril Castle HQ Zones -->
-	<zone type="HqZone" shape="NPoly" minZ="-2774" maxZ="4000"><!-- innadrile_castle_headquarter_territory1 -->
+	<zone shape="NPoly" minZ="-2774" maxZ="4000"><!-- innadrile_castle_headquarter_territory1 -->
 		<!-- headquarter_territory -->
 		<node X="119963" Y="244504" />
 		<node X="112132" Y="244522" />
 		<node X="112108" Y="241971" />
 		<node X="119943" Y="241963" />
 	</zone>
-	<zone type="HqZone" shape="NPoly" minZ="-2710" maxZ="4000"><!-- innadrile_castle_headquarter_territory2 -->
+	<zone shape="NPoly" minZ="-2710" maxZ="4000"><!-- innadrile_castle_headquarter_territory2 -->
 		<!-- headquarter_territory -->
 		<node X="119941" Y="253720" />
 		<node X="118181" Y="253712" />
 		<node X="118177" Y="244794" />
 		<node X="119942" Y="244797" />
 	</zone>
-	<zone type="HqZone" shape="NPoly" minZ="-2678" maxZ="4000"><!-- innadrile_castle_headquarter_territory3 -->
+	<zone shape="NPoly" minZ="-2678" maxZ="4000"><!-- innadrile_castle_headquarter_territory3 -->
 		<!-- headquarter_territory -->
 		<node X="113465" Y="253695" />
 		<node X="111828" Y="253690" />
@@ -132,7 +132,7 @@
 		<node X="113465" Y="244772" />
 	</zone>
 	<!-- Goddard Castle HQ Zones -->
-	<zone type="HqZone" shape="NPoly" minZ="-2625" maxZ="1875"><!-- goddard_castle_headquarter_territory -->
+	<zone shape="NPoly" minZ="-2625" maxZ="1875"><!-- goddard_castle_headquarter_territory -->
 		<!-- headquarter_territory -->
 		<node X="144715" Y="-43884" />
 		<node X="150045" Y="-43884" />
@@ -145,7 +145,7 @@
 		<node X="144692" Y="-42822" />
 	</zone>
 	<!-- Rune Castle HQ Zones -->
-	<zone type="HqZone" shape="NPoly" minZ="-1780" maxZ="-680"><!-- rune_castle_headquarter_territory -->
+	<zone shape="NPoly" minZ="-1780" maxZ="-680"><!-- rune_castle_headquarter_territory -->
 		<!-- headquarter_territory -->
 		<node X="26755" Y="-49171" />
 		<node X="22310" Y="-49171" />
@@ -161,7 +161,7 @@
 		<node X="26755" Y="-49082" />
 	</zone>
 	<!-- Schuttgart Castle HQ Zones -->
-	<zone type="HqZone" shape="NPoly" minZ="-3800" maxZ="1700"><!-- schuttgart_castle_headquarter_territory -->
+	<zone shape="NPoly" minZ="-3800" maxZ="1700"><!-- schuttgart_castle_headquarter_territory -->
 		<!-- headquarter_territory -->
 		<node X="74554" Y="-148009" />
 		<node X="80640" Y="-148009" />
@@ -173,26 +173,26 @@
 		<node X="74533" Y="-147618" />
 	</zone>
 	<!-- Clan Hall HQ Zones -->
-	<!-- zone name="partisan_agit001_headquarter_territory" type="HqZone" shape="NPoly" minZ="0" maxZ="0" -->
+	<!-- zone name="partisan_agit001_headquarter_territory" shape="NPoly" minZ="0" maxZ="0" -->
 		<!-- stat name="clanHallId" val="21" / -->
 	<!-- /zone -->
-	<!-- zone name="devastated_castle_headquarter_territory" type="HqZone" shape="NPoly" minZ="-2405" maxZ="595">
+	<!-- zone name="devastated_castle_headquarter_territory" shape="NPoly" minZ="-2405" maxZ="595">
 		<stat name="clanHallId" val="34" />
 		<node X="176740" Y="-13838" />
 		<node X="180040" Y="-13838" />
 		<node X="180040" Y="-13188" />
 		<node X="176740" Y="-13188" />
 	</zone -->
-	<!-- zone name="bandits'_stronghold_headquarter_territory" type="HqZone" shape="NPoly" minZ="0" maxZ="0" -->
+	<!-- zone name="bandits'_stronghold_headquarter_territory" shape="NPoly" minZ="0" maxZ="0" -->
 		<!-- stat name="clanHallId" val="35" / -->
 	<!-- /zone -->
-	<!-- zone name="rainbow_spring_headquarter_territory" type="HqZone" shape="NPoly" minZ="0" maxZ="0" -->
+	<!-- zone name="rainbow_spring_headquarter_territory" shape="NPoly" minZ="0" maxZ="0" -->
 		<!-- stat name="clanHallId" val="62" / -->
 	<!-- /zone -->
-	<!-- zone name="beast_farm_headquarter_territory" type="HqZone" shape="NPoly" minZ="0" maxZ="0" -->
+	<!-- zone name="beast_farm_headquarter_territory" shape="NPoly" minZ="0" maxZ="0" -->
 		<!-- stat name="clanHallId" val="63" / -->
 	<!-- /zone -->
-	<!-- zone name="fortress_of_dead_headquarter_territory" type="HqZone" shape="NPoly" minZ="-147" maxZ="1853">
+	<!-- zone name="fortress_of_dead_headquarter_territory" shape="NPoly" minZ="-147" maxZ="1853">
 		<stat name="clanHallId" val="64" />
 		<node X="57502" Y="-31651" />
 		<node X="58431" Y="-31607" />

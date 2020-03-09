@@ -147,13 +147,12 @@ public class ChanceSkillList extends ConcurrentHashMap<IChanceSkillTrigger, Chan
 				
 				Creature firstTarget = (Creature) targets[0];
 				
-				ISkillHandler handler = SkillHandler.getInstance().getSkillHandler(skill.getSkillType());
-				
 				_owner.broadcastPacket(new MagicSkillLaunched(_owner, skill.getId(), skill.getLevel(), targets));
 				_owner.broadcastPacket(new MagicSkillUse(_owner, firstTarget, skill.getId(), skill.getLevel(), 0, 0));
 				
 				// Launch the magic skill and calculate its effects
 				// TODO: once core will support all possible effects, use effects (not handler)
+				final ISkillHandler handler = SkillHandler.getInstance().getHandler(skill.getSkillType());
 				if (handler != null)
 					handler.useSkill(_owner, skill, targets);
 				else
@@ -191,7 +190,7 @@ public class ChanceSkillList extends ConcurrentHashMap<IChanceSkillTrigger, Chan
 			
 			Creature firstTarget = (Creature) targets[0];
 			
-			ISkillHandler handler = SkillHandler.getInstance().getSkillHandler(triggered.getSkillType());
+			ISkillHandler handler = SkillHandler.getInstance().getHandler(triggered.getSkillType());
 			
 			_owner.broadcastPacket(new MagicSkillLaunched(_owner, triggered.getId(), triggered.getLevel(), targets));
 			_owner.broadcastPacket(new MagicSkillUse(_owner, firstTarget, triggered.getId(), triggered.getLevel(), 0, 0));

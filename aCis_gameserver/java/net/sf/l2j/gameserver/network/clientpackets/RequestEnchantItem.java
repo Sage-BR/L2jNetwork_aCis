@@ -186,7 +186,7 @@ public final class RequestEnchantItem extends L2GameClientPacket
 						final L2Skill enchant4Skill = ((Weapon) it).getEnchant4Skill();
 						if (enchant4Skill != null)
 						{
-							activeChar.removeSkill(enchant4Skill, false);
+							activeChar.removeSkill(enchant4Skill.getId(), false);
 							activeChar.sendSkillList();
 						}
 					}
@@ -203,12 +203,8 @@ public final class RequestEnchantItem extends L2GameClientPacket
 								final int skillId = armorSet.getEnchant6skillId();
 								if (skillId > 0)
 								{
-									final L2Skill skill = SkillTable.getInstance().getInfo(skillId, 1);
-									if (skill != null)
-									{
-										activeChar.removeSkill(skill, false);
-										activeChar.sendSkillList();
-									}
+									activeChar.removeSkill(skillId, false);
+									activeChar.sendSkillList();
 								}
 							}
 						}

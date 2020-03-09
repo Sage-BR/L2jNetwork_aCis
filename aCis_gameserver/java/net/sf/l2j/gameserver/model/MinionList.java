@@ -7,7 +7,7 @@ import net.sf.l2j.commons.concurrent.ThreadPool;
 import net.sf.l2j.commons.random.Rnd;
 
 import net.sf.l2j.Config;
-import net.sf.l2j.gameserver.data.NpcTable;
+import net.sf.l2j.gameserver.data.xml.NpcData;
 import net.sf.l2j.gameserver.idfactory.IdFactory;
 import net.sf.l2j.gameserver.model.actor.Creature;
 import net.sf.l2j.gameserver.model.actor.instance.Monster;
@@ -104,7 +104,8 @@ public class MinionList
 		final int time = (_master.isRaid()) ? (int) Config.RAID_MINION_RESPAWN_TIMER : respawnTime;
 		if (time > 0 && !_master.isAlikeDead())
 		{
-			ThreadPool.schedule(() -> {
+			ThreadPool.schedule(() ->
+			{
 				if (!_master.isAlikeDead() && _master.isVisible())
 				{
 					// minion can be already spawned or deleted
@@ -193,7 +194,7 @@ public class MinionList
 	public static final Monster spawnMinion(Monster master, int minionId)
 	{
 		// Get the template of the Minion to spawn
-		NpcTemplate minionTemplate = NpcTable.getInstance().getTemplate(minionId);
+		NpcTemplate minionTemplate = NpcData.getInstance().getTemplate(minionId);
 		if (minionTemplate == null)
 			return null;
 		

@@ -14,7 +14,7 @@ import net.sf.l2j.gameserver.model.World;
 import net.sf.l2j.gameserver.model.actor.Creature;
 import net.sf.l2j.gameserver.model.actor.instance.Player;
 import net.sf.l2j.gameserver.model.location.Location;
-import net.sf.l2j.gameserver.model.zone.type.L2OlympiadStadiumZone;
+import net.sf.l2j.gameserver.model.zone.type.OlympiadStadiumZone;
 import net.sf.l2j.gameserver.network.SystemMessageId;
 import net.sf.l2j.gameserver.network.serverpackets.ExOlympiadUserInfo;
 import net.sf.l2j.gameserver.network.serverpackets.L2GameServerPacket;
@@ -111,7 +111,7 @@ abstract public class OlympiadGameNormal extends AbstractOlympiadGame
 	/**
 	 * Broadcasts olympiad info to participants and spectators on battle start.
 	 */
-	public final void broadcastOlympiadInfo(L2OlympiadStadiumZone stadium)
+	public final void broadcastOlympiadInfo(OlympiadStadiumZone stadium)
 	{
 		stadium.broadcastPacket(new ExOlympiadUserInfo(_playerOne.player));
 		_playerOne.player.updateEffectIcons();
@@ -304,7 +304,7 @@ abstract public class OlympiadGameNormal extends AbstractOlympiadGame
 	}
 	
 	@Override
-	protected void validateWinner(L2OlympiadStadiumZone stadium)
+	protected void validateWinner(OlympiadStadiumZone stadium)
 	{
 		if (_aborted)
 			return;

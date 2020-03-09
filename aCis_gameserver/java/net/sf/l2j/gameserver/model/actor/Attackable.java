@@ -15,8 +15,8 @@ import net.sf.l2j.commons.random.Rnd;
 
 import net.sf.l2j.Config;
 import net.sf.l2j.gameserver.data.ItemTable;
+import net.sf.l2j.gameserver.data.manager.CursedWeaponManager;
 import net.sf.l2j.gameserver.data.xml.HerbDropData;
-import net.sf.l2j.gameserver.instancemanager.CursedWeaponsManager;
 import net.sf.l2j.gameserver.model.AbsorbInfo;
 import net.sf.l2j.gameserver.model.AggroInfo;
 import net.sf.l2j.gameserver.model.L2Skill;
@@ -1074,7 +1074,7 @@ public class Attackable extends Npc
 		// level modifier in %'s (will be subtracted from drop chance)
 		int levelModifier = calculateLevelModifierForDrop(player);
 		
-		CursedWeaponsManager.getInstance().checkDrop(this, player);
+		CursedWeaponManager.getInstance().checkDrop(this, player);
 		
 		// now throw all categorized drops and handle spoil.
 		for (DropCategory cat : npcTemplate.getDropData())

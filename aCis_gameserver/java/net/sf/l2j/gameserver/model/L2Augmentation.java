@@ -118,7 +118,7 @@ public final class L2Augmentation
 				if (player.isInOlympiadMode() && !Config.ALT_OLY_SKILLS_ALLOW_APPLY_AUGMENT.contains(_skill.getId()))
 					return;
 			}
-			player.addSkill(_skill);
+			player.addSkill(_skill, false);
 			if (_skill.isActive())
 			{
 				if (player.getReuseTimeStamp().containsKey(_skill.getReuseHashCode()))
@@ -154,9 +154,7 @@ public final class L2Augmentation
 					return;
 			}
 			if (_skill.isPassive())
-				player.removeSkill(_skill, false, true);
-			else
-				player.removeSkill(_skill, false, false);
+				player.removeSkill(_skill.getId(), false, _skill.isPassive() || _skill.isToggle());
 			
 			player.sendSkillList();
 		}

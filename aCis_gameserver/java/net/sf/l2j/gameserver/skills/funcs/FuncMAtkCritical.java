@@ -18,7 +18,7 @@ public class FuncMAtkCritical extends Func
 	
 	private FuncMAtkCritical()
 	{
-		super(Stats.MCRITICAL_RATE, 0x30, null, null);
+		super(Stats.MCRITICAL_RATE, 0x09, null, null);
 	}
 	
 	@Override
@@ -32,5 +32,7 @@ public class FuncMAtkCritical extends Func
 		}
 		else
 			env.mulValue(Formulas.WIT_BONUS[player.getWIT()]);
+		
+		env.setBaseValue(env.getValue());
 	}
 }

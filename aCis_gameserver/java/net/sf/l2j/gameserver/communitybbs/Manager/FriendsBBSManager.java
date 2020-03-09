@@ -10,8 +10,8 @@ import java.util.logging.Level;
 import net.sf.l2j.commons.lang.StringUtil;
 
 import net.sf.l2j.L2DatabaseFactory;
-import net.sf.l2j.gameserver.cache.HtmCache;
-import net.sf.l2j.gameserver.data.PlayerNameTable;
+import net.sf.l2j.gameserver.data.cache.HtmCache;
+import net.sf.l2j.gameserver.data.sql.PlayerInfoTable;
 import net.sf.l2j.gameserver.model.BlockList;
 import net.sf.l2j.gameserver.model.World;
 import net.sf.l2j.gameserver.model.actor.instance.Player;
@@ -106,7 +106,7 @@ public class FriendsBBSManager extends BaseBBSManager
 						statement.execute();
 						statement.close();
 						
-						String name = PlayerNameTable.getInstance().getPlayerName(friendId);
+						String name = PlayerInfoTable.getInstance().getPlayerName(friendId);
 						
 						Player player = World.getInstance().getPlayer(friendId);
 						if (player != null)
@@ -209,7 +209,7 @@ public class FriendsBBSManager extends BaseBBSManager
 			if (slist.contains(id))
 				continue;
 			
-			final String friendName = PlayerNameTable.getInstance().getPlayerName(id);
+			final String friendName = PlayerInfoTable.getInstance().getPlayerName(id);
 			if (friendName == null)
 				continue;
 			
@@ -224,7 +224,7 @@ public class FriendsBBSManager extends BaseBBSManager
 		// Selected friendlist
 		for (Integer id : slist)
 		{
-			final String friendName = PlayerNameTable.getInstance().getPlayerName(id);
+			final String friendName = PlayerInfoTable.getInstance().getPlayerName(id);
 			if (friendName == null)
 				continue;
 			
@@ -257,7 +257,7 @@ public class FriendsBBSManager extends BaseBBSManager
 			if (slist.contains(id))
 				continue;
 			
-			final String blockName = PlayerNameTable.getInstance().getPlayerName(id);
+			final String blockName = PlayerInfoTable.getInstance().getPlayerName(id);
 			if (blockName == null)
 				continue;
 			
@@ -272,7 +272,7 @@ public class FriendsBBSManager extends BaseBBSManager
 		// Selected Blocklist
 		for (Integer id : slist)
 		{
-			final String blockName = PlayerNameTable.getInstance().getPlayerName(id);
+			final String blockName = PlayerInfoTable.getInstance().getPlayerName(id);
 			if (blockName == null)
 				continue;
 			
@@ -296,7 +296,7 @@ public class FriendsBBSManager extends BaseBBSManager
 		final StringBuilder sb = new StringBuilder();
 		for (int id : activeChar.getSelectedFriendList())
 		{
-			String friendName = PlayerNameTable.getInstance().getPlayerName(id);
+			String friendName = PlayerInfoTable.getInstance().getPlayerName(id);
 			if (friendName == null)
 				continue;
 			

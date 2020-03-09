@@ -1,7 +1,7 @@
 package net.sf.l2j.gameserver.network.serverpackets;
 
 import net.sf.l2j.Config;
-import net.sf.l2j.gameserver.instancemanager.CursedWeaponsManager;
+import net.sf.l2j.gameserver.data.manager.CursedWeaponManager;
 import net.sf.l2j.gameserver.model.WorldObject.PolyType;
 import net.sf.l2j.gameserver.model.actor.Summon;
 import net.sf.l2j.gameserver.model.actor.instance.Player;
@@ -261,7 +261,7 @@ public class UserInfo extends L2GameServerPacket
 		writeD(_activeChar.getAppearance().getTitleColor());
 		
 		if (_activeChar.isCursedWeaponEquipped())
-			writeD(CursedWeaponsManager.getInstance().getCurrentStage(_activeChar.getCursedWeaponEquippedId()) - 1);
+			writeD(CursedWeaponManager.getInstance().getCurrentStage(_activeChar.getCursedWeaponEquippedId()) - 1);
 		else
 			writeD(0x00);
 	}

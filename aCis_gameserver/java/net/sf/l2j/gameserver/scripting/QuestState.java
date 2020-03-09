@@ -11,7 +11,7 @@ import net.sf.l2j.commons.random.Rnd;
 
 import net.sf.l2j.Config;
 import net.sf.l2j.L2DatabaseFactory;
-import net.sf.l2j.gameserver.cache.HtmCache;
+import net.sf.l2j.gameserver.data.cache.HtmCache;
 import net.sf.l2j.gameserver.model.actor.instance.Player;
 import net.sf.l2j.gameserver.model.item.DropData;
 import net.sf.l2j.gameserver.model.item.instance.ItemInstance;
@@ -28,9 +28,6 @@ import net.sf.l2j.gameserver.network.serverpackets.TutorialEnableClientEvent;
 import net.sf.l2j.gameserver.network.serverpackets.TutorialShowHtml;
 import net.sf.l2j.gameserver.network.serverpackets.TutorialShowQuestionMark;
 
-/**
- * @author Luis Arias
- */
 public final class QuestState
 {
 	protected static final Logger _log = Logger.getLogger(Quest.class.getName());
@@ -792,11 +789,11 @@ public final class QuestState
 				
 				// Send sound.
 				sendSound = true;
-				
-				// Illimited needed count or current count being inferior to needed count means the state isn't reached.
-				if (neededCount <= 0 || ((currentCount + amount) < neededCount))
-					reached = false;
 			}
+			
+			// Illimited needed count or current count being inferior to needed count means the state isn't reached.
+			if (neededCount <= 0 || ((currentCount + amount) < neededCount))
+				reached = false;
 		}
 		
 		// Play the sound.

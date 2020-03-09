@@ -16,11 +16,11 @@ import net.sf.l2j.commons.random.Rnd;
 
 import net.sf.l2j.Config;
 import net.sf.l2j.L2DatabaseFactory;
-import net.sf.l2j.gameserver.data.MapRegionTable.TeleportType;
-import net.sf.l2j.gameserver.data.NpcTable;
-import net.sf.l2j.gameserver.data.PlayerNameTable;
 import net.sf.l2j.gameserver.data.SpawnTable;
 import net.sf.l2j.gameserver.data.sql.ClanTable;
+import net.sf.l2j.gameserver.data.sql.PlayerInfoTable;
+import net.sf.l2j.gameserver.data.xml.MapRegionData.TeleportType;
+import net.sf.l2j.gameserver.data.xml.NpcData;
 import net.sf.l2j.gameserver.instancemanager.SevenSigns.CabalType;
 import net.sf.l2j.gameserver.model.L2Spawn;
 import net.sf.l2j.gameserver.model.World;
@@ -35,7 +35,7 @@ import net.sf.l2j.gameserver.model.group.Party.MessageType;
 import net.sf.l2j.gameserver.model.item.instance.ItemInstance;
 import net.sf.l2j.gameserver.model.location.Location;
 import net.sf.l2j.gameserver.model.pledge.Clan;
-import net.sf.l2j.gameserver.model.zone.type.L2PeaceZone;
+import net.sf.l2j.gameserver.model.zone.type.PeaceZone;
 import net.sf.l2j.gameserver.network.SystemMessageId;
 import net.sf.l2j.gameserver.network.clientpackets.Say2;
 import net.sf.l2j.gameserver.network.serverpackets.CreatureSay;
@@ -79,7 +79,7 @@ public class SevenSignsFestival
 			return _maxLevel;
 		}
 		
-		public static final FestivalType VALUES[] = values();
+		public static final FestivalType[] VALUES = values();
 	}
 	
 	protected static final Logger _log = Logger.getLogger(SevenSignsFestival.class.getName());
@@ -3159,8 +3159,8 @@ public class SevenSignsFestival
 	protected List<Integer> _accumulatedBonuses = new ArrayList<>();
 	
 	boolean _noPartyRegister;
-	private List<L2PeaceZone> _dawnPeace;
-	private List<L2PeaceZone> _duskPeace;
+	private List<PeaceZone> _dawnPeace;
+	private List<PeaceZone> _duskPeace;
 	
 	protected Map<Integer, List<Integer>> _dawnFestivalParticipants = new HashMap<>();
 	protected Map<Integer, List<Integer>> _duskFestivalParticipants = new HashMap<>();
@@ -3764,7 +3764,7 @@ public class SevenSignsFestival
 			
 			final List<String> partyMembers = new ArrayList<>();
 			for (int partyMember : getPreviousParticipants(oracle, festivalId))
-				partyMembers.add(PlayerNameTable.getInstance().getPlayerName(partyMember));
+				partyMembers.add(PlayerInfoTable.getInstance().getPlayerName(partyMember));
 			
 			// Update the highest scores and party list.
 			set.set("date", String.valueOf(System.currentTimeMillis()));
@@ -3875,7 +3875,7 @@ public class SevenSignsFestival
 	 * @param zone : Zone to be added.
 	 * @param dawn : Is dawn zone.
 	 */
-	public void addPeaceZone(L2PeaceZone zone, boolean dawn)
+	public void addPeaceZone(PeaceZone zone, boolean dawn)
 	{
 		if (dawn)
 		{
@@ -3905,11 +3905,11 @@ public class SevenSignsFestival
 		final CreatureSay cs = new CreatureSay(0, Say2.SHOUT, senderName, message);
 		
 		if (_dawnPeace != null)
-			for (L2PeaceZone zone : _dawnPeace)
+			for (PeaceZone zone : _dawnPeace)
 				zone.broadcastPacket(cs);
 			
 		if (_duskPeace != null)
-			for (L2PeaceZone zone : _duskPeace)
+			for (PeaceZone zone : _duskPeace)
 				zone.broadcastPacket(cs);
 	}
 	
@@ -4249,7 +4249,7 @@ public class SevenSignsFestival
 				}
 			}
 			
-			NpcTemplate witchTemplate = NpcTable.getInstance().getTemplate(_witchSpawn._npcId);
+			NpcTemplate witchTemplate = NpcData.getInstance().getTemplate(_witchSpawn._npcId);
 			
 			// Spawn the festival witch for this arena
 			try
@@ -4359,7 +4359,7 @@ public class SevenSignsFestival
 					if (spawnType == 1 && isFestivalArcher(currSpawn._npcId))
 						continue;
 					
-					NpcTemplate npcTemplate = NpcTable.getInstance().getTemplate(currSpawn._npcId);
+					NpcTemplate npcTemplate = NpcData.getInstance().getTemplate(currSpawn._npcId);
 					
 					try
 					{

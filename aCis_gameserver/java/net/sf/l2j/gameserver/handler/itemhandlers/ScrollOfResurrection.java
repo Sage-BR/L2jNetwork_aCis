@@ -1,7 +1,7 @@
 package net.sf.l2j.gameserver.handler.itemhandlers;
 
+import net.sf.l2j.gameserver.data.manager.CastleManager;
 import net.sf.l2j.gameserver.handler.IItemHandler;
-import net.sf.l2j.gameserver.instancemanager.CastleManager;
 import net.sf.l2j.gameserver.model.L2Skill;
 import net.sf.l2j.gameserver.model.actor.Creature;
 import net.sf.l2j.gameserver.model.actor.Playable;
@@ -50,7 +50,7 @@ public class ScrollOfResurrection implements IItemHandler
 		final Player targetPlayer = target.getActingPlayer();
 		
 		// Check if target isn't in a active siege zone.
-		final Siege siege = CastleManager.getInstance().getSiege(targetPlayer);
+		final Siege siege = CastleManager.getInstance().getActiveSiege(targetPlayer);
 		if (siege != null)
 		{
 			activeChar.sendPacket(SystemMessageId.CANNOT_BE_RESURRECTED_DURING_SIEGE);

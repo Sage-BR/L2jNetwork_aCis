@@ -114,7 +114,7 @@ public class Announcement implements Runnable
 	
 	public static void VoteAnnouncements(String text)
 	{
-		CreatureSay cs = new CreatureSay(0, Say2.HERO_VOICE, "Vote System", "" + text);
+		CreatureSay cs = new CreatureSay(0, Say2.HERO_VOICE, "Info", "" + text);
 		for (Player player : World.getInstance().getPlayers())
 		{
 			if (player != null)

@@ -4,10 +4,6 @@ import net.sf.l2j.gameserver.model.actor.instance.Player;
 import net.sf.l2j.gameserver.model.pledge.Clan;
 import net.sf.l2j.gameserver.network.serverpackets.PledgePowerGradeList;
 
-/**
- * Format: (ch)
- * @author -Wooden-
- */
 public final class RequestPledgePowerGradeList extends L2GameClientPacket
 {
 	@Override
@@ -26,6 +22,6 @@ public final class RequestPledgePowerGradeList extends L2GameClientPacket
 		if (clan == null)
 			return;
 		
-		player.sendPacket(new PledgePowerGradeList(clan.getAllRankPrivs(), clan.getMembers()));
+		player.sendPacket(new PledgePowerGradeList(clan.getPriviledges().keySet(), clan.getMembers()));
 	}
 }

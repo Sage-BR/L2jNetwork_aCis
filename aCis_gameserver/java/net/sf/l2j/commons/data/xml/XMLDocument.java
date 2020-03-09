@@ -1,10 +1,10 @@
 package net.sf.l2j.commons.data.xml;
 
 import java.io.File;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.xml.parsers.DocumentBuilderFactory;
+
+import net.sf.l2j.commons.logging.CLogger;
 
 import net.sf.l2j.gameserver.templates.StatsSet;
 
@@ -13,11 +13,11 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
 /**
- * An XML document, relying on a static and single DocumentBuilderFactory.
+ * An XML document, relying on a static and single {@link DocumentBuilderFactory}.
  */
 public abstract class XMLDocument
 {
-	protected static final Logger LOG = Logger.getLogger(XMLDocument.class.getName());
+	protected static final CLogger LOGGER = new CLogger(XMLDocument.class.getName());
 	
 	private static final DocumentBuilderFactory BUILDER;
 	static
@@ -44,7 +44,7 @@ public abstract class XMLDocument
 	{
 		if (!file.exists())
 		{
-			LOG.severe("The following file or directory doesn't exist: " + file.getName());
+			LOGGER.error("The following file or directory doesn't exist: {}.", file.getName());
 			return;
 		}
 		
@@ -61,7 +61,7 @@ public abstract class XMLDocument
 			}
 			catch (Exception e)
 			{
-				LOG.log(Level.SEVERE, "Error loading XML file " + file.getName(), e);
+				LOGGER.error("Error loading XML file '{}'.", e, file.getName());
 			}
 		}
 	}

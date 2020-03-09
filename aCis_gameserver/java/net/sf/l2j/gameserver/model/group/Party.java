@@ -12,8 +12,8 @@ import net.sf.l2j.commons.random.Rnd;
 
 import net.sf.l2j.Config;
 import net.sf.l2j.gameserver.data.ItemTable;
+import net.sf.l2j.gameserver.data.manager.DuelManager;
 import net.sf.l2j.gameserver.instancemanager.DimensionalRiftManager;
-import net.sf.l2j.gameserver.instancemanager.DuelManager;
 import net.sf.l2j.gameserver.instancemanager.SevenSignsFestival;
 import net.sf.l2j.gameserver.model.BlockList;
 import net.sf.l2j.gameserver.model.RewardInfo;
@@ -69,7 +69,7 @@ public class Party extends AbstractGroup
 			return _smId;
 		}
 		
-		public static final LootRule VALUES[] = values();
+		public static final LootRule[] VALUES = values();
 	}
 	
 	private static final double[] BONUS_EXP_SP =
@@ -88,7 +88,7 @@ public class Party extends AbstractGroup
 	
 	private static final int PARTY_POSITION_BROADCAST = 12000;
 	
-	public final List<Player> _members = new CopyOnWriteArrayList<>();
+	private final List<Player> _members = new CopyOnWriteArrayList<>();
 	private final LootRule _lootRule;
 	
 	private boolean _pendingInvitation;
@@ -675,7 +675,8 @@ public class Party extends AbstractGroup
 			for (Player member : rewardedMembers)
 				sqLevelSum += (member.getLevel() * member.getLevel());
 			
-			final int partySize = rewardedMembers.size();
+			// Have to use range 1 to 9, since we -1 it : 0 can't be a good number (would lead to a IOOBE). Since 0 and 1 got same values, it's not a problem.
+			final int partySize = MathUtil.limit(rewardedMembers.size(), 1, 9);
 			
 			for (Player member : rewardedMembers)
 			{
@@ -685,8 +686,11 @@ public class Party extends AbstractGroup
 			}
 		}
 		
-		xpReward *= BONUS_EXP_SP[validMembers.size()] * Config.RATE_PARTY_XP;
-		spReward *= BONUS_EXP_SP[validMembers.size()] * Config.RATE_PARTY_SP;
+		// Since validMembers can also hold CommandChannel members, we have to restrict the value.
+		final double partyRate = BONUS_EXP_SP[Math.min(validMembers.size(), 9)];
+		
+		xpReward *= partyRate * Config.RATE_PARTY_XP;
+		spReward *= partyRate * Config.RATE_PARTY_SP;
 		
 		int sqLevelSum = 0;
 		for (Player member : validMembers)

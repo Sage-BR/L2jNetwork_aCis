@@ -4,7 +4,7 @@ import java.util.StringTokenizer;
 
 import net.sf.l2j.commons.concurrent.ThreadPool;
 
-import net.sf.l2j.gameserver.data.MapRegionTable;
+import net.sf.l2j.gameserver.data.xml.MapRegionData;
 import net.sf.l2j.gameserver.model.World;
 import net.sf.l2j.gameserver.model.actor.template.NpcTemplate;
 import net.sf.l2j.gameserver.network.serverpackets.NpcHtmlMessage;
@@ -83,11 +83,11 @@ public class CastleGatekeeper extends Folk
 			if (getCastle().getSiege().isInProgress())
 			{
 				final NpcSay cs = new NpcSay(getObjectId(), 1, getNpcId(), "The defenders of " + getCastle().getName() + " castle have been teleported to the inner castle.");
-				final int region = MapRegionTable.getInstance().getMapRegion(getX(), getY());
+				final int region = MapRegionData.getInstance().getMapRegion(getX(), getY());
 				
 				for (Player player : World.getInstance().getPlayers())
 				{
-					if (region == MapRegionTable.getInstance().getMapRegion(player.getX(), player.getY()))
+					if (region == MapRegionData.getInstance().getMapRegion(player.getX(), player.getY()))
 						player.sendPacket(cs);
 				}
 			}

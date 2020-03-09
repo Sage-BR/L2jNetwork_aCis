@@ -1,8 +1,8 @@
 package net.sf.l2j.gameserver.network.serverpackets;
 
 import net.sf.l2j.Config;
-import net.sf.l2j.gameserver.data.NpcTable;
-import net.sf.l2j.gameserver.instancemanager.CursedWeaponsManager;
+import net.sf.l2j.gameserver.data.manager.CursedWeaponManager;
+import net.sf.l2j.gameserver.data.xml.NpcData;
 import net.sf.l2j.gameserver.model.actor.instance.Player;
 import net.sf.l2j.gameserver.model.itemcontainer.Inventory;
 import net.sf.l2j.gameserver.model.location.Location;
@@ -108,8 +108,8 @@ public class CharInfo extends L2GameServerPacket
 		
 		if (_activeChar.getMountType() != 0)
 		{
-			writeF(NpcTable.getInstance().getTemplate(_activeChar.getMountNpcId()).getCollisionRadius());
-			writeF(NpcTable.getInstance().getTemplate(_activeChar.getMountNpcId()).getCollisionHeight());
+			writeF(NpcData.getInstance().getTemplate(_activeChar.getMountNpcId()).getCollisionRadius());
+			writeF(NpcData.getInstance().getTemplate(_activeChar.getMountNpcId()).getCollisionHeight());
 		}
 		else
 		{
@@ -202,7 +202,7 @@ public class CharInfo extends L2GameServerPacket
 		writeD(_activeChar.getAppearance().getTitleColor());
 		
 		if (_activeChar.isCursedWeaponEquipped())
-			writeD(CursedWeaponsManager.getInstance().getCurrentStage(_activeChar.getCursedWeaponEquippedId()) - 1);
+			writeD(CursedWeaponManager.getInstance().getCurrentStage(_activeChar.getCursedWeaponEquippedId()) - 1);
 		else
 			writeD(0x00);
 	}

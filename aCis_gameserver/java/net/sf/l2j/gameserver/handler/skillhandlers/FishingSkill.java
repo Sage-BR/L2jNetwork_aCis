@@ -8,7 +8,7 @@ import net.sf.l2j.gameserver.model.WorldObject;
 import net.sf.l2j.gameserver.model.actor.Creature;
 import net.sf.l2j.gameserver.model.actor.instance.Player;
 import net.sf.l2j.gameserver.model.item.instance.ItemInstance;
-import net.sf.l2j.gameserver.model.item.kind.Weapon;
+import net.sf.l2j.gameserver.model.item.type.WeaponType;
 import net.sf.l2j.gameserver.network.SystemMessageId;
 import net.sf.l2j.gameserver.network.serverpackets.ActionFailed;
 import net.sf.l2j.gameserver.templates.skills.L2SkillType;
@@ -38,14 +38,12 @@ public class FishingSkill implements ISkillHandler
 			return;
 		}
 		
-		final Weapon weaponItem = player.getActiveWeaponItem();
-		final ItemInstance weaponInst = activeChar.getActiveWeaponInstance();
-		
-		if (weaponInst == null || weaponItem == null)
+		final ItemInstance fishingRod = activeChar.getActiveWeaponInstance();
+		if (fishingRod == null || fishingRod.getItem().getItemType() != WeaponType.FISHINGROD)
 			return;
 		
 		final int ssBonus = (activeChar.isChargedShot(ShotType.FISH_SOULSHOT)) ? 2 : 1;
-		final double gradeBonus = 1 + weaponItem.getCrystalType().getId() * 0.1;
+		final double gradeBonus = 1 + fishingRod.getItem().getCrystalType().getId() * 0.1;
 		
 		int damage = (int) (skill.getPower() * gradeBonus * ssBonus);
 		int penalty = 0;
@@ -60,7 +58,7 @@ public class FishingSkill implements ISkillHandler
 		}
 		
 		if (ssBonus > 1)
-			weaponInst.setChargedShot(ShotType.FISH_SOULSHOT, false);
+			fishingRod.setChargedShot(ShotType.FISH_SOULSHOT, false);
 		
 		if (isReelingSkill)
 			fish.useRealing(damage, penalty);

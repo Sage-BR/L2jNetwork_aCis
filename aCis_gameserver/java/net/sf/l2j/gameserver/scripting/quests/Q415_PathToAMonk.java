@@ -291,8 +291,8 @@ public class Q415_PathToAMonk extends Quest
 		if (st == null)
 			return null;
 		
-		final WeaponType weapon = player.getActiveWeaponItem().getItemType();
-		if (!weapon.equals(WeaponType.DUALFIST) && !weapon.equals(WeaponType.FIST))
+		final WeaponType weapon = player.getAttackType();
+		if (weapon != WeaponType.DUALFIST && weapon != WeaponType.FIST)
 		{
 			st.playSound(QuestState.SOUND_GIVEUP);
 			st.exitQuest(true);

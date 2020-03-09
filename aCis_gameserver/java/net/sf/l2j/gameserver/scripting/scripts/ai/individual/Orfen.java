@@ -5,7 +5,6 @@ import net.sf.l2j.commons.random.Rnd;
 import net.sf.l2j.Config;
 import net.sf.l2j.gameserver.data.SkillTable;
 import net.sf.l2j.gameserver.instancemanager.GrandBossManager;
-import net.sf.l2j.gameserver.instancemanager.ZoneManager;
 import net.sf.l2j.gameserver.model.L2Skill;
 import net.sf.l2j.gameserver.model.L2Spawn;
 import net.sf.l2j.gameserver.model.WorldObject;
@@ -17,15 +16,13 @@ import net.sf.l2j.gameserver.model.actor.instance.GrandBoss;
 import net.sf.l2j.gameserver.model.actor.instance.Player;
 import net.sf.l2j.gameserver.model.location.Location;
 import net.sf.l2j.gameserver.model.location.SpawnLocation;
-import net.sf.l2j.gameserver.model.zone.type.L2BossZone;
+import net.sf.l2j.gameserver.model.zone.ZoneId;
 import net.sf.l2j.gameserver.network.serverpackets.PlaySound;
 import net.sf.l2j.gameserver.scripting.scripts.ai.L2AttackableAIScript;
 import net.sf.l2j.gameserver.templates.StatsSet;
 
 public class Orfen extends L2AttackableAIScript
 {
-	private static final L2BossZone ORFEN_LAIR = ZoneManager.getInstance().getZoneById(110013, L2BossZone.class);
-	
 	private static final SpawnLocation[] ORFEN_LOCATION =
 	{
 		new SpawnLocation(43728, 17220, -4342, 0),
@@ -138,7 +135,7 @@ public class Orfen extends L2AttackableAIScript
 				goTo(npc, ORFEN_LOCATION[_currentIndex]);
 			}
 			// Orfen already ported once and is lured out of her lair ; teleport her back.
-			else if (_isTeleported && !ORFEN_LAIR.isInsideZone(npc))
+			else if (_isTeleported && !npc.isInsideZone(ZoneId.SWAMP))
 				goTo(npc, ORFEN_LOCATION[0]);
 		}
 		return super.onAdvEvent(event, npc, player);

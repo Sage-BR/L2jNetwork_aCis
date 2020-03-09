@@ -2,15 +2,16 @@ package net.sf.l2j.gameserver.handler.admincommandhandlers;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.SQLException;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import net.sf.l2j.Config;
 import net.sf.l2j.L2DatabaseFactory;
 import net.sf.l2j.gameserver.LoginServerThread;
 import net.sf.l2j.gameserver.handler.IAdminCommandHandler;
 import net.sf.l2j.gameserver.model.World;
 import net.sf.l2j.gameserver.model.actor.instance.Player;
+import net.sf.l2j.gameserver.model.actor.instance.Player.PunishLevel;
 import net.sf.l2j.gameserver.network.SystemMessageId;
 
 /**
@@ -28,6 +29,13 @@ import net.sf.l2j.gameserver.network.SystemMessageId;
  */
 public class AdminBan implements IAdminCommandHandler
 {
+	private static final Logger LOG = Logger.getLogger(AdminBan.class.getName());
+	
+	private static final String UPDATE_BAN = "UPDATE characters SET punish_level=?, punish_timer=? WHERE char_name=?";
+	private static final String UPDATE_JAIL = "UPDATE characters SET x=-114356, y=-249645, z=-2984, punish_level=?, punish_timer=? WHERE char_name=?";
+	private static final String UPDATE_UNJAIL = "UPDATE characters SET x=17836, y=170178, z=-3507, punish_level=0, punish_timer=0 WHERE char_name=?";
+	private static final String UPDATE_ACCESS = "UPDATE characters SET accesslevel=? WHERE char_name=?";
+	
 	private static final String[] ADMIN_COMMANDS =
 	{
 		"admin_ban", // returns ban commands
@@ -99,14 +107,15 @@ public class AdminBan implements IAdminCommandHandler
 				activeChar.sendMessage("Usage: //ban_acc <account_name> (if none, target char's account gets banned).");
 				return false;
 			}
-			else if (targetPlayer == null)
+			
+			if (targetPlayer == null)
 			{
 				LoginServerThread.getInstance().sendAccessLevel(player, -100);
 				activeChar.sendMessage("Ban request sent for account " + player + ".");
 			}
 			else
 			{
-				targetPlayer.setPunishLevel(Player.PunishLevel.ACC, 0);
+				targetPlayer.setPunishLevel(PunishLevel.ACC, 0);
 				activeChar.sendMessage(targetPlayer.getAccountName() + " account is now banned.");
 			}
 		}
@@ -118,7 +127,7 @@ public class AdminBan implements IAdminCommandHandler
 				return false;
 			}
 			
-			return changeCharAccessLevel(targetPlayer, player, activeChar, -100);
+			return changeCharAccessLevel(targetPlayer, player, activeChar, -1);
 		}
 		else if (command.startsWith("admin_ban_chat"))
 		{
@@ -137,7 +146,7 @@ public class AdminBan implements IAdminCommandHandler
 				}
 				
 				String banLengthStr = "";
-				targetPlayer.setPunishLevel(Player.PunishLevel.CHAT, duration);
+				targetPlayer.setPunishLevel(PunishLevel.CHAT, duration);
 				
 				if (duration > 0)
 					banLengthStr = " for " + duration + " minutes";
@@ -159,7 +168,8 @@ public class AdminBan implements IAdminCommandHandler
 				activeChar.sendMessage(targetPlayer.getName() + " is currently online so mustn't be banned.");
 				return false;
 			}
-			else if (!player.equals(""))
+			
+			if (!player.equals(""))
 			{
 				LoginServerThread.getInstance().sendAccessLevel(player, 0);
 				activeChar.sendMessage("Unban request sent for account " + player + ".");
@@ -198,7 +208,7 @@ public class AdminBan implements IAdminCommandHandler
 			{
 				if (targetPlayer.isChatBanned())
 				{
-					targetPlayer.setPunishLevel(Player.PunishLevel.NONE, 0);
+					targetPlayer.setPunishLevel(PunishLevel.NONE, 0);
 					activeChar.sendMessage(targetPlayer.getName() + "'s chat ban has been lifted.");
 				}
 				else
@@ -217,8 +227,8 @@ public class AdminBan implements IAdminCommandHandler
 			
 			if (targetPlayer != null)
 			{
-				targetPlayer.setPunishLevel(Player.PunishLevel.JAIL, duration);
-				activeChar.sendMessage(targetPlayer.getName() + " have been jailed for " + (duration > 0 ? duration + " minutes." : "ever !"));
+				targetPlayer.setPunishLevel(PunishLevel.JAIL, duration);
+				activeChar.sendMessage(targetPlayer.getName() + " has been jailed for " + ((duration > 0) ? duration + " minutes." : "ever !"));
 			}
 			else
 				jailOfflinePlayer(activeChar, player, duration);
@@ -230,15 +240,22 @@ public class AdminBan implements IAdminCommandHandler
 				activeChar.sendMessage("Usage: //unjail <charname> (If no name is given target is used).");
 				return false;
 			}
-			else if (targetPlayer != null)
+			
+			if (targetPlayer != null)
 			{
-				targetPlayer.setPunishLevel(Player.PunishLevel.NONE, 0);
-				activeChar.sendMessage(targetPlayer.getName() + " have been unjailed.");
+				targetPlayer.setPunishLevel(PunishLevel.NONE, 0);
+				activeChar.sendMessage(targetPlayer.getName() + " has been unjailed.");
 			}
 			else
 				unjailOfflinePlayer(activeChar, player);
 		}
 		return true;
+	}
+	
+	@Override
+	public String[] getAdminCommandList()
+	{
+		return ADMIN_COMMANDS;
 	}
 	
 	private static void banChatOfflinePlayer(Player activeChar, String name, int delay, boolean ban)
@@ -248,94 +265,73 @@ public class AdminBan implements IAdminCommandHandler
 		
 		if (ban)
 		{
-			level = Player.PunishLevel.CHAT.value();
-			value = (delay > 0 ? delay * 60000L : 60000);
+			level = PunishLevel.CHAT.value();
+			value = ((delay > 0) ? delay * 60000L : 60000);
 		}
 		else
-		{
-			level = Player.PunishLevel.NONE.value();
-			value = 0;
-		}
+			level = PunishLevel.NONE.value();
 		
-		try (Connection con = L2DatabaseFactory.getInstance().getConnection())
+		try (Connection con = L2DatabaseFactory.getInstance().getConnection();
+			PreparedStatement ps = con.prepareStatement(UPDATE_BAN))
 		{
-			PreparedStatement statement = con.prepareStatement("UPDATE characters SET punish_level=?, punish_timer=? WHERE char_name=?");
-			statement.setInt(1, level);
-			statement.setLong(2, value);
-			statement.setString(3, name);
+			ps.setInt(1, level);
+			ps.setLong(2, value);
+			ps.setString(3, name);
+			ps.execute();
 			
-			statement.execute();
-			int count = statement.getUpdateCount();
-			statement.close();
-			
+			final int count = ps.getUpdateCount();
 			if (count == 0)
 				activeChar.sendMessage("Character isn't found.");
 			else if (ban)
-				activeChar.sendMessage(name + " is chat banned for " + (delay > 0 ? delay + " minutes." : "ever !"));
+				activeChar.sendMessage(name + " is chat banned for " + ((delay > 0) ? delay + " minutes." : "ever !"));
 			else
-				activeChar.sendMessage(name + "'s chat ban have been lifted.");
+				activeChar.sendMessage(name + "'s chat ban has been lifted.");
 		}
-		catch (SQLException se)
+		catch (Exception e)
 		{
-			activeChar.sendMessage("SQLException while chat-banning player");
-			if (Config.DEBUG)
-				se.printStackTrace();
+			LOG.log(Level.SEVERE, "AdminBan.banChatOfflinePlayer :" + e.getMessage(), e);
 		}
 	}
 	
 	private static void jailOfflinePlayer(Player activeChar, String name, int delay)
 	{
-		try (Connection con = L2DatabaseFactory.getInstance().getConnection())
+		try (Connection con = L2DatabaseFactory.getInstance().getConnection();
+			PreparedStatement ps = con.prepareStatement(UPDATE_JAIL))
 		{
-			PreparedStatement statement = con.prepareStatement("UPDATE characters SET x=?, y=?, z=?, punish_level=?, punish_timer=? WHERE char_name=?");
-			statement.setInt(1, -114356);
-			statement.setInt(2, -249645);
-			statement.setInt(3, -2984);
-			statement.setInt(4, Player.PunishLevel.JAIL.value());
-			statement.setLong(5, (delay > 0 ? delay * 60000L : 0));
-			statement.setString(6, name);
+			ps.setInt(1, PunishLevel.JAIL.value());
+			ps.setLong(2, ((delay > 0) ? delay * 60000L : 0));
+			ps.setString(3, name);
+			ps.execute();
 			
-			statement.execute();
-			int count = statement.getUpdateCount();
-			statement.close();
-			
+			final int count = ps.getUpdateCount();
 			if (count == 0)
 				activeChar.sendMessage("Character not found!");
 			else
-				activeChar.sendMessage(name + " have been jailed for " + (delay > 0 ? delay + " minutes." : "ever!"));
+				activeChar.sendMessage(name + " has been jailed for " + ((delay > 0) ? delay + " minutes." : "ever!"));
 		}
-		catch (SQLException se)
+		catch (Exception e)
 		{
-			activeChar.sendMessage("SQLException while jailing player");
-			if (Config.DEBUG)
-				se.printStackTrace();
+			LOG.log(Level.SEVERE, "AdminBan.jailOfflinePlayer :" + e.getMessage(), e);
 		}
 	}
 	
 	private static void unjailOfflinePlayer(Player activeChar, String name)
 	{
-		try (Connection con = L2DatabaseFactory.getInstance().getConnection())
+		try (Connection con = L2DatabaseFactory.getInstance().getConnection();
+			PreparedStatement ps = con.prepareStatement(UPDATE_UNJAIL))
 		{
-			PreparedStatement statement = con.prepareStatement("UPDATE characters SET x=?, y=?, z=?, punish_level=?, punish_timer=? WHERE char_name=?");
-			statement.setInt(1, 17836);
-			statement.setInt(2, 170178);
-			statement.setInt(3, -3507);
-			statement.setInt(4, 0);
-			statement.setLong(5, 0);
-			statement.setString(6, name);
-			statement.execute();
-			int count = statement.getUpdateCount();
-			statement.close();
+			ps.setString(1, name);
+			ps.execute();
+			
+			final int count = ps.getUpdateCount();
 			if (count == 0)
 				activeChar.sendMessage("Character isn't found.");
 			else
-				activeChar.sendMessage(name + " have been unjailed.");
+				activeChar.sendMessage(name + " has been unjailed.");
 		}
-		catch (SQLException se)
+		catch (Exception e)
 		{
-			activeChar.sendMessage("SQLException while jailing player");
-			if (Config.DEBUG)
-				se.printStackTrace();
+			LOG.log(Level.SEVERE, "AdminBan.unjailOfflinePlayer :" + e.getMessage(), e);
 		}
 	}
 	
@@ -349,15 +345,14 @@ public class AdminBan implements IAdminCommandHandler
 		}
 		else
 		{
-			try (Connection con = L2DatabaseFactory.getInstance().getConnection())
+			try (Connection con = L2DatabaseFactory.getInstance().getConnection();
+				PreparedStatement ps = con.prepareStatement(UPDATE_ACCESS))
 			{
-				PreparedStatement statement = con.prepareStatement("UPDATE characters SET accesslevel=? WHERE char_name=?");
-				statement.setInt(1, lvl);
-				statement.setString(2, player);
-				statement.execute();
-				int count = statement.getUpdateCount();
-				statement.close();
+				ps.setInt(1, lvl);
+				ps.setString(2, player);
+				ps.execute();
 				
+				final int count = ps.getUpdateCount();
 				if (count == 0)
 				{
 					activeChar.sendMessage("Character not found or access level unaltered.");
@@ -366,21 +361,12 @@ public class AdminBan implements IAdminCommandHandler
 				
 				activeChar.sendMessage(player + " now has an access level of " + lvl + ".");
 			}
-			catch (SQLException se)
+			catch (Exception e)
 			{
-				activeChar.sendMessage("SQLException while changing character's access level");
-				if (Config.DEBUG)
-					se.printStackTrace();
-				
+				LOG.log(Level.SEVERE, "AdminBan.changeCharAccessLevel :" + e.getMessage(), e);
 				return false;
 			}
 		}
 		return true;
-	}
-	
-	@Override
-	public String[] getAdminCommandList()
-	{
-		return ADMIN_COMMANDS;
 	}
 }

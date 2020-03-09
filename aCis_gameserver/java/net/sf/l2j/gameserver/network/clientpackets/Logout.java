@@ -1,7 +1,6 @@
 package net.sf.l2j.gameserver.network.clientpackets;
 
 import net.sf.l2j.gameserver.events.TvTEvent;
-import net.sf.l2j.gameserver.events.phoenixevents.EventManager;
 import net.sf.l2j.gameserver.instancemanager.SevenSignsFestival;
 import net.sf.l2j.gameserver.model.actor.instance.Player;
 import net.sf.l2j.gameserver.model.zone.ZoneId;
@@ -33,14 +32,6 @@ public final class Logout extends L2GameClientPacket
 		if (!TvTEvent.isInactive() && TvTEvent.isPlayerParticipant(player.getName()))
 		{
 			player.sendMessage("You can not leave the game while attending an event.");
-			player.sendPacket(ActionFailed.STATIC_PACKET);
-			return;
-		}
-		
-		if (EventManager.getInstance().isRegistered(player))
-		{
-			player.sendMessage("You cannot logout while you are a participant of an event.");
-			player.sendPacket(ActionFailed.STATIC_PACKET);
 			return;
 		}
 		
@@ -67,7 +58,6 @@ public final class Logout extends L2GameClientPacket
 		
 		player.removeFromBossZone();
 		AfkTaskManager.getInstance().remove(player);
-		player.setAutoCpMpHpSystem(false);
 		player.logout();
 	}
 }

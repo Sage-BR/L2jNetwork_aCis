@@ -17,8 +17,8 @@ import net.sf.l2j.commons.random.Rnd;
 
 import net.sf.l2j.Config;
 import net.sf.l2j.L2DatabaseFactory;
-import net.sf.l2j.gameserver.data.NpcTable;
 import net.sf.l2j.gameserver.data.SpawnTable;
+import net.sf.l2j.gameserver.data.xml.NpcData;
 import net.sf.l2j.gameserver.model.L2Spawn;
 import net.sf.l2j.gameserver.model.actor.instance.RaidBoss;
 import net.sf.l2j.gameserver.model.actor.template.NpcTemplate;
@@ -168,8 +168,6 @@ public class RaidBossSpawnManager
 			
 			if (!_schedules.containsKey(boss.getNpcId()))
 			{
-				if (Config.ANNOUNCE_DEAD_RB)
-					Broadcast.announceToOnlinePlayers("Raidboss " + boss.getName() + " is dead.", true);
 				_log.info("RaidBoss: " + boss.getName() + " - " + new SimpleDateFormat("dd-MM-yyyy HH:mm").format(respawnTime) + " (" + respawnDelay + "h).");
 				_respawns.put(boss.getNpcId(), Calendar.getInstance().getTimeInMillis() + (respawnDelay * 3600000L));
 				_schedules.put(boss.getNpcId(), ThreadPool.schedule(new spawnSchedule(boss.getNpcId()), respawnDelay * 3600000));
@@ -358,7 +356,7 @@ public class RaidBossSpawnManager
 	
 	public NpcTemplate getValidTemplate(int bossId)
 	{
-		NpcTemplate template = NpcTable.getInstance().getTemplate(bossId);
+		NpcTemplate template = NpcData.getInstance().getTemplate(bossId);
 		if (template == null)
 			return null;
 		

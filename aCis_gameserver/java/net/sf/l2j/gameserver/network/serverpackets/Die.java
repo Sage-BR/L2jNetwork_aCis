@@ -1,6 +1,6 @@
 package net.sf.l2j.gameserver.network.serverpackets;
 
-import net.sf.l2j.gameserver.instancemanager.CastleManager;
+import net.sf.l2j.gameserver.data.manager.CastleManager;
 import net.sf.l2j.gameserver.model.actor.Attackable;
 import net.sf.l2j.gameserver.model.actor.Creature;
 import net.sf.l2j.gameserver.model.actor.instance.Player;
@@ -54,7 +54,7 @@ public class Die extends L2GameServerPacket
 		{
 			SiegeSide side = null;
 			
-			final Siege siege = CastleManager.getInstance().getSiege(_activeChar);
+			final Siege siege = CastleManager.getInstance().getActiveSiege(_activeChar);
 			if (siege != null)
 				side = siege.getSide(_clan);
 			

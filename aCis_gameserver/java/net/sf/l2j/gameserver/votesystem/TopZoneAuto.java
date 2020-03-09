@@ -58,18 +58,16 @@ public class TopZoneAuto extends AutoVoteMain
 				if (topzone_votes != -1)
 				{
 					LOGGER.info("[TOPZONE] Votes: " + topzone_votes);
-					Announcement.VoteAnnouncements("Topzone -  Votes are " + topzone_votes + "...");
+					Announcement.VoteAnnouncements("Votes on Topzone are " + topzone_votes + ".");
 					
 					if (topzone_votes != 0 && topzone_votes >= getTopZoneVoteCount() + Config.VOTES_FOR_REWARD_TOP)
 					{
 						rewardPlayer();
-						Announcement.VoteAnnouncements("Topzone - Thanks For Voting..Players Rewarded!");
+						Announcement.VoteAnnouncements("Topzone: Thanks for voting. You have been rewarded!");
 					}
 					setTopZoneVoteCount(topzone_votes);
 				}
-				Announcement.VoteAnnouncements("Topzone - Next Reward at " + (getTopZoneVoteCount() + Config.VOTES_FOR_REWARD_TOP) + " Votes!!");
-				
-				Announcement.VoteAnnouncements("Website: " + Config.SERVER_WEB_SITE);
+				Announcement.VoteAnnouncements("Next Reward at " + (getTopZoneVoteCount() + Config.VOTES_FOR_REWARD_TOP) + " votes!");
 			}
 		}
 	}

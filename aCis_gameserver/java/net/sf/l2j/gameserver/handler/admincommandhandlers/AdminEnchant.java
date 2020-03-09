@@ -132,7 +132,7 @@ public class AdminEnchant implements IAdminCommandHandler
 						final L2Skill enchant4Skill = ((Weapon) it).getEnchant4Skill();
 						if (enchant4Skill != null)
 						{
-							player.removeSkill(enchant4Skill, false);
+							player.removeSkill(enchant4Skill.getId(), false);
 							player.sendSkillList();
 						}
 					}
@@ -163,12 +163,8 @@ public class AdminEnchant implements IAdminCommandHandler
 								final int skillId = armorSet.getEnchant6skillId();
 								if (skillId > 0)
 								{
-									final L2Skill skill = SkillTable.getInstance().getInfo(skillId, 1);
-									if (skill != null)
-									{
-										player.removeSkill(skill, false);
-										player.sendSkillList();
-									}
+									player.removeSkill(skillId, false);
+									player.sendSkillList();
 								}
 							}
 						}

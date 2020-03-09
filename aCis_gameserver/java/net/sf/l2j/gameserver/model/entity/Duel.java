@@ -7,7 +7,7 @@ import java.util.concurrent.Future;
 
 import net.sf.l2j.commons.concurrent.ThreadPool;
 
-import net.sf.l2j.gameserver.instancemanager.DuelManager;
+import net.sf.l2j.gameserver.data.manager.DuelManager;
 import net.sf.l2j.gameserver.model.L2Effect;
 import net.sf.l2j.gameserver.model.actor.Summon;
 import net.sf.l2j.gameserver.model.actor.ai.CtrlIntention;
@@ -62,12 +62,12 @@ public class Duel
 	protected Future<?> _checkTask = null;
 	protected int _countdown = 5;
 	
-	public Duel(Player playerA, Player playerB, int partyDuel, int duelId)
+	public Duel(Player playerA, Player playerB, boolean isPartyDuel, int duelId)
 	{
 		_duelId = duelId;
 		_playerA = playerA;
 		_playerB = playerB;
-		_partyDuel = (partyDuel == 1);
+		_partyDuel = isPartyDuel;
 		
 		_duelEndTime = Calendar.getInstance();
 		_duelEndTime.add(Calendar.SECOND, 120);

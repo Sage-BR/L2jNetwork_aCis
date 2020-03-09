@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <list>
 	<!-- Castle Zones -->
-	<zone type="CastleZone" shape="NPoly" minZ="-4452" maxZ="3547"><!-- gludio_castle -->
+	<zone shape="NPoly" minZ="-4452" maxZ="3547"><!-- gludio_castle -->
 		<stat name="castleId" val="1" />
 		<!-- residence_territory -->
 		<node X="-20060" Y="106912" />
@@ -19,7 +19,7 @@
 		<spawn X="-16659" Y="109261" Z="-1799" />
 		<spawn X="-16618" Y="109485" Z="-1799" />
 	</zone>
-	<zone type="CastleZone" shape="NPoly" minZ="-4646" maxZ="4000"><!-- dion_castle -->
+	<zone shape="NPoly" minZ="-4646" maxZ="4000"><!-- dion_castle -->
 		<stat name="castleId" val="2" />
 		<!-- residence_territory -->
 		<node X="24020" Y="162838" />
@@ -37,7 +37,7 @@
 		<spawn X="20619" Y="160489" Z="-1993" />
 		<spawn X="20578" Y="160265" Z="-1993" />
 	</zone>
-	<zone type="CastleZone" shape="NPoly" minZ="-4519" maxZ="19931"><!-- giran_castle -->
+	<zone shape="NPoly" minZ="-4519" maxZ="19931"><!-- giran_castle -->
 		<stat name="castleId" val="3" />
 		<!-- residence_territory -->
 		<node X="119010" Y="143149" />
@@ -55,7 +55,7 @@
 		<spawn X="116661" Y="146550" Z="-1866" />
 		<spawn X="116437" Y="146591" Z="-1866" />
 	</zone>
-	<zone type="CastleZone" shape="NPoly" minZ="-4246" maxZ="19931"><!-- oren_castle -->
+	<zone shape="NPoly" minZ="-4246" maxZ="19931"><!-- oren_castle -->
 		<stat name="castleId" val="4" />
 		<!-- residence_territory -->
 		<node X="85086" Y="35244" />
@@ -73,7 +73,7 @@
 		<spawn X="82737" Y="38645" Z="-1593" />
 		<spawn X="82513" Y="38686" Z="-1593" />
 	</zone>
-	<zone type="CastleZone" shape="NPoly" minZ="-3328" maxZ="6672"><!-- aden_castle -->
+	<zone shape="NPoly" minZ="-3328" maxZ="6672"><!-- aden_castle -->
 		<stat name="castleId" val="5" />
 		<!-- residence_territory -->
 		<node X="144599" Y="577" />
@@ -92,7 +92,7 @@
 		<spawn X="147200" Y="4350" Z="-2784" />
 		<spawn X="147705" Y="4350" Z="-2784" />
 	</zone>
-	<zone type="CastleZone" shape="NPoly" minZ="-2742" maxZ="4000"><!-- innadrile_castle -->
+	<zone shape="NPoly" minZ="-2742" maxZ="4000"><!-- innadrile_castle -->
 		<stat name="castleId" val="6" />
 		<!-- residence_territory -->
 		<node X="117971" Y="251617" />
@@ -110,7 +110,7 @@
 		<spawn X="114570" Y="249268" Z="-89" />
 		<spawn X="114529" Y="249044" Z="-89" />
 	</zone>
-	<zone type="CastleZone" shape="NPoly" minZ="-3670" maxZ="1830"><!-- goddard_castle -->
+	<zone shape="NPoly" minZ="-3670" maxZ="1830"><!-- goddard_castle -->
 		<stat name="castleId" val="7" />
 		<!-- residence_territory -->
 		<node X="144023" Y="-51298" />
@@ -140,7 +140,7 @@
 		<spawn X="147408" Y="-46896" Z="-963" />
 		<spawn X="147536" Y="-46896" Z="-963" />
 	</zone>
-	<zone type="CastleZone" shape="NPoly" minZ="-2200" maxZ="6000"><!-- rune_castle -->
+	<zone shape="NPoly" minZ="-2200" maxZ="6000"><!-- rune_castle -->
 		<stat name="castleId" val="8" />
 		<!-- residence_territory -->
 		<node X="7432" Y="-52472" />
@@ -165,7 +165,7 @@
 		<spawn X="10974" Y="-49244" Z="3890" />
 		<spawn X="10658" Y="-49211" Z="3890" />
 	</zone>
-	<zone type="CastleZone" shape="NPoly" minZ="-1934" maxZ="3566"><!-- schuttgart_castle -->
+	<zone shape="NPoly" minZ="-1934" maxZ="3566"><!-- schuttgart_castle -->
 		<stat name="castleId" val="9" />
 		<!-- residence_territory -->
 		<node X="74108" Y="-155352" />

@@ -8,7 +8,7 @@ import java.util.logging.Logger;
 import net.sf.l2j.commons.math.MathUtil;
 
 import net.sf.l2j.gameserver.data.ItemTable;
-import net.sf.l2j.gameserver.data.NpcTable;
+import net.sf.l2j.gameserver.data.xml.NpcData;
 import net.sf.l2j.gameserver.idfactory.IdFactory;
 import net.sf.l2j.gameserver.model.actor.Creature;
 import net.sf.l2j.gameserver.model.actor.Npc;
@@ -172,7 +172,7 @@ public abstract class WorldObject
 		
 		if (type == PolyType.NPC)
 		{
-			final NpcTemplate template = NpcTable.getInstance().getTemplate(id);
+			final NpcTemplate template = NpcData.getInstance().getTemplate(id);
 			if (template == null)
 				return false;
 			

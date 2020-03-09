@@ -7,8 +7,8 @@ import java.util.StringTokenizer;
 import net.sf.l2j.commons.lang.StringUtil;
 
 import net.sf.l2j.gameserver.data.ItemTable;
-import net.sf.l2j.gameserver.data.NpcTable;
 import net.sf.l2j.gameserver.data.manager.BuyListManager;
+import net.sf.l2j.gameserver.data.xml.NpcData;
 import net.sf.l2j.gameserver.handler.IAdminCommandHandler;
 import net.sf.l2j.gameserver.model.L2Skill;
 import net.sf.l2j.gameserver.model.actor.Npc;
@@ -116,7 +116,7 @@ public class AdminEditNpc implements IAdminCommandHandler
 		}
 		
 		final StringBuilder sb = new StringBuilder(500);
-		StringUtil.append(sb, "<html><body><center><font color=\"LEVEL\">", NpcTable.getInstance().getTemplate(buyList.getNpcId()).getName(), " (", buyList.getNpcId(), ") buylist id: ", buyList.getListId(), "</font></center><br><table width=\"100%\"><tr><td width=200>Item</td><td width=80>Price</td></tr>");
+		StringUtil.append(sb, "<html><body><center><font color=\"LEVEL\">", NpcData.getInstance().getTemplate(buyList.getNpcId()).getName(), " (", buyList.getNpcId(), ") buylist id: ", buyList.getListId(), "</font></center><br><table width=\"100%\"><tr><td width=200>Item</td><td width=80>Price</td></tr>");
 		
 		for (Product product : buyList.getProducts())
 			StringUtil.append(sb, "<tr><td>", product.getItem().getName(), "</td><td>", product.getPrice(), "</td></tr>");
@@ -162,7 +162,7 @@ public class AdminEditNpc implements IAdminCommandHandler
 	
 	private static void showNpcDropList(Player activeChar, int npcId, int page)
 	{
-		final NpcTemplate npcData = NpcTable.getInstance().getTemplate(npcId);
+		final NpcTemplate npcData = NpcData.getInstance().getTemplate(npcId);
 		if (npcData == null)
 		{
 			activeChar.sendMessage("Npc template is unknown for id: " + npcId + ".");
@@ -243,7 +243,7 @@ public class AdminEditNpc implements IAdminCommandHandler
 	
 	private static void showNpcSkillList(Player activeChar, int npcId)
 	{
-		final NpcTemplate npcData = NpcTable.getInstance().getTemplate(npcId);
+		final NpcTemplate npcData = NpcData.getInstance().getTemplate(npcId);
 		if (npcData == null)
 		{
 			activeChar.sendMessage("Npc template is unknown for id: " + npcId + ".");
@@ -282,7 +282,7 @@ public class AdminEditNpc implements IAdminCommandHandler
 	
 	private static void showScriptsList(Player activeChar, int npcId)
 	{
-		final NpcTemplate npcData = NpcTable.getInstance().getTemplate(npcId);
+		final NpcTemplate npcData = NpcData.getInstance().getTemplate(npcId);
 		if (npcData == null)
 		{
 			activeChar.sendMessage("Npc template is unknown for id: " + npcId + ".");

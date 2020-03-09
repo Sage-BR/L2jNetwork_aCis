@@ -32,8 +32,7 @@ public class Heal implements ISkillHandler
 	@Override
 	public void useSkill(Creature activeChar, L2Skill skill, WorldObject[] targets)
 	{
-		// check for other effects
-		final ISkillHandler handler = SkillHandler.getInstance().getSkillHandler(L2SkillType.BUFF);
+		final ISkillHandler handler = SkillHandler.getInstance().getHandler(L2SkillType.BUFF);
 		if (handler != null)
 			handler.useSkill(activeChar, skill, targets);
 		

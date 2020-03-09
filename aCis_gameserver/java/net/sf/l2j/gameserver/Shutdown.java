@@ -8,20 +8,18 @@ import net.sf.l2j.commons.lang.StringUtil;
 
 import net.sf.l2j.Config;
 import net.sf.l2j.L2DatabaseFactory;
-import net.sf.l2j.gameserver.data.BufferTable;
+import net.sf.l2j.gameserver.data.manager.BufferManager;
+import net.sf.l2j.gameserver.data.manager.CastleManorManager;
+import net.sf.l2j.gameserver.data.manager.CoupleManager;
+import net.sf.l2j.gameserver.data.manager.FishingChampionshipManager;
+import net.sf.l2j.gameserver.data.manager.ZoneManager;
 import net.sf.l2j.gameserver.data.sql.ServerMemoTable;
 import net.sf.l2j.gameserver.datatables.OfflineStoresData;
-import net.sf.l2j.gameserver.events.phoenixevents.EventBuffer;
-import net.sf.l2j.gameserver.events.phoenixevents.EventManager;
-import net.sf.l2j.gameserver.instancemanager.CastleManorManager;
-import net.sf.l2j.gameserver.instancemanager.CoupleManager;
-import net.sf.l2j.gameserver.instancemanager.FishingChampionshipManager;
 import net.sf.l2j.gameserver.instancemanager.FourSepulchersManager;
 import net.sf.l2j.gameserver.instancemanager.GrandBossManager;
 import net.sf.l2j.gameserver.instancemanager.RaidBossSpawnManager;
 import net.sf.l2j.gameserver.instancemanager.SevenSigns;
 import net.sf.l2j.gameserver.instancemanager.SevenSignsFestival;
-import net.sf.l2j.gameserver.instancemanager.ZoneManager;
 import net.sf.l2j.gameserver.model.World;
 import net.sf.l2j.gameserver.model.actor.instance.Player;
 import net.sf.l2j.gameserver.model.entity.Hero;
@@ -32,7 +30,6 @@ import net.sf.l2j.gameserver.network.gameserverpackets.ServerStatus;
 import net.sf.l2j.gameserver.network.serverpackets.ServerClose;
 import net.sf.l2j.gameserver.network.serverpackets.SystemMessage;
 import net.sf.l2j.gameserver.taskmanager.ItemsOnGroundTaskManager;
-import net.sf.l2j.gameserver.taskmanager.MovementTaskManager;
 import net.sf.l2j.gameserver.util.Broadcast;
 
 /**
@@ -125,15 +122,6 @@ public class Shutdown extends Thread
 			{
 			}
 			
-			// ensure all services are stopped
-			try
-			{
-				MovementTaskManager.getInstance().interrupt();
-			}
-			catch (Throwable t)
-			{
-			}
-			
 			// stop all threadpolls
 			ThreadPool.shutdown();
 			
@@ -185,7 +173,7 @@ public class Shutdown extends Thread
 			_log.info("Fishing Championship data has been saved.");
 			
 			// Schemes save.
-			BufferTable.getInstance().saveSchemes();
+			BufferManager.getInstance().saveSchemes();
 			_log.info("BufferTable data has been saved.");
 			
 			// Couples save.
@@ -201,9 +189,6 @@ public class Shutdown extends Thread
 			
 			// Save items on ground before closing
 			ItemsOnGroundTaskManager.getInstance().save();
-			
-			if (EventManager.getInstance().getBoolean("eventBufferEnabled"))
-				EventBuffer.getInstance().updateSQL();
 			
 			try
 			{

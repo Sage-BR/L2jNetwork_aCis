@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <list>
 	<!-- Elven Mother Tree Zones -->
-	<zone type="MotherTreeZone" shape="NPoly" minZ="-3550" maxZ="-3350"><!-- mother_tree_start_zone -->
+	<zone shape="NPoly" minZ="-3550" maxZ="-3350"><!-- mother_tree_start_zone -->
 		<stat name="HpRegenBonus" val="2" />
 		<stat name="MpRegenBonus" val="1" />
 		<stat name="affectedRace" val="1" /> <!-- Elf -->
@@ -25,7 +25,7 @@
 		<node X="47108" Y="41599" />
 		<node X="46531" Y="41868" />
 	</zone>
-	<zone type="MotherTreeZone" shape="NPoly" minZ="-3121" maxZ="-2921"><!-- mother_tree_town -->
+	<zone shape="NPoly" minZ="-3121" maxZ="-2921"><!-- mother_tree_town -->
 		<stat name="HpRegenBonus" val="2" />
 		<stat name="MpRegenBonus" val="1" />
 		<stat name="affectedRace" val="1" /> <!-- Elf -->
@@ -50,7 +50,7 @@
 		<node X="45498" Y="49893" />
 		<node X="45366" Y="49914" />
 	</zone>
-	<zone type="MotherTreeZone" shape="NPoly" minZ="-3745" maxZ="-3545"><!-- 20_19_worldtree -->
+	<zone shape="NPoly" minZ="-3745" maxZ="-3545"><!-- 20_19_worldtree -->
 		<stat name="HpRegenBonus" val="2" />
 		<stat name="MpRegenBonus" val="1" />
 		<stat name="affectedRace" val="1" /> <!-- Elf -->
@@ -65,7 +65,7 @@
 		<node X="20627" Y="51121" />
 		<node X="20728" Y="50743" />
 	</zone>
-	<zone type="MotherTreeZone" shape="NPoly" minZ="-3260" maxZ="-3060"><!-- 20_20_worldtree -->
+	<zone shape="NPoly" minZ="-3260" maxZ="-3060"><!-- 20_20_worldtree -->
 		<stat name="HpRegenBonus" val="2" />
 		<stat name="MpRegenBonus" val="1" />
 		<stat name="affectedRace" val="1" /> <!-- Elf -->
@@ -80,7 +80,7 @@
 		<node X="24816" Y="81012" />
 		<node X="25248" Y="80944" />
 	</zone>
-	<zone type="MotherTreeZone" shape="NPoly" minZ="-3775" maxZ="-3575"><!-- 21_20_worldtree -->
+	<zone shape="NPoly" minZ="-3775" maxZ="-3575"><!-- 21_20_worldtree -->
 		<stat name="HpRegenBonus" val="2" />
 		<stat name="MpRegenBonus" val="1" />
 		<stat name="affectedRace" val="1" /> <!-- Elf -->
@@ -96,7 +96,7 @@
 		<node X="57404" Y="85785" />
 	</zone>
 	<!-- Oracle of Dusk (Mp Regen Zones) -->
-	<zone type="MotherTreeZone" shape="NPoly" minZ="-5168" maxZ="-4968"><!-- ssq_main_event_17_20_01 -->
+	<zone shape="NPoly" minZ="-5168" maxZ="-4968"><!-- ssq_main_event_17_20_01 -->
 		<stat name="MpRegenBonus" val="2" />
 		<stat name="enterMsgId" val="1054" />
 		<stat name="leaveMsgId" val="1055" />
@@ -107,7 +107,7 @@
 		<node X="-80080" Y="84772" />
 		<node X="-80076" Y="84620" />
 	</zone>
-	<zone type="MotherTreeZone" shape="NPoly" minZ="-5164" maxZ="-4964"><!-- ssq_main_event_17_20_04 -->
+	<zone shape="NPoly" minZ="-5164" maxZ="-4964"><!-- ssq_main_event_17_20_04 -->
 		<stat name="MpRegenBonus" val="2" />
 		<stat name="enterMsgId" val="1054" />
 		<stat name="leaveMsgId" val="1055" />
@@ -118,7 +118,7 @@
 		<node X="-77068" Y="85376" />
 		<node X="-77068" Y="85236" />
 	</zone>
-	<zone type="MotherTreeZone" shape="NPoly" minZ="-5164" maxZ="-4964"><!-- ssq_main_event_17_20_05 -->
+	<zone shape="NPoly" minZ="-5164" maxZ="-4964"><!-- ssq_main_event_17_20_05 -->
 		<stat name="MpRegenBonus" val="3" />
 		<stat name="enterMsgId" val="1054" />
 		<stat name="leaveMsgId" val="1055" />
@@ -129,7 +129,7 @@
 		<node X="-74924" Y="87260" />
 		<node X="-75000" Y="87140" />
 	</zone>
-	<zone type="MotherTreeZone" shape="NPoly" minZ="-5176" maxZ="-4976"><!-- ssq_main_event_17_20_03 -->
+	<zone shape="NPoly" minZ="-5176" maxZ="-4976"><!-- ssq_main_event_17_20_03 -->
 		<stat name="MpRegenBonus" val="3" />
 		<stat name="enterMsgId" val="1054" />
 		<stat name="leaveMsgId" val="1055" />
@@ -140,7 +140,7 @@
 		<node X="-77328" Y="89044" />
 		<node X="-77328" Y="88892" />
 	</zone>
-	<zone type="MotherTreeZone" shape="NPoly" minZ="-5172" maxZ="-4972"><!-- ssq_main_event_17_20_02 -->
+	<zone shape="NPoly" minZ="-5172" maxZ="-4972"><!-- ssq_main_event_17_20_02 -->
 		<stat name="MpRegenBonus" val="4" />
 		<stat name="enterMsgId" val="1054" />
 		<stat name="leaveMsgId" val="1055" />
@@ -152,7 +152,7 @@
 		<node X="-80328" Y="88292" />
 	</zone>
 	<!-- Oracle of Dawn (Mp Regen Zones) -->
-	<zone type="MotherTreeZone" shape="NPoly" minZ="-4916" maxZ="-4716"><!-- ssq_main_event_17_21_01 -->
+	<zone shape="NPoly" minZ="-4916" maxZ="-4716"><!-- ssq_main_event_17_21_01 -->
 		<stat name="MpRegenBonus" val="2" />
 		<stat name="enterMsgId" val="1054" />
 		<stat name="leaveMsgId" val="1055" />
@@ -163,7 +163,7 @@
 		<node X="-79056" Y="109456" />
 		<node X="-78932" Y="109380" />
 	</zone>
-	<zone type="MotherTreeZone" shape="NPoly" minZ="-4908" maxZ="-4708"><!-- ssq_main_event_17_21_02 -->
+	<zone shape="NPoly" minZ="-4908" maxZ="-4708"><!-- ssq_main_event_17_21_02 -->
 		<stat name="MpRegenBonus" val="2" />
 		<stat name="enterMsgId" val="1054" />
 		<stat name="leaveMsgId" val="1055" />
@@ -174,7 +174,7 @@
 		<node X="-76048" Y="110212" />
 		<node X="-76044" Y="110068" />
 	</zone>
-	<zone type="MotherTreeZone" shape="NPoly" minZ="-4916" maxZ="-4716"><!-- ssq_main_event_17_21_05 -->
+	<zone shape="NPoly" minZ="-4916" maxZ="-4716"><!-- ssq_main_event_17_21_05 -->
 		<stat name="MpRegenBonus" val="3" />
 		<stat name="enterMsgId" val="1054" />
 		<stat name="leaveMsgId" val="1055" />
@@ -185,7 +185,7 @@
 		<node X="-73904" Y="112092" />
 		<node X="-73976" Y="111968" />
 	</zone>
-	<zone type="MotherTreeZone" shape="NPoly" minZ="-4912" maxZ="-4712"><!-- ssq_main_event_17_21_03 -->
+	<zone shape="NPoly" minZ="-4912" maxZ="-4712"><!-- ssq_main_event_17_21_03 -->
 		<stat name="MpRegenBonus" val="3" />
 		<stat name="enterMsgId" val="1054" />
 		<stat name="leaveMsgId" val="1055" />
@@ -196,7 +196,7 @@
 		<node X="-76308" Y="113876" />
 		<node X="-76304" Y="113728" />
 	</zone>
-	<zone type="MotherTreeZone" shape="NPoly" minZ="-4908" maxZ="-4708"><!-- ssq_main_event_17_21_04 -->
+	<zone shape="NPoly" minZ="-4908" maxZ="-4708"><!-- ssq_main_event_17_21_04 -->
 		<stat name="MpRegenBonus" val="4" />
 		<stat name="enterMsgId" val="1054" />
 		<stat name="leaveMsgId" val="1055" />
@@ -209,7 +209,7 @@
 	</zone>
 	<!-- Devil Isle Zones -->
 	<!-- Recovery -->
-	<zone type="MotherTreeZone" shape="NPoly" minZ="-3913" maxZ="-3413"><!-- devil_healing_zone -->
+	<zone shape="NPoly" minZ="-3913" maxZ="-3413"><!-- devil_healing_zone -->
 		<stat name="HpRegenBonus" val="2" />
 		<stat name="MpRegenBonus" val="1" />
 		<stat name="enterMsgId" val="1054" />

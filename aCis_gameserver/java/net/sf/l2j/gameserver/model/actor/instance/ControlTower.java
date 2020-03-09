@@ -3,7 +3,7 @@ package net.sf.l2j.gameserver.model.actor.instance;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.sf.l2j.gameserver.data.NpcTable;
+import net.sf.l2j.gameserver.data.xml.NpcData;
 import net.sf.l2j.gameserver.geoengine.GeoEngine;
 import net.sf.l2j.gameserver.model.L2Spawn;
 import net.sf.l2j.gameserver.model.actor.Creature;
@@ -63,6 +63,10 @@ public class ControlTower extends Npc
 			}
 			else
 			{
+				// Stop moving if we're already in interact range.
+				if (player.isMoving() || player.isInCombat())
+					player.getAI().setIntention(CtrlIntention.IDLE);
+				
 				// Rotate the player to face the instance
 				player.sendPacket(new MoveToPawn(player, this, Npc.INTERACTION_DISTANCE));
 				
@@ -89,12 +93,12 @@ public class ControlTower extends Npc
 				
 				// If siege life controls reach 0, broadcast a message to defenders.
 				if (siege.getControlTowerCount() == 0)
-					siege.announceToPlayer(SystemMessage.getSystemMessage(SystemMessageId.TOWER_DESTROYED_NO_RESURRECTION), false);
+					siege.announceToPlayers(SystemMessage.getSystemMessage(SystemMessageId.TOWER_DESTROYED_NO_RESURRECTION), false);
 				
 				// Spawn a little version of it. This version is a simple NPC, cleaned on siege end.
 				try
 				{
-					final L2Spawn spawn = new L2Spawn(NpcTable.getInstance().getTemplate(13003));
+					final L2Spawn spawn = new L2Spawn(NpcData.getInstance().getTemplate(13003));
 					spawn.setLoc(getPosition());
 					
 					final Npc tower = spawn.doSpawn(false);

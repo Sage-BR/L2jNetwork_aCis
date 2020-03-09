@@ -61,17 +61,16 @@ public class HopZoneAuto extends AutoVoteMain
 				{
 					LOGGER.info("[HOPZONE] Votes: " + hopzone_votes);
 					
-					Announcement.VoteAnnouncements("Hopzone - Votes are " + hopzone_votes + "...");
+					Announcement.VoteAnnouncements("Votes on Hopzone are " + hopzone_votes + ".");
 					
 					if (hopzone_votes != 0 && hopzone_votes >= getHopZoneVoteCount() + Config.VOTES_FOR_REWARD_HOP)
 					{
 						rewardPlayer();
-						Announcement.VoteAnnouncements("Hopzone - Thanks For Voting..Players Rewarded!");
+						Announcement.VoteAnnouncements("Hopzone: Thanks for voting. You have been rewarded!");
 					}
 					setHopZoneVoteCount(hopzone_votes);
 				}
-				Announcement.VoteAnnouncements("Hopzone - Next Reward at " + (getHopZoneVoteCount() + Config.VOTES_FOR_REWARD_HOP) + " Votes!!");
-				Announcement.VoteAnnouncements("Website: " + Config.SERVER_WEB_SITE);
+				Announcement.VoteAnnouncements("Next Reward at " + (getHopZoneVoteCount() + Config.VOTES_FOR_REWARD_HOP) + " votes!");
 			}
 		}
 	}

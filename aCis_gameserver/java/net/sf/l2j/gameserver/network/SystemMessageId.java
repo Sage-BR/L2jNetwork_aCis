@@ -3958,7 +3958,7 @@ public final class SystemMessageId
 	 * ID: 707<br>
 	 * Message: You cannot teleport to a village that is in a siege.
 	 */
-	public static final SystemMessageId NO_PORT_THAT_IS_IN_SIGE;
+	public static final SystemMessageId CANNOT_PORT_VILLAGE_IN_SIEGE;
 	
 	/**
 	 * ID: 708<br>
@@ -12459,7 +12459,7 @@ public final class SystemMessageId
 		GM_S1 = new SystemMessageId(704);
 		CANNOT_EXCLUDE_SELF = new SystemMessageId(705);
 		ONLY_64_NAMES_ON_EXCLUDE_LIST = new SystemMessageId(706);
-		NO_PORT_THAT_IS_IN_SIGE = new SystemMessageId(707);
+		CANNOT_PORT_VILLAGE_IN_SIEGE = new SystemMessageId(707);
 		YOU_DO_NOT_HAVE_THE_RIGHT_TO_USE_CASTLE_WAREHOUSE = new SystemMessageId(708);
 		YOU_DO_NOT_HAVE_THE_RIGHT_TO_USE_CLAN_WAREHOUSE = new SystemMessageId(709);
 		ONLY_LEVEL_1_CLAN_OR_HIGHER_CAN_USE_WAREHOUSE = new SystemMessageId(710);

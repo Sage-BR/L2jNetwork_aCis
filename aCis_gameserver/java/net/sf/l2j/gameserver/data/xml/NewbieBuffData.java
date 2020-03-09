@@ -34,7 +34,7 @@ public class NewbieBuffData extends XMLDocument
 	protected void load()
 	{
 		loadDocument("./data/xml/newbieBuffs.xml");
-		LOG.info("Loaded " + _buffs.size() + " newbie buffs.");
+		LOGGER.info("Loaded {} newbie buffs.", _buffs.size());
 	}
 	
 	@Override

@@ -4,8 +4,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import net.sf.l2j.Config;
-import net.sf.l2j.gameserver.data.CharTemplateTable;
 import net.sf.l2j.gameserver.data.SkillTable;
+import net.sf.l2j.gameserver.data.xml.PlayerData;
 import net.sf.l2j.gameserver.model.L2Skill;
 import net.sf.l2j.gameserver.model.actor.Npc;
 import net.sf.l2j.gameserver.model.actor.template.NpcTemplate;
@@ -61,7 +61,7 @@ public class NewbieNpc extends Npc
 			{
 				final NpcHtmlMessage html = new NpcHtmlMessage(getObjectId());
 				html.setFile("data/html/classmaster/ok.htm");
-				html.replace("%name%", CharTemplateTable.getInstance().getClassNameById(val));
+				html.replace("%name%", PlayerData.getInstance().getClassNameById(val));
 				player.sendPacket(html);
 			}
 		}

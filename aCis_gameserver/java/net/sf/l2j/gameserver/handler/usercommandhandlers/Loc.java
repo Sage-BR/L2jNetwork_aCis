@@ -1,6 +1,6 @@
 package net.sf.l2j.gameserver.handler.usercommandhandlers;
 
-import net.sf.l2j.gameserver.data.MapRegionTable;
+import net.sf.l2j.gameserver.data.xml.MapRegionData;
 import net.sf.l2j.gameserver.handler.IUserCommandHandler;
 import net.sf.l2j.gameserver.model.actor.instance.Player;
 import net.sf.l2j.gameserver.network.SystemMessageId;
@@ -18,7 +18,7 @@ public class Loc implements IUserCommandHandler
 	{
 		SystemMessageId msg;
 		
-		switch (MapRegionTable.getInstance().getMapRegion(activeChar.getX(), activeChar.getY()))
+		switch (MapRegionData.getInstance().getMapRegion(activeChar.getX(), activeChar.getY()))
 		{
 			case 0:
 				msg = SystemMessageId.LOC_TI_S1_S2_S3;

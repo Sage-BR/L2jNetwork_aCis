@@ -1,12 +1,12 @@
 package net.sf.l2j.gameserver.util;
 
-import net.sf.l2j.gameserver.instancemanager.ZoneManager;
+import net.sf.l2j.gameserver.data.manager.ZoneManager;
 import net.sf.l2j.gameserver.model.World;
 import net.sf.l2j.gameserver.model.WorldObject;
 import net.sf.l2j.gameserver.model.WorldRegion;
 import net.sf.l2j.gameserver.model.actor.Creature;
 import net.sf.l2j.gameserver.model.actor.instance.Player;
-import net.sf.l2j.gameserver.model.zone.L2ZoneType;
+import net.sf.l2j.gameserver.model.zone.ZoneType;
 import net.sf.l2j.gameserver.network.clientpackets.Say2;
 import net.sf.l2j.gameserver.network.serverpackets.CreatureSay;
 import net.sf.l2j.gameserver.network.serverpackets.L2GameServerPacket;
@@ -123,9 +123,9 @@ public final class Broadcast
 	 * @param zoneType : The zone type to send packets.
 	 * @param packets : The packets to send.
 	 */
-	public static <T extends L2ZoneType> void toAllPlayersInZoneType(Class<T> zoneType, L2GameServerPacket... packets)
+	public static <T extends ZoneType> void toAllPlayersInZoneType(Class<T> zoneType, L2GameServerPacket... packets)
 	{
-		for (L2ZoneType temp : ZoneManager.getInstance().getAllZones(zoneType))
+		for (ZoneType temp : ZoneManager.getInstance().getAllZones(zoneType))
 		{
 			for (Player player : temp.getKnownTypeInside(Player.class))
 			{

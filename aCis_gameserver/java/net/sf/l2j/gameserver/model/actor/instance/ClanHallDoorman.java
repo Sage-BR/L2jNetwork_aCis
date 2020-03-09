@@ -8,6 +8,11 @@ import net.sf.l2j.gameserver.model.pledge.Clan;
 import net.sf.l2j.gameserver.network.serverpackets.ActionFailed;
 import net.sf.l2j.gameserver.network.serverpackets.NpcHtmlMessage;
 
+/**
+ * An instance type extending {@link Doorman}, used by clan hall doorman. The clan hall is linked during NPC spawn, based on distance.<br>
+ * <br>
+ * isOwnerClan() checks if the user is part of clan owning the clan hall.
+ */
 public class ClanHallDoorman extends Doorman
 {
 	private ClanHall _clanHall;

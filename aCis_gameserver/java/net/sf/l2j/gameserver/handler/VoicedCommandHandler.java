@@ -19,11 +19,11 @@ import java.util.Map;
 
 import net.sf.l2j.gameserver.handler.voicedcommandhandlers.AioMenu;
 import net.sf.l2j.gameserver.handler.voicedcommandhandlers.BankingCommand;
-import net.sf.l2j.gameserver.handler.voicedcommandhandlers.EventJoin;
 import net.sf.l2j.gameserver.handler.voicedcommandhandlers.GrandBossStatus;
 import net.sf.l2j.gameserver.handler.voicedcommandhandlers.Menu;
 import net.sf.l2j.gameserver.handler.voicedcommandhandlers.OfflineShop;
 import net.sf.l2j.gameserver.handler.voicedcommandhandlers.Online;
+import net.sf.l2j.gameserver.handler.voicedcommandhandlers.PvPZoneExit;
 import net.sf.l2j.gameserver.handler.voicedcommandhandlers.Repair;
 import net.sf.l2j.gameserver.handler.voicedcommandhandlers.Secure;
 import net.sf.l2j.gameserver.handler.voicedcommandhandlers.TvTEventCommand;
@@ -48,10 +48,10 @@ public class VoicedCommandHandler
 		registerHandler(new Menu());
 		registerHandler(new GrandBossStatus());
 		registerHandler(new Secure());
-		registerHandler(new EventJoin());
 		registerHandler(new Repair());
 		registerHandler(new AioMenu());
 		registerHandler(new OfflineShop());
+		registerHandler(new PvPZoneExit());
 	}
 	
 	public void registerHandler(IVoicedCommandHandler handler)

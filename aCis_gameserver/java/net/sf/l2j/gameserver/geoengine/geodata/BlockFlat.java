@@ -4,9 +4,6 @@ import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-/**
- * @author Hasha
- */
 public class BlockFlat extends ABlock
 {
 	protected final short _height;

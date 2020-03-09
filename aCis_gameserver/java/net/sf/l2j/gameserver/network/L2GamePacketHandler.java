@@ -486,9 +486,6 @@ public final class L2GamePacketHandler implements IPacketHandler<L2GameClient>, 
 					// break;
 					case 0x9d:
 						// RequestSkillCoolTime
-						/*
-						 * if (Config.DEBUG) _log.info("Request Skill Cool Time .. ignored"); msg = null;
-						 */
 						break;
 					case 0x9e:
 						msg = new RequestPackageSendableItemList();

@@ -33,6 +33,7 @@ public enum Stats
 	SHIELD_RATE("rShld"),
 	
 	CRITICAL_DAMAGE("cAtk"),
+	CRITICAL_DAMAGE_POS("cAtkPos"),
 	CRITICAL_DAMAGE_ADD("cAtkAdd"),
 	
 	PVP_PHYSICAL_DMG("pvpPhysDmg"),

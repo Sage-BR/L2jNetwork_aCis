@@ -15,7 +15,7 @@ import net.sf.l2j.gameserver.data.sql.ClanTable;
 import net.sf.l2j.gameserver.model.entity.Auction;
 import net.sf.l2j.gameserver.model.entity.ClanHall;
 import net.sf.l2j.gameserver.model.pledge.Clan;
-import net.sf.l2j.gameserver.model.zone.type.L2ClanHallZone;
+import net.sf.l2j.gameserver.model.zone.type.ClanHallZone;
 
 /**
  * @author Steuf
@@ -194,7 +194,7 @@ public class ClanHallManager
 	
 	public final ClanHall getNearbyClanHall(int x, int y, int maxDist)
 	{
-		L2ClanHallZone zone = null;
+		ClanHallZone zone = null;
 		
 		for (Map.Entry<Integer, ClanHall> ch : _clanHall.entrySet())
 		{

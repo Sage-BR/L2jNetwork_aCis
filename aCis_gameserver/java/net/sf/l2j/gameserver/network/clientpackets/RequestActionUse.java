@@ -88,43 +88,43 @@ public final class RequestActionUse extends L2GameClientPacket
 	@Override
 	protected void runImpl()
 	{
-		final Player activeChar = getClient().getActiveChar();
-		if (activeChar == null)
+		final Player player = getClient().getActiveChar();
+		if (player == null)
 			return;
 		
 		// Dont do anything if player is dead, or use fakedeath using another action than sit.
-		if ((activeChar.isFakeDeath() && _actionId != 0) || activeChar.isDead() || activeChar.isOutOfControl())
+		if ((player.isFakeDeath() && _actionId != 0) || player.isDead() || player.isOutOfControl())
 		{
-			activeChar.sendPacket(ActionFailed.STATIC_PACKET);
+			player.sendPacket(ActionFailed.STATIC_PACKET);
 			return;
 		}
 		
-		final Summon pet = activeChar.getPet();
-		final WorldObject target = activeChar.getTarget();
+		final Summon pet = player.getPet();
+		final WorldObject target = player.getTarget();
 		
 		switch (_actionId)
 		{
 			case 0:
-				activeChar.tryToSitOrStand(target, activeChar.isSitting());
+				player.tryToSitOrStand(target, player.isSitting());
 				break;
 			
 			case 1:
 				// Player is mounted, do not allow to change movement type.
-				if (activeChar.isMounted())
+				if (player.isMounted())
 					return;
 				
-				if (activeChar.isRunning())
-					activeChar.setWalking();
+				if (player.isRunning())
+					player.setWalking();
 				else
-					activeChar.setRunning();
+					player.setRunning();
 				break;
 			
 			case 10: // Private Store - Sell
-				activeChar.tryOpenPrivateSellStore(false);
+				player.tryOpenPrivateSellStore(false);
 				break;
 			
 			case 28: // Private Store - Buy
-				activeChar.tryOpenPrivateBuyStore();
+				player.tryOpenPrivateBuyStore();
 				break;
 			
 			case 15:
@@ -133,12 +133,12 @@ public final class RequestActionUse extends L2GameClientPacket
 					return;
 				
 				// You can't order anymore your pet to stop if distance is superior to 2000.
-				if (pet.getFollowStatus() && MathUtil.calculateDistance(activeChar, pet, true) > 2000)
+				if (pet.getFollowStatus() && MathUtil.calculateDistance(player, pet, true) > 2000)
 					return;
 				
 				if (pet.isOutOfControl())
 				{
-					activeChar.sendPacket(SystemMessageId.PET_REFUSING_ORDER);
+					player.sendPacket(SystemMessageId.PET_REFUSING_ORDER);
 					return;
 				}
 				
@@ -147,7 +147,7 @@ public final class RequestActionUse extends L2GameClientPacket
 			
 			case 16:
 			case 22: // Attack (pet attack)
-				if (!(target instanceof Creature) || pet == null || pet == target || activeChar == target)
+				if (!(target instanceof Creature) || pet == null || pet == target || player == target)
 					return;
 				
 				// Sin eater, Big Boom, Wyvern can't attack with attack button.
@@ -156,7 +156,7 @@ public final class RequestActionUse extends L2GameClientPacket
 				
 				if (pet.isOutOfControl())
 				{
-					activeChar.sendPacket(SystemMessageId.PET_REFUSING_ORDER);
+					player.sendPacket(SystemMessageId.PET_REFUSING_ORDER);
 					return;
 				}
 				
@@ -168,29 +168,29 @@ public final class RequestActionUse extends L2GameClientPacket
 					pet.getAI().setIntention(CtrlIntention.ATTACK, target);
 				}
 				
-				if (pet instanceof Pet && (pet.getLevel() - activeChar.getLevel() > 20))
+				if (pet instanceof Pet && (pet.getLevel() - player.getLevel() > 20))
 				{
-					activeChar.sendPacket(SystemMessageId.PET_TOO_HIGH_TO_CONTROL);
+					player.sendPacket(SystemMessageId.PET_TOO_HIGH_TO_CONTROL);
 					return;
 				}
 				
-				if (activeChar.isInOlympiadMode() && !activeChar.isOlympiadStart())
+				if (player.isInOlympiadMode() && !player.isOlympiadStart())
 					return;
 				
 				pet.setTarget(target);
 				
 				// Summons can attack NPCs even when the owner cannot.
-				if (!target.isAutoAttackable(activeChar) && !_ctrlPressed && (!(target instanceof Folk)))
+				if (!target.isAutoAttackable(player) && !_ctrlPressed && (!(target instanceof Folk)))
 				{
 					pet.setFollowStatus(false);
 					pet.getAI().setIntention(CtrlIntention.FOLLOW, target);
-					activeChar.sendPacket(SystemMessageId.INCORRECT_TARGET);
+					player.sendPacket(SystemMessageId.INCORRECT_TARGET);
 					return;
 				}
 				
 				if (target instanceof Door)
 				{
-					if (((Door) target).isAutoAttackable(activeChar) && pet.getNpcId() != SiegeSummon.SWOOP_CANNON_ID)
+					if (((Door) target).isAutoAttackable(player) && pet.getNpcId() != SiegeSummon.SWOOP_CANNON_ID)
 						pet.getAI().setIntention(CtrlIntention.ATTACK, target);
 				}
 				// siege golem AI doesn't support attacking other than doors at the moment
@@ -213,7 +213,7 @@ public final class RequestActionUse extends L2GameClientPacket
 				
 				if (pet.isOutOfControl())
 				{
-					activeChar.sendPacket(SystemMessageId.PET_REFUSING_ORDER);
+					player.sendPacket(SystemMessageId.PET_REFUSING_ORDER);
 					return;
 				}
 				
@@ -225,19 +225,19 @@ public final class RequestActionUse extends L2GameClientPacket
 					return;
 				
 				if (pet.isDead())
-					activeChar.sendPacket(SystemMessageId.DEAD_PET_CANNOT_BE_RETURNED);
+					player.sendPacket(SystemMessageId.DEAD_PET_CANNOT_BE_RETURNED);
 				else if (pet.isOutOfControl())
-					activeChar.sendPacket(SystemMessageId.PET_REFUSING_ORDER);
+					player.sendPacket(SystemMessageId.PET_REFUSING_ORDER);
 				else if (pet.isAttackingNow() || pet.isInCombat())
-					activeChar.sendPacket(SystemMessageId.PET_CANNOT_SENT_BACK_DURING_BATTLE);
+					player.sendPacket(SystemMessageId.PET_CANNOT_SENT_BACK_DURING_BATTLE);
 				else if (((Pet) pet).checkUnsummonState())
-					activeChar.sendPacket(SystemMessageId.YOU_CANNOT_RESTORE_HUNGRY_PETS);
+					player.sendPacket(SystemMessageId.YOU_CANNOT_RESTORE_HUNGRY_PETS);
 				else
-					pet.unSummon(activeChar);
+					pet.unSummon(player);
 				break;
 			
 			case 38: // pet mount/dismount
-				activeChar.mountPlayer(pet);
+				player.mountPlayer(pet);
 				break;
 			
 			case 32: // Wild Hog Cannon - Mode Change
@@ -249,7 +249,7 @@ public final class RequestActionUse extends L2GameClientPacket
 				break;
 			
 			case 37: // Dwarven Manufacture
-				activeChar.tryOpenWorkshop(true);
+				player.tryOpenWorkshop(true);
 				break;
 			
 			case 39: // Soulless - Parasite Burst
@@ -259,7 +259,7 @@ public final class RequestActionUse extends L2GameClientPacket
 			case 41: // Wild Hog Cannon - Attack
 				if (!(target instanceof Door))
 				{
-					activeChar.sendPacket(SystemMessageId.INCORRECT_TARGET);
+					player.sendPacket(SystemMessageId.INCORRECT_TARGET);
 					return;
 				}
 				
@@ -267,7 +267,7 @@ public final class RequestActionUse extends L2GameClientPacket
 				break;
 			
 			case 42: // Kai the Cat - Self Damage Shield
-				useSkill(4378, activeChar);
+				useSkill(4378, player);
 				break;
 			
 			case 43: // Unicorn Merrow - Hydro Screw
@@ -279,7 +279,7 @@ public final class RequestActionUse extends L2GameClientPacket
 				break;
 			
 			case 45: // Unicorn Boxer - Master Recharge
-				useSkill(4025, activeChar);
+				useSkill(4025, player);
 				break;
 			
 			case 46: // Mew the Cat - Mega Storm Strike
@@ -295,7 +295,7 @@ public final class RequestActionUse extends L2GameClientPacket
 				break;
 			
 			case 51: // General Manufacture
-				activeChar.tryOpenWorkshop(false);
+				player.tryOpenWorkshop(false);
 				break;
 			
 			case 52: // Unsummon a servitor
@@ -303,13 +303,13 @@ public final class RequestActionUse extends L2GameClientPacket
 					return;
 				
 				if (pet.isDead())
-					activeChar.sendPacket(SystemMessageId.DEAD_PET_CANNOT_BE_RETURNED);
+					player.sendPacket(SystemMessageId.DEAD_PET_CANNOT_BE_RETURNED);
 				else if (pet.isOutOfControl())
-					activeChar.sendPacket(SystemMessageId.PET_REFUSING_ORDER);
+					player.sendPacket(SystemMessageId.PET_REFUSING_ORDER);
 				else if (pet.isAttackingNow() || pet.isInCombat())
-					activeChar.sendPacket(SystemMessageId.PET_CANNOT_SENT_BACK_DURING_BATTLE);
+					player.sendPacket(SystemMessageId.PET_CANNOT_SENT_BACK_DURING_BATTLE);
 				else
-					pet.unSummon(activeChar);
+					pet.unSummon(player);
 				break;
 			
 			case 53: // move to target
@@ -319,7 +319,7 @@ public final class RequestActionUse extends L2GameClientPacket
 				
 				if (pet.isOutOfControl())
 				{
-					activeChar.sendPacket(SystemMessageId.PET_REFUSING_ORDER);
+					player.sendPacket(SystemMessageId.PET_REFUSING_ORDER);
 					return;
 				}
 				
@@ -328,13 +328,13 @@ public final class RequestActionUse extends L2GameClientPacket
 				break;
 			
 			case 61: // Private Store Package Sell
-				activeChar.tryOpenPrivateSellStore(true);
+				player.tryOpenPrivateSellStore(true);
 				break;
 			
 			case 1000: // Siege Golem - Siege Hammer
 				if (!(target instanceof Door))
 				{
-					activeChar.sendPacket(SystemMessageId.INCORRECT_TARGET);
+					player.sendPacket(SystemMessageId.INCORRECT_TARGET);
 					return;
 				}
 				
@@ -351,7 +351,7 @@ public final class RequestActionUse extends L2GameClientPacket
 				break;
 			
 			case 1004: // Wind Hatchling/Strider - Wild Defense
-				useSkill(4711, activeChar);
+				useSkill(4711, player);
 				break;
 			
 			case 1005: // Star Hatchling/Strider - Bright Burst
@@ -359,15 +359,15 @@ public final class RequestActionUse extends L2GameClientPacket
 				break;
 			
 			case 1006: // Star Hatchling/Strider - Bright Heal
-				useSkill(4713, activeChar);
+				useSkill(4713, player);
 				break;
 			
 			case 1007: // Cat Queen - Blessing of Queen
-				useSkill(4699, activeChar);
+				useSkill(4699, player);
 				break;
 			
 			case 1008: // Cat Queen - Gift of Queen
-				useSkill(4700, activeChar);
+				useSkill(4700, player);
 				break;
 			
 			case 1009: // Cat Queen - Cure of Queen
@@ -375,11 +375,11 @@ public final class RequestActionUse extends L2GameClientPacket
 				break;
 			
 			case 1010: // Unicorn Seraphim - Blessing of Seraphim
-				useSkill(4702, activeChar);
+				useSkill(4702, player);
 				break;
 			
 			case 1011: // Unicorn Seraphim - Gift of Seraphim
-				useSkill(4703, activeChar);
+				useSkill(4703, player);
 				break;
 			
 			case 1012: // Unicorn Seraphim - Cure of Seraphim
@@ -391,7 +391,7 @@ public final class RequestActionUse extends L2GameClientPacket
 				break;
 			
 			case 1014: // Nightshade - Mass Curse of Shade
-				useSkill(4706, activeChar);
+				useSkill(4706, player);
 				break;
 			
 			case 1015: // Nightshade - Shade Sacrifice
@@ -441,7 +441,7 @@ public final class RequestActionUse extends L2GameClientPacket
 			case 1039: // Swoop Cannon - Cannon Fodder
 				if (target instanceof Door)
 				{
-					activeChar.sendPacket(SystemMessageId.INCORRECT_TARGET);
+					player.sendPacket(SystemMessageId.INCORRECT_TARGET);
 					return;
 				}
 				
@@ -451,7 +451,7 @@ public final class RequestActionUse extends L2GameClientPacket
 			case 1040: // Swoop Cannon - Big Bang
 				if (target instanceof Door)
 				{
-					activeChar.sendPacket(SystemMessageId.INCORRECT_TARGET);
+					player.sendPacket(SystemMessageId.INCORRECT_TARGET);
 					return;
 				}
 				
@@ -459,7 +459,7 @@ public final class RequestActionUse extends L2GameClientPacket
 				break;
 			
 			default:
-				_log.warning(activeChar.getName() + ": unhandled action type " + _actionId);
+				LOGGER.warn("Unhandled action type {} detected for {}.", _actionId, player.getName());
 		}
 	}
 	

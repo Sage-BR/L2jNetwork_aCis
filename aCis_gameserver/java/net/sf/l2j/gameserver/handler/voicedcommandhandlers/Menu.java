@@ -1,8 +1,5 @@
 package net.sf.l2j.gameserver.handler.voicedcommandhandlers;
 
-import java.util.StringTokenizer;
-
-import net.sf.l2j.Config;
 import net.sf.l2j.gameserver.handler.IVoicedCommandHandler;
 import net.sf.l2j.gameserver.model.World;
 import net.sf.l2j.gameserver.model.actor.instance.Player;
@@ -10,139 +7,155 @@ import net.sf.l2j.gameserver.network.serverpackets.NpcHtmlMessage;
 
 public class Menu implements IVoicedCommandHandler
 {
-	private static final String[] _voicedCommands =
+	private final String[] _voicedCommands =
 	{
-		"menu",
-		"cp"
+		"menu"
 	};
 	
 	@Override
 	public boolean useVoicedCommand(String command, Player activeChar, String target)
 	{
-		htmlWindows(activeChar);
+		mainHtml(activeChar);
 		return true;
 	}
 	
-	private static void htmlWindows(Player activeChar)
+	public static void mainHtml(Player activeChar)
 	{
 		NpcHtmlMessage nhm = new NpcHtmlMessage(5);
-		StringBuilder html = new StringBuilder("");
-		html.append("<html><head><title>Menu</title></head><body><center>");
-		html.append("<img src=\"SS_L2jNetwork.lineo\" width=300 height=3>");
-		html.append("<table width=305 height=20 bgcolor=000000>");
-		html.append("<tr>");
-		html.append("<td align=center>Player Personal Menu</td>");
-		html.append("</tr>");
-		html.append("</table>");
-		html.append("<img src=\"SS_L2jNetwork.lineo\" width=300 height=3>");
-		html.append("<br><br>");
-		html.append("<img src=\"SS_L2jNetwork.lineo\" width=300 height=3>");
-		html.append("<table width=305 height=20 bgcolor=000000>");
-		html.append("<tr>");
-		html.append("<td align=left>Anti Buff Shield</td>");
-		html.append("<td align=center><button value=\"" + (activeChar.isBuffProtected() ? "Activated" : "Disabled") + "\" action=\"bypass -h menu_commands antibuff\" width=90 height=22 back=\"SS_L2jNetwork.smallb_down\" fore=\"SS_L2jNetwork.smallb\"></td>");
-		html.append("</tr>");
-		html.append("</table>");
-		html.append("<img src=\"L2UI.SquareGray\" width=300 height=1>");
-		html.append("<table width=307 height=20 bgcolor=000000>");
-		html.append("<tr>");
-		html.append("<td align=left>Trade Refusal</td>");
-		html.append("<td width=8></td>");
-		html.append("<td align=center><button value=\"" + (activeChar.getTradeRefusal() ? "Activated" : "Disabled") + "\" action=\"bypass -h menu_commands traderefusal\" width=90 height=22 back=\"SS_L2jNetwork.smallb_down\" fore=\"SS_L2jNetwork.smallb\"></td>");
-		html.append("</tr>");
-		html.append("</table>");
-		html.append("<img src=\"L2UI.SquareGray\" width=300 height=1>");
-		html.append("<table width=307 height=20 bgcolor=000000>");
-		html.append("<tr>");
-		html.append("<td align=left>PM Refusal</td>");
-		html.append("<td width=20></td>");
-		html.append("<td align=center><button value=\"" + (activeChar.isInRefusalMode() ? "Activated" : "Disabled") + "\" action=\"bypass -h menu_commands pmrefusal\" width=90 height=22 back=\"SS_L2jNetwork.smallb_down\" fore=\"SS_L2jNetwork.smallb\"></td>");
-		html.append("</tr>");
-		html.append("</table>");
-		html.append("<img src=\"L2UI.SquareGray\" width=300 height=1>");
-		html.append("<table width=307 height=20 bgcolor=000000>");
-		html.append("<tr>");
-		html.append("<td align=left>Friend Refusal</td>");
-		html.append("<td width=5></td>");
-		html.append("<td align=center><button value=\"" + (activeChar.getFriendInviteRefusal() ? "Activated" : "Disabled") + "\" action=\"bypass -h menu_commands friendinviterefusal\" width=90 height=22 back=\"SS_L2jNetwork.smallb_down\" fore=\"SS_L2jNetwork.smallb\"></td>");
-		html.append("</tr>");
-		html.append("</table>");
-		html.append("<img src=\"L2UI.SquareGray\" width=300 height=1>");
-		html.append("<img src=\"SS_L2jNetwork.lineo\" width=300 height=3>");
-		html.append("<br><br><br>");
-		html.append("<img src=\"SS_L2jNetwork.lineo\" width=300 height=3>");
-		html.append("<table width=300 height=20 bgcolor=000000>");
-		html.append("<tr>");
-		html.append("<td align=center>Auto Click</td>");
-		html.append("<td align=center><button value=\"" + (activeChar._autoCp ? "CP On" : "CP Off") + "\" action=\"bypass -h menu_commands auto cp\" width=50 height=22 back=\"SS_L2jNetwork.bssmall_down\" fore=\"SS_L2jNetwork.bssmall\"></td>");
-		html.append("<td align=center><button value=\"" + (activeChar._autoHp ? "HP On" : "HP Off") + "\" action=\"bypass -h menu_commands auto hp\" width=50 height=22 back=\"SS_L2jNetwork.bssmall_down\" fore=\"SS_L2jNetwork.bssmall\"></td>");
-		html.append("<td align=center><button value=\"" + (activeChar._autoMp ? "Mp On" : "MP Off") + "\" action=\"bypass -h menu_commands auto mp\" width=50 height=22 back=\"SS_L2jNetwork.bssmall_down\" fore=\"SS_L2jNetwork.bssmall\"></td>");
-		html.append("</tr>");
-		html.append("</table>");
-		html.append("<img src=\"SS_L2jNetwork.lineo\" width=300 height=3>");
-		if (Config.ENABLE_ONLINE)
-		{
-			html.append("<br><br><br>");
-			html.append("<img src=\"SS_L2jNetwork.lineo\" width=300 height=3>");
-			html.append("<table width=310 height=20 bgcolor=000000>");
-			html.append("<tr>");
-			html.append("<td align=center>Online Players:</td>");
-			html.append("</tr>");
-			html.append("</table>");
-			html.append("<img src=\"SS_L2jNetwork.lineo\" width=300 height=3>");
-			html.append("There are: " + World.getInstance().getPlayers().size() + " online players in game!");
-		}
-		nhm.setHtml(html.toString());
+		final StringBuilder tb = new StringBuilder();
+		
+		tb.append("<html><head><title>Personal Menu</title></head><body>");
+		tb.append("<center>");
+		tb.append("<br>");
+		tb.append("<td valign=\"top\">Players online <font color=\"00FF00\"> " + (World.getInstance().getPlayers().size()) + "</font>");
+		tb.append("<table border=\"1\" width=\"100\" height=\"12\" bgcolor=\"\">");
+		tb.append("<tr>");
+		tb.append("<td width=\"52\">ON</td>");
+		tb.append("<td width=\"16\"><button width=16 height=12 back=\"L2UI_CH3.br_bar1_hp\" fore=\"L2UI_CH3.br_bar1_hp\"></td>");
+		tb.append("<td><button width=32 height=12 back=\"L2UI_CH3.tutorial_pointer1\" fore=\"L2UI_CH3.tutorial_pointer1\"></td>");
+		tb.append("</tr>");
+		tb.append("<tr>");
+		tb.append("<td width=\"52\">OFF</td>");
+		tb.append("<td width=\"16\"><button width=16 height=12 back=\"L2UI_CH3.br_bar1_mp\" fore=\"L2UI_CH3.br_bar1_mp\"></td>");
+		tb.append("<td><button width=32 height=12 back=\"L2UI_CH3.tutorial_pointer1\" fore=\"L2UI_CH3.tutorial_pointer1\"></td>");
+		tb.append("</tr>");
+		tb.append("</table><br>");
+		tb.append("<table border=\"1\" width=\"280\" height=\"20\" bgcolor=\"\">");
+		tb.append("<tr>");
+		tb.append("<td align=\"center\" width=\"52\">Buff Protection System</td>");
+		if (activeChar.isBuffProtected())
+			tb.append("<td width=\"16\"><button action=\"bypass -h buffprot\" width=30 height=18 back=\"L2UI_CH3.br_bar1_hp\" fore=\"L2UI_CH3.br_bar1_hp\"></td>");
+		if (!activeChar.isBuffProtected())
+			tb.append("<td width=\"16\"><button action=\"bypass -h buffprot\" width=30 height=18 back=\"L2UI_CH3.br_bar1_mp\" fore=\"L2UI_CH3.br_bar1_mp\"></td>");
+		tb.append("</tr>");
+		tb.append("</table>");
+		tb.append("<table border=\"1\" width=\"280\" height=\"20\" bgcolor=\"\">");
+		tb.append("<tr>");
+		tb.append("<td align=\"center\" width=\"52\">Personal Message Refusal</td>");
+		if (activeChar.isInRefusalMode())
+			tb.append("<td width=\"16\"><button action=\"bypass -h pmref\" width=30 height=18 back=\"L2UI_CH3.br_bar1_hp\" fore=\"L2UI_CH3.br_bar1_hp\"></td>");
+		if (!activeChar.isInRefusalMode())
+			tb.append("<td width=\"16\"><button action=\"bypass -h pmref\" width=30 height=18 back=\"L2UI_CH3.br_bar1_mp\" fore=\"L2UI_CH3.br_bar1_mp\"></td>");
+		tb.append("</tr>");
+		tb.append("</table>");
+		tb.append("<table border=\"1\" width=\"280\" height=\"20\" bgcolor=\"\">");
+		tb.append("<tr>");
+		tb.append("<td align=\"center\" width=\"52\">Trade Request Protection</td>");
+		if (activeChar.getTradeRefusal())
+			tb.append("<td width=\"16\"><button action=\"bypass -h tradeprot\" width=30 height=18 back=\"L2UI_CH3.br_bar1_hp\" fore=\"L2UI_CH3.br_bar1_hp\"></td>");
+		if (!activeChar.getTradeRefusal())
+			tb.append("<td width=\"16\"><button action=\"bypass -h tradeprot\" width=30 height=18 back=\"L2UI_CH3.br_bar1_mp\" fore=\"L2UI_CH3.br_bar1_mp\"></td>");
+		tb.append("</tr>");
+		tb.append("</table>");
+		tb.append("<table border=\"1\" width=\"280\" height=\"20\" bgcolor=\"\">");
+		tb.append("<tr>");
+		tb.append("<td align=\"center\" width=\"52\">Soulshot/Spiritshot Effect</td>");
+		if (activeChar.isSSDisabled())
+			tb.append("<td width=\"16\"><button action=\"bypass -h ssprot\" width=30 height=18 back=\"L2UI_CH3.br_bar1_hp\" fore=\"L2UI_CH3.br_bar1_hp\"></td>");
+		if (!activeChar.isSSDisabled())
+			tb.append("<td width=\"16\"><button action=\"bypass -h ssprot\" width=30 height=18 back=\"L2UI_CH3.br_bar1_mp\" fore=\"L2UI_CH3.br_bar1_mp\"></td>");
+		tb.append("</tr>");
+		tb.append("<table border=\"1\" width=\"280\" height=\"20\" bgcolor=\"\">");
+		tb.append("<tr>");
+		tb.append("<td align=\"center\" width=\"52\">Party Invite Protection</td>");
+		if (activeChar.isPartyInRefuse())
+			tb.append("<td width=\"16\"><button action=\"bypass -h partyin\" width=30 height=18 back=\"L2UI_CH3.br_bar1_hp\" fore=\"L2UI_CH3.br_bar1_hp\"></td>");
+		if (!activeChar.isPartyInRefuse())
+			tb.append("<td width=\"16\"><button action=\"bypass -h partyin\" width=30 height=18 back=\"L2UI_CH3.br_bar1_mp\" fore=\"L2UI_CH3.br_bar1_mp\"></td>");
+		tb.append("</tr>");
+		tb.append("</table>");
+		tb.append("<table border=\"1\" width=\"280\" height=\"20\" bgcolor=\"\">");
+		tb.append("<tr>");
+		tb.append("<td align=\"center\" width=\"52\">Experience Gain Protection</td>");
+		if (activeChar.cantGainXP())
+			tb.append("<td width=\"16\"><button action=\"bypass -h xpnot\" width=30 height=18 back=\"L2UI_CH3.br_bar1_hp\" fore=\"L2UI_CH3.br_bar1_hp\"></td>");
+		if (!activeChar.cantGainXP())
+			tb.append("<td width=\"16\"><button action=\"bypass -h xpnot\" width=30 height=18 back=\"L2UI_CH3.br_bar1_mp\" fore=\"L2UI_CH3.br_bar1_mp\"></td>");
+		tb.append("</tr>");
+		tb.append("</table>");		
+		tb.append("<br>");
+		tb.append("<img src=L2UI_CH3.herotower_deco width=256 height=32>");
+		tb.append("</body>");
+		tb.append("</center>");
+		tb.append("</html>");
+		
+		nhm.setHtml(tb.toString());
 		activeChar.sendPacket(nhm);
 	}
 	
-	/**
-	 * @param activeChar
-	 * @param command
-	 * @param st
-	 */
-	public static void bypass(Player activeChar, String command, StringTokenizer st)
+	public static void mainHtml2(Player activeChar)
 	{
-		if (command.equals("antibuff"))
-		{
-			activeChar.setIsBuffProtected(!activeChar.isBuffProtected());
-			activeChar.sendMessage("The anti buff mode " + (activeChar.isBuffProtected() ? "Activated" : "Disabled") + ".");
-		}
-		else if (command.equals("pmrefusal"))
-		{
-			activeChar.setInRefusalMode(!activeChar.isInRefusalMode());
-			activeChar.sendMessage("The chat/pm refusal mode " + (activeChar.isInRefusalMode() ? "Activated" : "Disabled") + ".");
-		}
-		else if (command.equals("traderefusal"))
-		{
-			activeChar.setTradeRefusal(!activeChar.getTradeRefusal());
-			activeChar.sendMessage("The trade refusal mode " + (activeChar.getTradeRefusal() ? "Activated" : "Disabled") + ".");
-		}
-		else if (command.equals("friendinviterefusal"))
-		{
-			activeChar.setFriendInviteRefusal(!activeChar.getFriendInviteRefusal());
-			activeChar.sendMessage("The friend refusal mode " + (activeChar.getFriendInviteRefusal() ? "Activated" : "Disabled") + ".");
-		}
-		else if (command.equals("auto"))
-		{
-			final String potion = st.nextToken();
-			switch (potion)
-			{
-				case "cp":
-					activeChar.AutoCp(!activeChar._autoCp);
-					activeChar.sendMessage("The status of auto CP is now " + (activeChar._autoCp ? "Activated" : "Disabled"));
-					break;
-				case "hp":
-					activeChar.AutoHp(!activeChar._autoHp);
-					activeChar.sendMessage("The status of auto HP is now " + (activeChar._autoHp ? "Activated" : "Disabled"));
-					break;
-				case "mp":
-					activeChar.AutoMp(!activeChar._autoMp);
-					activeChar.sendMessage("The status of auto MP is now " + (activeChar._autoMp ? "Activated" : "Disabled"));
-					break;
-			}
-		}
-		htmlWindows(activeChar);
+		NpcHtmlMessage nhm = new NpcHtmlMessage(5);
+		final StringBuilder tb = new StringBuilder();
+		
+		tb.append("<html><head><title>Personal Menu</title></head><body>");
+		tb.append("<center>");
+		tb.append("<table width=\"250\" cellpadding=\"5\" bgcolor=\"000000\">");
+		tb.append("<tr>");
+		tb.append("<td width=\"45\" valign=\"top\" align=\"center\"><img src=\"L2ui_ch3.menubutton4\" width=\"38\" height=\"38\"></td>");
+		tb.append("<td valign=\"top\">Players online <font color=\"FF6600\"> " + (World.getInstance().getPlayers().size()) + "</font>");
+		tb.append("<br1><font color=\"00FF00\">" + activeChar.getName() + "</font>, use this menu for everything related to your gameplay.<br1></td>");
+    	tb.append("</tr>");
+	    tb.append("</table>");
+	    tb.append("</center>");
+	    tb.append("<center>");
+	    tb.append("<table border=\"1\" width=\"100\" height=\"12\" bgcolor=\"000000\">");
+		tb.append("<tr>");
+	    tb.append("<td width=\"52\">ON</td>");
+		tb.append("<td width=\"16\"><button width=16 height=12 back=\"L2UI_CH3.br_bar1_hp\" fore=\"L2UI_CH3.br_bar1_hp\"></td>");
+		tb.append("<td><button width=32 height=12 back=\"L2UI_CH3.tutorial_pointer1\" fore=\"L2UI_CH3.tutorial_pointer1\"></td>");
+	    tb.append("</tr>");
+		tb.append("<tr>");
+	    tb.append("<td width=\"52\">OFF</td>");
+	    tb.append("<td width=\"16\"><button width=16 height=12 back=\"L2UI_CH3.br_bar1_mp\" fore=\"L2UI_CH3.br_bar1_mp\"></td>");
+	    tb.append("<td><button width=32 height=12 back=\"L2UI_CH3.tutorial_pointer1\" fore=\"L2UI_CH3.tutorial_pointer1\"></td>");
+		tb.append("</tr>");
+	    tb.append("</table><br>");
+	    tb.append("<table border=\"1\" width=\"250\" height=\"12\" bgcolor=\"000000\">");
+       	tb.append("<tr>");
+	    tb.append("<td align=\"center\" width=\"52\">Party Invite Protection</td>");
+	if (activeChar.isPartyInRefuse())
+		tb.append("<td width=\"16\"><button action=\"bypass -h partyin\" width=24 height=12 back=\"L2UI_CH3.br_bar1_hp\" fore=\"L2UI_CH3.br_bar1_hp\"></td>");
+		if (!activeChar.isPartyInRefuse())
+		tb.append("<td width=\"16\"><button action=\"bypass -h partyin\" width=24 height=12 back=\"L2UI_CH3.br_bar1_mp\" fore=\"L2UI_CH3.br_bar1_mp\"></td>");
+		tb.append("</tr>");
+		tb.append("<tr><td width=\"250\"><font color=\"00FF00\">By enabling that you won't be able to recieve ANY party invite from another character.</font></td></tr>");
+		tb.append("</table>");
+		tb.append("<table border=\"1\" width=\"250\" height=\"12\" bgcolor=\"000000\">");
+		tb.append("<tr>");
+		tb.append("<td align=\"center\" width=\"52\">Exp Gain Protection</td>");
+	if (activeChar.cantGainXP())
+			tb.append("<td width=\"16\"><button action=\"bypass -h xpnot\" width=24 height=12 back=\"L2UI_CH3.br_bar1_hp\" fore=\"L2UI_CH3.br_bar1_hp\"></td>");
+		if (!activeChar.cantGainXP())
+		tb.append("<td width=\"16\"><button action=\"bypass -h xpnot\" width=24 height=12 back=\"L2UI_CH3.br_bar1_mp\" fore=\"L2UI_CH3.br_bar1_mp\"></td>");
+			tb.append("</tr>");
+		tb.append("<tr><td width=\"250\"><font color=\"00FF00\">By enabling that you won't be able to recieve expirience from killing monsters.</font></td><td align=\"center\" valign=\"middle\"><button action=\"bypass -h page1\" width=16 height=16 back=\"L2UI_CH3.back1\" fore=\"L2UI_CH3.next1\"></td></tr>");
+		tb.append("</table>");
+		tb.append("</center>");
+		tb.append("</body></html>");
+		
+	nhm.setHtml(tb.toString());
+		activeChar.sendPacket(nhm);
 	}
 	
 	@Override

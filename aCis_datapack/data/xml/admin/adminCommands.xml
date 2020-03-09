@@ -41,10 +41,6 @@
 	<aCar name="admin_areacancel" accessLevel="7"/>
 	<aCar name="admin_removereuse" accessLevel="7"/>
 
-	<!-- CACHE -->
-	<aCar name="admin_reload_cache_path" accessLevel="7"/>
-	<aCar name="admin_reload_cache_file" accessLevel="7"/>
-
 	<!-- CAMERA -->
 	<aCar name="admin_camera" accessLevel="7"/>
 	<aCar name="admin_cameramode" accessLevel="7"/>
@@ -180,7 +176,6 @@
 	<aCar name="admin_help" accessLevel="7"/>
 
 	<!-- INVUL -->
-	<aCar name="admin_invul" accessLevel="7"/>
 	<aCar name="admin_setinvul" accessLevel="7"/>
 
 	<!-- KICK -->
@@ -345,72 +340,7 @@
     <aCar name="admin_vipon" accessLevel="7" />
     <aCar name="admin_vipoff" accessLevel="7" />
     
-	<!-- AIO -->
+    <!-- AIO -->
 	<aCar name="admin_setaio" accessLevel="7" />
 	<aCar name="admin_removeaio" accessLevel="7" />
-
-	<!-- ADMIN EVENT ENGINE -->
-	<aCar name="admin_event" accessLevel="7" />
-	<aCar name="admin_event_new" accessLevel="7" />
-	<aCar name="admin_event_choose" accessLevel="7" />
-	<aCar name="admin_event_store" accessLevel="7" />
-	<aCar name="admin_event_set" accessLevel="7" />
-	<aCar name="admin_event_change_teams_number" accessLevel="7" />
-	<aCar name="admin_event_announce" accessLevel="7" />
-	<aCar name="admin_event_panel" accessLevel="7" />
-	<aCar name="admin_event_control_begin" accessLevel="7" />
-	<aCar name="admin_event_control_teleport" accessLevel="7" />
-	<aCar name="admin_add" accessLevel="7" />
-	<aCar name="admin_event_see" accessLevel="7" />
-	<aCar name="admin_event_del" accessLevel="7" />
-	<aCar name="admin_delete_buffer" accessLevel="7" />
-	<aCar name="admin_event_control_sit" accessLevel="7" />
-	<aCar name="admin_event_name" accessLevel="7" />
-	<aCar name="admin_event_control_kill" accessLevel="7" />
-	<aCar name="admin_event_control_res" accessLevel="7" />
-	<aCar name="admin_event_control_poly" accessLevel="7" />
-	<aCar name="admin_event_control_unpoly" accessLevel="7" />
-	<aCar name="admin_event_control_prize" accessLevel="7" />
-	<aCar name="admin_event_control_chatban" accessLevel="7" />
-	<aCar name="admin_event_control_finish" accessLevel="7" />
-
-	<!-- ADMIN TvT Event -->
-	<aCar name="admin_tvt" accessLevel="7" />
-	<aCar name="admin_tvt_name" accessLevel="7" />
-	<aCar name="admin_tvt_desc" accessLevel="7" />
-	<aCar name="admin_tvt_join_loc" accessLevel="7" />
-	<aCar name="admin_tvt_minlvl" accessLevel="7" />
-	<aCar name="admin_tvt_maxlvl" accessLevel="7" />
-	<aCar name="admin_tvt_npc" accessLevel="7" />
-	<aCar name="admin_tvt_npc_pos" accessLevel="7" />
-	<aCar name="admin_tvt_reward" accessLevel="7" />
-	<aCar name="admin_tvt_reward_amount" accessLevel="7" />
-	<aCar name="admin_tvt_team_add" accessLevel="7" />
-	<aCar name="admin_tvt_team_remove" accessLevel="7" />
-	<aCar name="admin_tvt_team_pos" accessLevel="7" />
-	<aCar name="admin_tvt_team_color" accessLevel="7" />
-	<aCar name="admin_tvt_join" accessLevel="7" />
-	<aCar name="admin_tvt_teleport" accessLevel="7" />
-	<aCar name="admin_tvt_start" accessLevel="7" />
-	<aCar name="admin_tvt_abort" accessLevel="7" />
-	<aCar name="admin_tvt_finish" accessLevel="7" />
-	<aCar name="admin_tvt_sit" accessLevel="7" />
-	<aCar name="admin_tvt_dump" accessLevel="7" />
-	<aCar name="admin_tvt_save" accessLevel="7" />
-	<aCar name="admin_tvt_load" accessLevel="7" />
-	<aCar name="admin_tvt_jointime" accessLevel="7" />
-	<aCar name="admin_tvt_eventtime" accessLevel="7" />
-	<aCar name="admin_tvt_autoevent" accessLevel="7" />
-	<aCar name="admin_tvt_minplayers" accessLevel="7" />
-	<aCar name="admin_tvt_maxplayers" accessLevel="7" />
-	<aCar name="admin_tvtkick" accessLevel="7" />
-	<aCar name="admin_tvt_interval" accessLevel="7" />
-  
-	<!-- ADMIN DM Event -->
-	<aCar name="admin_events" accessLevel="7" />
-	<aCar name="admin_enableEvent" accessLevel="7" />
-	<aCar name="admin_configureEvent" accessLevel="7" />
-	<aCar name="admin_event_set" accessLevel="7" />
-	<aCar name="admin_event_finish" accessLevel="7" />
-	<aCar name="admin_event_start" accessLevel="7" />
 </list>

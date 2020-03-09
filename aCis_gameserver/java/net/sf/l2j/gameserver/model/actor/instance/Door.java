@@ -3,10 +3,10 @@ package net.sf.l2j.gameserver.model.actor.instance;
 import net.sf.l2j.commons.concurrent.ThreadPool;
 import net.sf.l2j.commons.random.Rnd;
 
-import net.sf.l2j.gameserver.data.DoorTable;
+import net.sf.l2j.gameserver.data.manager.CastleManager;
+import net.sf.l2j.gameserver.data.xml.DoorData;
 import net.sf.l2j.gameserver.geoengine.GeoEngine;
 import net.sf.l2j.gameserver.geoengine.geodata.IGeoObject;
-import net.sf.l2j.gameserver.instancemanager.CastleManager;
 import net.sf.l2j.gameserver.instancemanager.ClanHallManager;
 import net.sf.l2j.gameserver.model.L2Skill;
 import net.sf.l2j.gameserver.model.actor.Creature;
@@ -158,7 +158,7 @@ public class Door extends Creature implements IGeoObject
 		if (triggerId > 0)
 		{
 			// get door and trigger state change
-			Door door = DoorTable.getInstance().getDoor(triggerId);
+			Door door = DoorData.getInstance().getDoor(triggerId);
 			if (door != null)
 				door.changeState(open, true);
 		}
@@ -173,14 +173,7 @@ public class Door extends Creature implements IGeoObject
 			
 			// try to schedule automatic state change
 			if (time > 0)
-				ThreadPool.schedule(new Runnable()
-				{
-					@Override
-					public void run()
-					{
-						changeState(!open, false);
-					}
-				}, time * 1000);
+				ThreadPool.schedule(() -> changeState(!open, false), time * 1000);
 		}
 	}
 	
@@ -381,7 +374,7 @@ public class Door extends Creature implements IGeoObject
 			GeoEngine.getInstance().removeGeoObject(this);
 		
 		if (_castle != null && _castle.getSiege().isInProgress())
-			_castle.getSiege().announceToPlayer(SystemMessage.getSystemMessage((getTemplate().getType() == DoorType.WALL) ? SystemMessageId.CASTLE_WALL_DAMAGED : SystemMessageId.CASTLE_GATE_BROKEN_DOWN), false);
+			_castle.getSiege().announceToPlayers(SystemMessage.getSystemMessage((getTemplate().getType() == DoorType.WALL) ? SystemMessageId.CASTLE_WALL_DAMAGED : SystemMessageId.CASTLE_GATE_BROKEN_DOWN), false);
 		
 		return true;
 	}

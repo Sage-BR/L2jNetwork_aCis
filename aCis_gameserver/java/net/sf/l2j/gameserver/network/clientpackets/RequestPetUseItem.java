@@ -86,7 +86,7 @@ public final class RequestPetUseItem extends L2GameClientPacket
 		}
 		
 		// If pet food check is successful or if the item got an handler, use that item.
-		final IItemHandler handler = ItemHandler.getInstance().getItemHandler(item.getEtcItem());
+		final IItemHandler handler = ItemHandler.getInstance().getHandler(item.getEtcItem());
 		if (handler != null)
 		{
 			handler.useItem(pet, item, false);

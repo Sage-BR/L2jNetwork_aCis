@@ -58,7 +58,7 @@ public class SummonMinions extends L2AttackableAIScript
 	@Override
 	protected void registerNpcs()
 	{
-		addEventIds(MINIONS.keySet(), EventType.ON_ATTACK, EventType.ON_KILL);
+		addEventIds(MINIONS.keySet(), EventType.ON_ATTACK);
 	}
 	
 	@Override

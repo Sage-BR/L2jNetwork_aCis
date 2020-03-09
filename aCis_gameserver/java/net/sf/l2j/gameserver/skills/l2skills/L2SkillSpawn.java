@@ -4,7 +4,7 @@ import java.util.logging.Level;
 
 import net.sf.l2j.commons.random.Rnd;
 
-import net.sf.l2j.gameserver.data.NpcTable;
+import net.sf.l2j.gameserver.data.xml.NpcData;
 import net.sf.l2j.gameserver.model.L2Skill;
 import net.sf.l2j.gameserver.model.L2Spawn;
 import net.sf.l2j.gameserver.model.WorldObject;
@@ -41,7 +41,7 @@ public class L2SkillSpawn extends L2Skill
 			return;
 		}
 		
-		final NpcTemplate template = NpcTable.getInstance().getTemplate(_npcId);
+		final NpcTemplate template = NpcData.getInstance().getTemplate(_npcId);
 		if (template == null)
 		{
 			_log.warning("Spawn of the nonexisting NPC ID: " + _npcId + ", skill ID: " + getId());

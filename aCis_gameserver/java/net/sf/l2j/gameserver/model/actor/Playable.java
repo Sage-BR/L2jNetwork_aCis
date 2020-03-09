@@ -1,11 +1,13 @@
 package net.sf.l2j.gameserver.model.actor;
 
 import net.sf.l2j.Config;
+import net.sf.l2j.gameserver.geoengine.GeoEngine;
 import net.sf.l2j.gameserver.model.L2Effect;
 import net.sf.l2j.gameserver.model.L2Skill;
 import net.sf.l2j.gameserver.model.WorldObject;
 import net.sf.l2j.gameserver.model.WorldRegion;
 import net.sf.l2j.gameserver.model.actor.ai.CtrlEvent;
+import net.sf.l2j.gameserver.model.actor.ai.CtrlIntention;
 import net.sf.l2j.gameserver.model.actor.instance.Player;
 import net.sf.l2j.gameserver.model.actor.stat.PlayableStat;
 import net.sf.l2j.gameserver.model.actor.status.PlayableStatus;
@@ -74,7 +76,12 @@ public abstract class Playable extends Creature
 		if (player.getTarget() != this)
 			player.setTarget(this);
 		else
-			player.sendPacket(ActionFailed.STATIC_PACKET);
+		{
+			if (isAutoAttackable(player) && player.isInsideRadius(this, player.getPhysicalAttackRange(), false, false) && GeoEngine.getInstance().canSeeTarget(player, this))
+				player.getAI().setIntention(CtrlIntention.ATTACK, this);
+			else
+				player.sendPacket(ActionFailed.STATIC_PACKET);
+		}
 	}
 	
 	@Override

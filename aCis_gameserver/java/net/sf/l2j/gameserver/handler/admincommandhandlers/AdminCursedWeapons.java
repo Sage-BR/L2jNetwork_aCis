@@ -4,8 +4,8 @@ import java.util.StringTokenizer;
 
 import net.sf.l2j.commons.lang.StringUtil;
 
+import net.sf.l2j.gameserver.data.manager.CursedWeaponManager;
 import net.sf.l2j.gameserver.handler.IAdminCommandHandler;
-import net.sf.l2j.gameserver.instancemanager.CursedWeaponsManager;
 import net.sf.l2j.gameserver.model.WorldObject;
 import net.sf.l2j.gameserver.model.actor.instance.Player;
 import net.sf.l2j.gameserver.model.entity.CursedWeapon;
@@ -45,7 +45,7 @@ public class AdminCursedWeapons implements IAdminCommandHandler
 			if (!command.contains("menu"))
 			{
 				activeChar.sendMessage("====== Cursed Weapons: ======");
-				for (CursedWeapon cw : CursedWeaponsManager.getInstance().getCursedWeapons())
+				for (CursedWeapon cw : CursedWeaponManager.getInstance().getCursedWeapons())
 				{
 					activeChar.sendMessage(cw.getName() + " (" + cw.getItemId() + ")");
 					if (cw.isActive())
@@ -84,7 +84,7 @@ public class AdminCursedWeapons implements IAdminCommandHandler
 			else
 			{
 				final StringBuilder sb = new StringBuilder(2000);
-				for (CursedWeapon cw : CursedWeaponsManager.getInstance().getCursedWeapons())
+				for (CursedWeapon cw : CursedWeaponManager.getInstance().getCursedWeapons())
 				{
 					StringUtil.append(sb, "<table width=280><tr><td>Name:</td><td>", cw.getName(), "</td></tr>");
 					
@@ -131,7 +131,7 @@ public class AdminCursedWeapons implements IAdminCommandHandler
 				else
 				{
 					parameter = parameter.replace('_', ' ');
-					for (CursedWeapon cwp : CursedWeaponsManager.getInstance().getCursedWeapons())
+					for (CursedWeapon cwp : CursedWeaponManager.getInstance().getCursedWeapons())
 					{
 						if (cwp.getName().toLowerCase().contains(parameter.toLowerCase()))
 						{
@@ -141,7 +141,7 @@ public class AdminCursedWeapons implements IAdminCommandHandler
 					}
 				}
 				
-				final CursedWeapon cw = CursedWeaponsManager.getInstance().getCursedWeapon(id);
+				final CursedWeapon cw = CursedWeaponManager.getInstance().getCursedWeapon(id);
 				if (cw == null)
 				{
 					activeChar.sendMessage("Unknown cursed weapon ID.");

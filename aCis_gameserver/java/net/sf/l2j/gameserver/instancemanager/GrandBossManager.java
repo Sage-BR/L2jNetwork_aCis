@@ -11,7 +11,7 @@ import java.util.logging.Logger;
 
 import net.sf.l2j.Config;
 import net.sf.l2j.L2DatabaseFactory;
-import net.sf.l2j.gameserver.data.NpcTable;
+import net.sf.l2j.gameserver.data.xml.NpcData;
 import net.sf.l2j.gameserver.model.actor.instance.GrandBoss;
 import net.sf.l2j.gameserver.templates.StatsSet;
 import net.sf.l2j.gameserver.util.Broadcast;
@@ -80,7 +80,7 @@ public class GrandBossManager
 	public void setBossStatus(int bossId, int status)
 	{
 		_bossStatus.put(bossId, status);
-		_log.info("GrandBossManager: Updated " + NpcTable.getInstance().getTemplate(bossId).getName() + " (id: " + bossId + ") status to " + status);
+		_log.info("GrandBossManager: Updated " + NpcData.getInstance().getTemplate(bossId).getName() + " (id: " + bossId + ") status to " + status);
 		updateDb(bossId, true);
 		if (Config.GRAND_BOSS_ANNOUNCE)
 		{
@@ -90,27 +90,21 @@ public class GrandBossManager
 				case 29006:
 				case 29014:
 					if (status == 0)
-						Broadcast.announceToOnlinePlayers("Grandboss " + NpcTable.getInstance().getTemplate(bossId).getName() + " is spawned in the world!", true);
-					else if (status == 1)
-						Broadcast.announceToOnlinePlayers("Grandboss " + NpcTable.getInstance().getTemplate(bossId).getName() + " has been killed. Type .epic for details!", true);
+						Broadcast.announceToOnlinePlayers("Grandboss " + NpcData.getInstance().getTemplate(bossId).getName() + " is spawned in the world!", true);
 					break;
 				case 29020:
 					if (status == 0)
-						Broadcast.announceToOnlinePlayers("Grandboss " + NpcTable.getInstance().getTemplate(bossId).getName() + " is spawned in the world!", true);
+						Broadcast.announceToOnlinePlayers("Grandboss " + NpcData.getInstance().getTemplate(bossId).getName() + " is spawned in the world!", true);
 					else if (status == 1)
-						Broadcast.announceToOnlinePlayers("Grandboss " + NpcTable.getInstance().getTemplate(bossId).getName() + " is awake and fighting.", true);
-					else if (status == 2)
-						Broadcast.announceToOnlinePlayers("Grandboss " + NpcTable.getInstance().getTemplate(bossId).getName() + " has been killed. Type .epic for details!", true);
+						Broadcast.announceToOnlinePlayers("Grandboss " + NpcData.getInstance().getTemplate(bossId).getName() + " is awake and fighting.", true);
 					break;
 				case 29028:
 				case 29019:
 				case 29047:
 					if (status == 0)
-						Broadcast.announceToOnlinePlayers("Grandboss " + NpcTable.getInstance().getTemplate(bossId).getName() + " is spawned in the world!", true);
+						Broadcast.announceToOnlinePlayers("Grandboss " + NpcData.getInstance().getTemplate(bossId).getName() + " is spawned in the world!", true);
 					if (status == 2)
-						Broadcast.announceToOnlinePlayers("Grandboss " + NpcTable.getInstance().getTemplate(bossId).getName() + " is engaged in battle!", true);
-					else if (status == 3)
-						Broadcast.announceToOnlinePlayers("Grandboss " + NpcTable.getInstance().getTemplate(bossId).getName() + " has been killed. Type .epic for details!", true);
+						Broadcast.announceToOnlinePlayers("Grandboss " + NpcData.getInstance().getTemplate(bossId).getName() + " is engaged in battle!", true);
 					break;
 			}
 		}

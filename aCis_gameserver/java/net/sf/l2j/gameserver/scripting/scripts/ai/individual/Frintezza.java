@@ -20,10 +20,10 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import net.sf.l2j.commons.random.Rnd;
 
 import net.sf.l2j.Config;
+import net.sf.l2j.gameserver.data.manager.ZoneManager;
 import net.sf.l2j.gameserver.datatables.DoorTable;
 import net.sf.l2j.gameserver.datatables.SkillTable;
 import net.sf.l2j.gameserver.instancemanager.GrandBossManager;
-import net.sf.l2j.gameserver.instancemanager.ZoneManager;
 import net.sf.l2j.gameserver.model.L2Skill;
 import net.sf.l2j.gameserver.model.actor.Attackable;
 import net.sf.l2j.gameserver.model.actor.Creature;
@@ -34,7 +34,7 @@ import net.sf.l2j.gameserver.model.actor.instance.Monster;
 import net.sf.l2j.gameserver.model.actor.instance.Player;
 import net.sf.l2j.gameserver.model.group.CommandChannel;
 import net.sf.l2j.gameserver.model.group.Party;
-import net.sf.l2j.gameserver.model.zone.type.L2BossZone;
+import net.sf.l2j.gameserver.model.zone.type.BossZone;
 import net.sf.l2j.gameserver.network.SystemMessageId;
 import net.sf.l2j.gameserver.network.serverpackets.AbstractNpcInfo.NpcInfo;
 import net.sf.l2j.gameserver.network.serverpackets.CreatureSay;
@@ -1109,7 +1109,7 @@ public class Frintezza extends L2AttackableAIScript
 	private static int _KillDarkChoirPlayer = 0;
 	private static int _KillDarkChoirCaptain = 0;
 	
-	private static L2BossZone _Zone;
+	private static BossZone _Zone;
 	private GrandBoss frintezza, weakScarlet, strongScarlet, activeScarlet;
 	private Monster demon1, demon2, demon3, demon4, portrait1, portrait2, portrait3, portrait4;
 	private Npc _frintezzaDummy, _overheadDummy, _portraitDummy1, _portraitDummy3, _scarletDummy;
@@ -1149,7 +1149,7 @@ public class Frintezza extends L2AttackableAIScript
 			29050,
 			29051
 		};
-		_Zone = ZoneManager.getInstance().getZoneById(110011, L2BossZone.class);
+		_Zone = ZoneManager.getInstance().getZoneById(110011, BossZone.class);
 		addAttackId(mob);
 		addKillId(mob);
 		addStartNpc(GUIDE);
@@ -1419,7 +1419,7 @@ public class Frintezza extends L2AttackableAIScript
 		{
 			_Zone.broadcastPacket(new SocialAction(demon1, 1));
 			_Zone.broadcastPacket(new SocialAction(demon4, 1));
-			for (Creature pc : _Zone.getCharactersInside())
+			for (Creature pc : _Zone.getCharacters())
 			{
 				if (pc instanceof Player)
 					if (pc.getX() < 174232)
@@ -1431,7 +1431,7 @@ public class Frintezza extends L2AttackableAIScript
 		}
 		else if (event.equalsIgnoreCase("camera_9c"))
 		{
-			for (Creature pc : _Zone.getCharactersInside())
+			for (Creature pc : _Zone.getCharacters())
 			{
 				if (pc instanceof Player)
 					if (pc.getX() < 174232)
@@ -1570,7 +1570,7 @@ public class Frintezza extends L2AttackableAIScript
 		}
 		else if (event.equalsIgnoreCase("stop_pc"))
 		{
-			for (Creature cha : _Zone.getCharactersInside())
+			for (Creature cha : _Zone.getCharacters())
 			{
 				cha.abortAttack();
 				cha.abortCast();
@@ -1591,7 +1591,7 @@ public class Frintezza extends L2AttackableAIScript
 		}
 		else if (event.equalsIgnoreCase("start_pc"))
 		{
-			for (Creature cha : _Zone.getCharactersInside())
+			for (Creature cha : _Zone.getCharacters())
 			{
 				if (cha != frintezza)
 				{
@@ -1809,7 +1809,7 @@ public class Frintezza extends L2AttackableAIScript
 			}
 			else if (_OnSong == 4)
 			{
-				for (Creature cha : _Zone.getCharactersInside())
+				for (Creature cha : _Zone.getCharacters())
 				{
 					if (cha instanceof Player && Rnd.get(100) < 80)
 					{
@@ -1820,7 +1820,7 @@ public class Frintezza extends L2AttackableAIScript
 			}
 			else if (_OnSong == 5)
 			{
-				for (Creature cha : _Zone.getCharactersInside())
+				for (Creature cha : _Zone.getCharacters())
 				{
 					if (cha instanceof Player && Rnd.get(100) < 70)
 					{
@@ -1841,7 +1841,7 @@ public class Frintezza extends L2AttackableAIScript
 		}
 		else if (event.equalsIgnoreCase("stop_effect"))
 		{
-			for (Creature cha : _Zone.getCharactersInside())
+			for (Creature cha : _Zone.getCharacters())
 			{
 				if (cha instanceof Player)
 				{
@@ -1963,7 +1963,7 @@ public class Frintezza extends L2AttackableAIScript
 			}
 			else
 			{
-				for (Creature cha : _Zone.getCharactersInside())
+				for (Creature cha : _Zone.getCharacters())
 				{
 					if (cha instanceof Player)
 					{

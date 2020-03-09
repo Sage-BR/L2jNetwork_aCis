@@ -4,19 +4,18 @@ import net.sf.l2j.commons.lang.StringUtil;
 import net.sf.l2j.commons.random.Rnd;
 
 import net.sf.l2j.Config;
-import net.sf.l2j.gameserver.data.CharTemplateTable;
 import net.sf.l2j.gameserver.data.ItemTable;
-import net.sf.l2j.gameserver.data.PlayerNameTable;
-import net.sf.l2j.gameserver.data.SkillTable;
-import net.sf.l2j.gameserver.data.SkillTreeTable;
+import net.sf.l2j.gameserver.data.sql.PlayerInfoTable;
+import net.sf.l2j.gameserver.data.xml.NpcData;
+import net.sf.l2j.gameserver.data.xml.PlayerData;
 import net.sf.l2j.gameserver.idfactory.IdFactory;
 import net.sf.l2j.gameserver.model.L2ShortCut;
-import net.sf.l2j.gameserver.model.L2SkillLearn;
 import net.sf.l2j.gameserver.model.World;
 import net.sf.l2j.gameserver.model.actor.instance.Player;
 import net.sf.l2j.gameserver.model.actor.template.PlayerTemplate;
 import net.sf.l2j.gameserver.model.base.Experience;
 import net.sf.l2j.gameserver.model.base.Sex;
+import net.sf.l2j.gameserver.model.holder.skillnode.GeneralSkillNode;
 import net.sf.l2j.gameserver.model.item.instance.ItemInstance;
 import net.sf.l2j.gameserver.model.item.kind.Item;
 import net.sf.l2j.gameserver.model.itemcontainer.PcInventory;
@@ -29,7 +28,6 @@ import net.sf.l2j.gameserver.scripting.ScriptManager;
 @SuppressWarnings("unused")
 public final class CharacterCreate extends L2GameClientPacket
 {
-	// cSdddddddddddd
 	private String _name;
 	private int _race;
 	private byte _sex;
@@ -65,81 +63,87 @@ public final class CharacterCreate extends L2GameClientPacket
 	@Override
 	protected void runImpl()
 	{
-		if (!StringUtil.isValidPlayerName(_name))
-		{
-			sendPacket(new CharCreateFail((_name.length() > 16) ? CharCreateFail.REASON_16_ENG_CHARS : CharCreateFail.REASON_INCORRECT_NAME));
-			return;
-		}
-		
 		if (_face > 2 || _face < 0)
 		{
-			sendPacket(new CharCreateFail(CharCreateFail.REASON_CREATION_FAILED));
+			sendPacket(CharCreateFail.REASON_CREATION_FAILED);
 			return;
 		}
 		
 		if (_hairStyle < 0 || (_sex == 0 && _hairStyle > 4) || (_sex != 0 && _hairStyle > 6))
 		{
-			sendPacket(new CharCreateFail(CharCreateFail.REASON_CREATION_FAILED));
+			sendPacket(CharCreateFail.REASON_CREATION_FAILED);
 			return;
 		}
 		
 		if (_hairColor > 3 || _hairColor < 0)
 		{
-			sendPacket(new CharCreateFail(CharCreateFail.REASON_CREATION_FAILED));
+			sendPacket(CharCreateFail.REASON_CREATION_FAILED);
 			return;
 		}
 		
-		if (PlayerNameTable.getInstance().getCharactersInAcc(getClient().getAccountName()) >= 7)
+		if (!StringUtil.isValidPlayerName(_name))
 		{
-			sendPacket(new CharCreateFail(CharCreateFail.REASON_TOO_MANY_CHARACTERS));
+			sendPacket((_name.length() > 16) ? CharCreateFail.REASON_16_ENG_CHARS : CharCreateFail.REASON_INCORRECT_NAME);
 			return;
 		}
 		
-		if (PlayerNameTable.getInstance().getPlayerObjectId(_name) > 0)
+		if (NpcData.getInstance().getTemplateByName(_name) != null)
 		{
-			sendPacket(new CharCreateFail(CharCreateFail.REASON_NAME_ALREADY_EXISTS));
+			sendPacket(CharCreateFail.REASON_INCORRECT_NAME);
 			return;
 		}
 		
-		final PlayerTemplate template = CharTemplateTable.getInstance().getTemplate(_classId);
+		if (PlayerInfoTable.getInstance().getCharactersInAcc(getClient().getAccountName()) >= 7)
+		{
+			sendPacket(CharCreateFail.REASON_TOO_MANY_CHARACTERS);
+			return;
+		}
+		
+		if (PlayerInfoTable.getInstance().getPlayerObjectId(_name) > 0)
+		{
+			sendPacket(CharCreateFail.REASON_NAME_ALREADY_EXISTS);
+			return;
+		}
+		
+		final PlayerTemplate template = PlayerData.getInstance().getTemplate(_classId);
 		if (template == null || template.getClassBaseLevel() > 1)
 		{
-			sendPacket(new CharCreateFail(CharCreateFail.REASON_CREATION_FAILED));
+			sendPacket(CharCreateFail.REASON_CREATION_FAILED);
 			return;
 		}
 		
-		final Player newChar = Player.create(IdFactory.getInstance().getNextId(), template, getClient().getAccountName(), _name, _hairStyle, _hairColor, _face, Sex.values()[_sex]);
-		if (newChar == null)
+		final Player player = Player.create(IdFactory.getInstance().getNextId(), template, getClient().getAccountName(), _name, _hairStyle, _hairColor, _face, Sex.values()[_sex]);
+		if (player == null)
 		{
-			sendPacket(new CharCreateFail(CharCreateFail.REASON_CREATION_FAILED));
+			sendPacket(CharCreateFail.REASON_CREATION_FAILED);
 			return;
 		}
 		
-		newChar.setCurrentCp(0);
-		newChar.setCurrentHp(newChar.getMaxHp());
-		newChar.setCurrentMp(newChar.getMaxMp());
+		player.setCurrentCp(0);
+		player.setCurrentHp(player.getMaxHp());
+		player.setCurrentMp(player.getMaxMp());
 		
 		// send acknowledgement
 		sendPacket(CharCreateOk.STATIC_PACKET);
 		
-		World.getInstance().addObject(newChar);
+		World.getInstance().addObject(player);
 		
 		// Starting Adena
-		newChar.addAdena("Adena", Config.STARTING_ADENA, newChar, true);
+		player.addAdena("Adena", Config.STARTING_ADENA, player, true);
 		
 		if (Config.STARTING_ITEMS_SYSTEM)
 		{
 			
 			for (int[] reward : Config.STARTING_ITEMS)
 			{
-				PcInventory inv = newChar.getInventory();
+				PcInventory inv = player.getInventory();
 				
 				if (ItemTable.getInstance().createDummyItem(reward[0]).isStackable())
-					inv.addItem("Start.", reward[0], reward[1], newChar, newChar);
+					inv.addItem("Start.", reward[0], reward[1], player, player);
 				else
 				{
 					for (int i = 0; i < reward[1]; i++)
-						inv.addItem("Start.", reward[0], reward[1], newChar, newChar);
+						inv.addItem("Start.", reward[0], reward[1], player, player);
 				}
 			}
 		}
@@ -147,79 +151,78 @@ public final class CharacterCreate extends L2GameClientPacket
 		if (Config.CUSTOM_SPAWN_CHAR)
 		{
 			if (Config.RANDOM_SPAWN_CHAR == 1)
-				newChar.getPosition().set(Config.CUSTOM_SPAWN1[0], Config.CUSTOM_SPAWN1[1], Config.CUSTOM_SPAWN1[2]);
+				player.getPosition().set(Config.CUSTOM_SPAWN1[0], Config.CUSTOM_SPAWN1[1], Config.CUSTOM_SPAWN1[2]);
 			else if (Config.RANDOM_SPAWN_CHAR == 2)
 			{
 				int rndarea = Rnd.get(1, 2);
 				if (rndarea == 1)
-					newChar.getPosition().set(Config.CUSTOM_SPAWN1[0], Config.CUSTOM_SPAWN1[1], Config.CUSTOM_SPAWN1[2]);
+					player.getPosition().set(Config.CUSTOM_SPAWN1[0], Config.CUSTOM_SPAWN1[1], Config.CUSTOM_SPAWN1[2]);
 				else
-					newChar.getPosition().set(Config.CUSTOM_SPAWN2[0], Config.CUSTOM_SPAWN2[1], Config.CUSTOM_SPAWN2[2]);
+					player.getPosition().set(Config.CUSTOM_SPAWN2[0], Config.CUSTOM_SPAWN2[1], Config.CUSTOM_SPAWN2[2]);
 			}
 			else if (Config.RANDOM_SPAWN_CHAR == 3)
 			{
 				int rndarea = Rnd.get(1, 3);
 				if (rndarea == 1)
-					newChar.getPosition().set(Config.CUSTOM_SPAWN1[0], Config.CUSTOM_SPAWN1[1], Config.CUSTOM_SPAWN1[2]);
+					player.getPosition().set(Config.CUSTOM_SPAWN1[0], Config.CUSTOM_SPAWN1[1], Config.CUSTOM_SPAWN1[2]);
 				else if (rndarea == 2)
-					newChar.getPosition().set(Config.CUSTOM_SPAWN2[0], Config.CUSTOM_SPAWN2[1], Config.CUSTOM_SPAWN2[2]);
+					player.getPosition().set(Config.CUSTOM_SPAWN2[0], Config.CUSTOM_SPAWN2[1], Config.CUSTOM_SPAWN2[2]);
 				else
-					newChar.getPosition().set(Config.CUSTOM_SPAWN3[0], Config.CUSTOM_SPAWN3[1], Config.CUSTOM_SPAWN3[2]);
+					player.getPosition().set(Config.CUSTOM_SPAWN3[0], Config.CUSTOM_SPAWN3[1], Config.CUSTOM_SPAWN3[2]);
 			}
 		}
 		else
-			newChar.getPosition().set(template.getSpawn());
+			player.getPosition().set(template.getSpawn());
 		
-		newChar.registerShortCut(new L2ShortCut(0, 0, 3, 2, -1, 1)); // attack shortcut
-		newChar.registerShortCut(new L2ShortCut(3, 0, 3, 5, -1, 1)); // take shortcut
-		newChar.registerShortCut(new L2ShortCut(10, 0, 3, 0, -1, 1)); // sit shortcut
+		player.registerShortCut(new L2ShortCut(0, 0, 3, 2, -1, 1)); // attack shortcut
+		player.registerShortCut(new L2ShortCut(3, 0, 3, 5, -1, 1)); // take shortcut
+		player.registerShortCut(new L2ShortCut(10, 0, 3, 0, -1, 1)); // sit shortcut
 		
-		for (Item ia : template.getItems())
+		for (int itemId : template.getItemIds())
 		{
-			ItemInstance item = newChar.getInventory().addItem("Init", ia.getItemId(), 1, newChar, null);
-			if (item.getItemId() == 5588) // tutorial book shortcut
-				newChar.registerShortCut(new L2ShortCut(11, 0, 1, item.getObjectId(), -1, 1));
+			final ItemInstance item = player.getInventory().addItem("Init", itemId, 1, player, null);
+			if (itemId == 5588) // tutorial book shortcut
+				player.registerShortCut(new L2ShortCut(11, 0, 1, item.getObjectId(), -1, 1));
 			
 			if (item.isEquipable())
 			{
-				if (newChar.getActiveWeaponItem() == null || !(item.getItem().getType2() != Item.TYPE2_WEAPON))
-					newChar.getInventory().equipItemAndRecord(item);
+				if (player.getActiveWeaponItem() == null || !(item.getItem().getType2() != Item.TYPE2_WEAPON))
+					player.getInventory().equipItemAndRecord(item);
 			}
 		}
 		
-		for (L2SkillLearn skill : SkillTreeTable.getInstance().getAvailableSkills(newChar, newChar.getClassId()))
+		for (GeneralSkillNode skill : player.getAvailableAutoGetSkills())
 		{
-			newChar.addSkill(SkillTable.getInstance().getInfo(skill.getId(), skill.getLevel()), true);
 			if (skill.getId() == 1001 || skill.getId() == 1177)
-				newChar.registerShortCut(new L2ShortCut(1, 0, 2, skill.getId(), 1, 1));
+				player.registerShortCut(new L2ShortCut(1, 0, 2, skill.getId(), 1, 1));
 			
 			if (skill.getId() == 1216)
-				newChar.registerShortCut(new L2ShortCut(9, 0, 2, skill.getId(), 1, 1));
+				player.registerShortCut(new L2ShortCut(9, 0, 2, skill.getId(), 1, 1));
 		}
 		
 		if (Config.START_LEVEL > 1)
-			newChar.addExpAndSp(Experience.LEVEL[Config.START_LEVEL], 0);
+			player.addExpAndSp(Experience.LEVEL[Config.START_LEVEL], 0);
 		
 		if (!Config.DISABLE_TUTORIAL)
 		{
-			if (newChar.getQuestState("Tutorial") == null)
+			if (player.getQuestState("Tutorial") == null)
 			{
-				Quest q = ScriptManager.getInstance().getQuest("Tutorial");
-				if (q != null)
-					q.newQuestState(newChar).setState(Quest.STATE_STARTED);
+				final Quest quest = ScriptManager.getInstance().getQuest("Tutorial");
+				if (quest != null)
+					quest.newQuestState(player).setState(Quest.STATE_STARTED);
 			}
 		}
 		
 		if (Config.PVP_PK_TITLE)
-			newChar.setTitle(Config.PVP_TITLE_PREFIX + "[0]|" + Config.PK_TITLE_PREFIX + "[0]");
+			player.setTitle(Config.PVP_TITLE_PREFIX + "[0]|" + Config.PK_TITLE_PREFIX + "[0]");
 		else
-			newChar.setTitle(Config.NEW_CHAR_TITLE);
+			player.setTitle(Config.NEW_CHAR_TITLE);
 		
-		newChar.setOnlineStatus(true, false);
-		newChar.deleteMe();
+		player.setOnlineStatus(true, false);
+		player.deleteMe();
 		
-		final CharSelectInfo cl = new CharSelectInfo(getClient().getAccountName(), getClient().getSessionId().playOkID1);
-		getClient().getConnection().sendPacket(cl);
-		getClient().setCharSelection(cl.getCharInfo());
+		final CharSelectInfo csi = new CharSelectInfo(getClient().getAccountName(), getClient().getSessionId().playOkID1);
+		sendPacket(csi);
+		getClient().setCharSelectSlot(csi.getCharacterSlots());
 	}
 }

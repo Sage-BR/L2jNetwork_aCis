@@ -17,11 +17,11 @@ import java.util.logging.Logger;
 import net.sf.l2j.commons.lang.StringUtil;
 
 import net.sf.l2j.L2DatabaseFactory;
-import net.sf.l2j.gameserver.data.CharTemplateTable;
-import net.sf.l2j.gameserver.data.NpcTable;
-import net.sf.l2j.gameserver.data.PlayerNameTable;
+import net.sf.l2j.gameserver.data.manager.CastleManager;
 import net.sf.l2j.gameserver.data.sql.ClanTable;
-import net.sf.l2j.gameserver.instancemanager.CastleManager;
+import net.sf.l2j.gameserver.data.sql.PlayerInfoTable;
+import net.sf.l2j.gameserver.data.xml.NpcData;
+import net.sf.l2j.gameserver.data.xml.PlayerData;
 import net.sf.l2j.gameserver.model.World;
 import net.sf.l2j.gameserver.model.actor.instance.Player;
 import net.sf.l2j.gameserver.model.actor.template.NpcTemplate;
@@ -259,7 +259,7 @@ public class Hero
 				
 				if (action == ACTION_RAID_KILLED)
 				{
-					NpcTemplate template = NpcTable.getInstance().getTemplate(param);
+					NpcTemplate template = NpcData.getInstance().getTemplate(param);
 					if (template != null)
 						entry.set("action", template.getName() + " was defeated");
 				}
@@ -280,7 +280,7 @@ public class Hero
 			
 			_heroDiaries.put(charId, _diary);
 			
-			_log.info("Hero: Loaded " + entries + " diary entries for hero: " + PlayerNameTable.getInstance().getPlayerName(charId));
+			_log.info("Hero: Loaded " + entries + " diary entries for hero: " + PlayerInfoTable.getInstance().getPlayerName(charId));
 		}
 		catch (SQLException e)
 		{
@@ -325,8 +325,8 @@ public class Hero
 				
 				if (charId == charOneId)
 				{
-					String name = PlayerNameTable.getInstance().getPlayerName(charTwoId);
-					String cls = CharTemplateTable.getInstance().getClassNameById(charTwoClass);
+					String name = PlayerInfoTable.getInstance().getPlayerName(charTwoId);
+					String cls = PlayerData.getInstance().getClassNameById(charTwoClass);
 					if (name != null && cls != null)
 					{
 						StatsSet fight = new StatsSet();
@@ -360,8 +360,8 @@ public class Hero
 				}
 				else if (charId == charTwoId)
 				{
-					String name = PlayerNameTable.getInstance().getPlayerName(charOneId);
-					String cls = CharTemplateTable.getInstance().getClassNameById(charOneClass);
+					String name = PlayerInfoTable.getInstance().getPlayerName(charOneId);
+					String cls = PlayerData.getInstance().getClassNameById(charOneClass);
 					if (name != null && cls != null)
 					{
 						StatsSet fight = new StatsSet();
@@ -404,7 +404,7 @@ public class Hero
 			_heroCounts.put(charId, heroCountData);
 			_heroFights.put(charId, _fights);
 			
-			_log.info("Hero: Loaded " + numberOfFights + " fights for: " + PlayerNameTable.getInstance().getPlayerName(charId));
+			_log.info("Hero: Loaded " + numberOfFights + " fights for: " + PlayerInfoTable.getInstance().getPlayerName(charId));
 		}
 		catch (SQLException e)
 		{
@@ -449,7 +449,7 @@ public class Hero
 		
 		final NpcHtmlMessage html = new NpcHtmlMessage(0);
 		html.setFile("data/html/olympiad/herodiary.htm");
-		html.replace("%heroname%", PlayerNameTable.getInstance().getPlayerName(charid));
+		html.replace("%heroname%", PlayerInfoTable.getInstance().getPlayerName(charid));
 		html.replace("%message%", _heroMessages.get(charid));
 		html.disableValidation();
 		
@@ -511,7 +511,7 @@ public class Hero
 		
 		final NpcHtmlMessage html = new NpcHtmlMessage(0);
 		html.setFile("data/html/olympiad/herohistory.htm");
-		html.replace("%heroname%", PlayerNameTable.getInstance().getPlayerName(charid));
+		html.replace("%heroname%", PlayerInfoTable.getInstance().getPlayerName(charid));
 		html.disableValidation();
 		
 		if (!list.isEmpty())
@@ -746,7 +746,7 @@ public class Hero
 	{
 		setDiaryData(charId, ACTION_RAID_KILLED, npcId);
 		
-		NpcTemplate template = NpcTable.getInstance().getTemplate(npcId);
+		NpcTemplate template = NpcData.getInstance().getTemplate(npcId);
 		
 		if (_heroDiaries.containsKey(charId) && template != null)
 		{
@@ -912,6 +912,11 @@ public class Hero
 		_heroMessages.put(player.getObjectId(), "");
 		
 		updateHeroes(false);
+	}
+	
+	public Map<Integer, StatsSet> getAllHeroes()
+	{
+		return _completeHeroes;
 	}
 	
 	public static Hero getInstance()

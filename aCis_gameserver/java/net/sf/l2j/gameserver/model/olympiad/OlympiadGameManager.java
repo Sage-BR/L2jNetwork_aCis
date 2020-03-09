@@ -5,9 +5,9 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import net.sf.l2j.gameserver.instancemanager.ZoneManager;
+import net.sf.l2j.gameserver.data.manager.ZoneManager;
 import net.sf.l2j.gameserver.model.actor.instance.Player;
-import net.sf.l2j.gameserver.model.zone.type.L2OlympiadStadiumZone;
+import net.sf.l2j.gameserver.model.zone.type.OlympiadStadiumZone;
 
 /**
  * @author GodKratos, DS
@@ -21,13 +21,13 @@ public class OlympiadGameManager implements Runnable
 	
 	protected OlympiadGameManager()
 	{
-		final Collection<L2OlympiadStadiumZone> zones = ZoneManager.getInstance().getAllZones(L2OlympiadStadiumZone.class);
+		final Collection<OlympiadStadiumZone> zones = ZoneManager.getInstance().getAllZones(OlympiadStadiumZone.class);
 		if (zones == null || zones.isEmpty())
 			throw new Error("No olympiad stadium zones defined !");
 		
 		_tasks = new OlympiadGameTask[zones.size()];
 		int i = 0;
-		for (L2OlympiadStadiumZone zone : zones)
+		for (OlympiadStadiumZone zone : zones)
 			_tasks[i++] = new OlympiadGameTask(zone);
 		
 		_log.log(Level.INFO, "Olympiad: Loaded " + _tasks.length + " stadiums.");

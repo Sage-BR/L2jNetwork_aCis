@@ -1,7 +1,7 @@
 package net.sf.l2j.gameserver.handler.chathandlers;
 
 import net.sf.l2j.Config;
-import net.sf.l2j.gameserver.datatables.MapRegionTable;
+import net.sf.l2j.gameserver.data.xml.MapRegionData;
 import net.sf.l2j.gameserver.handler.IChatHandler;
 import net.sf.l2j.gameserver.model.BlockList;
 import net.sf.l2j.gameserver.model.World;
@@ -31,11 +31,11 @@ public class ChatTrade implements IChatHandler
 			}
 		
 		final CreatureSay cs = new CreatureSay(activeChar.getObjectId(), type, activeChar.getName(), text);
-		final int region = MapRegionTable.getInstance().getMapRegion(activeChar.getX(), activeChar.getY());
+		final int region = MapRegionData.getInstance().getMapRegion(activeChar.getX(), activeChar.getY());
 		
 		for (Player player : World.getInstance().getPlayers())
 		{
-			if (!BlockList.isBlocked(player, activeChar) && region == MapRegionTable.getInstance().getMapRegion(player.getX(), player.getY()))
+			if (!BlockList.isBlocked(player, activeChar) && region == MapRegionData.getInstance().getMapRegion(player.getX(), player.getY()))
 				player.sendPacket(cs);
 		}
 	}

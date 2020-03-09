@@ -2,7 +2,8 @@ package net.sf.l2j.gameserver.model.actor.instance;
 
 import net.sf.l2j.commons.random.Rnd;
 
-import net.sf.l2j.gameserver.instancemanager.RaidBossPointsManager;
+import net.sf.l2j.Config;
+import net.sf.l2j.gameserver.data.manager.RaidPointManager;
 import net.sf.l2j.gameserver.model.actor.Creature;
 import net.sf.l2j.gameserver.model.actor.template.NpcTemplate;
 import net.sf.l2j.gameserver.model.entity.Hero;
@@ -10,6 +11,7 @@ import net.sf.l2j.gameserver.model.group.Party;
 import net.sf.l2j.gameserver.network.SystemMessageId;
 import net.sf.l2j.gameserver.network.serverpackets.PlaySound;
 import net.sf.l2j.gameserver.network.serverpackets.SystemMessage;
+import net.sf.l2j.gameserver.util.Broadcast;
 
 /**
  * This class manages all Grand Bosses.
@@ -43,6 +45,8 @@ public final class GrandBoss extends Monster
 		final Player player = killer.getActingPlayer();
 		if (player != null)
 		{
+			if (Config.ANNOUNCE_DEAD_RB)
+				Broadcast.announceToOnlinePlayers(player.getClan() != null ? "Grandboss " + getName() + " has been killed by " + player.getClan().getName() + " Clan." : "Raid Boss " + getName() + " has been killed by " + killer.getName(), true);
 			broadcastPacket(SystemMessage.getSystemMessage(SystemMessageId.RAID_WAS_SUCCESSFUL));
 			broadcastPacket(new PlaySound("systemmsg_e.1209"));
 			
@@ -51,14 +55,14 @@ public final class GrandBoss extends Monster
 			{
 				for (Player member : party.getMembers())
 				{
-					RaidBossPointsManager.getInstance().addPoints(member, getNpcId(), (getLevel() / 2) + Rnd.get(-5, 5));
+					RaidPointManager.getInstance().addPoints(member, getNpcId(), (getLevel() / 2) + Rnd.get(-5, 5));
 					if (member.isNoble())
 						Hero.getInstance().setRBkilled(member.getObjectId(), getNpcId());
 				}
 			}
 			else
 			{
-				RaidBossPointsManager.getInstance().addPoints(player, getNpcId(), (getLevel() / 2) + Rnd.get(-5, 5));
+				RaidPointManager.getInstance().addPoints(player, getNpcId(), (getLevel() / 2) + Rnd.get(-5, 5));
 				if (player.isNoble())
 					Hero.getInstance().setRBkilled(player.getObjectId(), getNpcId());
 			}

@@ -4,7 +4,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -32,16 +31,12 @@ public class ServerMemoTable extends AbstractMemo
 	public boolean restoreMe()
 	{
 		// Restore previous variables.
-		try (Connection con = L2DatabaseFactory.getInstance().getConnection())
+		try (Connection con = L2DatabaseFactory.getInstance().getConnection();
+			PreparedStatement ps = con.prepareStatement(SELECT_QUERY);
+			ResultSet rs = ps.executeQuery())
 		{
-			Statement st = con.createStatement();
-			
-			ResultSet rset = st.executeQuery(SELECT_QUERY);
-			while (rset.next())
-				set(rset.getString("var"), rset.getString("value"));
-			
-			rset.close();
-			st.close();
+			while (rs.next())
+				set(rs.getString("var"), rs.getString("value"));
 		}
 		catch (SQLException e)
 		{
@@ -66,20 +61,20 @@ public class ServerMemoTable extends AbstractMemo
 		try (Connection con = L2DatabaseFactory.getInstance().getConnection())
 		{
 			// Clear previous entries.
-			Statement del = con.createStatement();
-			del.execute(DELETE_QUERY);
-			del.close();
+			PreparedStatement ps = con.prepareStatement(DELETE_QUERY);
+			ps.execute();
+			ps.close();
 			
 			// Insert all variables.
-			PreparedStatement st = con.prepareStatement(INSERT_QUERY);
+			ps = con.prepareStatement(INSERT_QUERY);
 			for (Entry<String, Object> entry : entrySet())
 			{
-				st.setString(1, entry.getKey());
-				st.setString(2, String.valueOf(entry.getValue()));
-				st.addBatch();
+				ps.setString(1, entry.getKey());
+				ps.setString(2, String.valueOf(entry.getValue()));
+				ps.addBatch();
 			}
-			st.executeBatch();
-			st.close();
+			ps.executeBatch();
+			ps.close();
 		}
 		catch (SQLException e)
 		{
