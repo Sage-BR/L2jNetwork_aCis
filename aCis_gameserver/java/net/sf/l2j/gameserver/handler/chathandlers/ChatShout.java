@@ -22,16 +22,20 @@ public class ChatShout implements IChatHandler
 		if (!FloodProtectors.performAction(activeChar.getClient(), Action.GLOBAL_CHAT))
 			return;
 		
+		if (Config.ALLOW_PVP_CHAT)
+			if ((activeChar.getPvpKills() < Config.PVPS_TO_TALK_ON_SHOUT) && !activeChar.isGM())
+			{
+				activeChar.sendMessage("You must have at least " + Config.PVPS_TO_TALK_ON_SHOUT + " pvp kills in order to speak in global chat.");
+				return;
+			}
+		
 		final CreatureSay cs = new CreatureSay(activeChar.getObjectId(), type, activeChar.getName(), text);
 		for (Player player : World.getInstance().getPlayers())
 		{
-			if (!BlockList.isBlocked(player, activeChar) && activeChar.getLevel() >= Config.CHAT_GLOBAL_LEVEL)
+			if (!BlockList.isBlocked(player, activeChar))
 				player.sendPacket(cs);
 		}
-			if (!(activeChar.getLevel() >= Config.CHAT_GLOBAL_LEVEL))
-				activeChar.sendMessage("Your level must be more than " + Config.CHAT_GLOBAL_LEVEL + " to use Global Chat!");
-			return;
-		}
+	}
 	
 	@Override
 	public int[] getChatTypeList()

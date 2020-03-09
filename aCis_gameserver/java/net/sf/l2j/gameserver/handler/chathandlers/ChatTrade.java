@@ -23,17 +23,21 @@ public class ChatTrade implements IChatHandler
 		if (!FloodProtectors.performAction(activeChar.getClient(), Action.TRADE_CHAT))
 			return;
 		
+		if (Config.ALLOW_PVP_CHAT)
+			if ((activeChar.getPvpKills() < Config.PVPS_TO_TALK_ON_TRADE) && !activeChar.isGM())
+			{
+				activeChar.sendMessage("You must have at least " + Config.PVPS_TO_TALK_ON_TRADE + " pvp kills in order to speak in trade chat.");
+				return;
+			}
+		
 		final CreatureSay cs = new CreatureSay(activeChar.getObjectId(), type, activeChar.getName(), text);
 		final int region = MapRegionTable.getInstance().getMapRegion(activeChar.getX(), activeChar.getY());
 		
 		for (Player player : World.getInstance().getPlayers())
 		{
-			if (!BlockList.isBlocked(player, activeChar) && region == MapRegionTable.getInstance().getMapRegion(player.getX(), player.getY()) && activeChar.getLevel() >= Config.CHAT_TRADE_LEVEL)
+			if (!BlockList.isBlocked(player, activeChar) && region == MapRegionTable.getInstance().getMapRegion(player.getX(), player.getY()))
 				player.sendPacket(cs);
 		}
-		if (!(activeChar.getLevel() >= Config.CHAT_TRADE_LEVEL))
-			activeChar.sendMessage("Your level must be more than " + Config.CHAT_TRADE_LEVEL + " to use Trade Chat!");
-		return;
 	}
 	
 	@Override

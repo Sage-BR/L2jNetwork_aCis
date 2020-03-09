@@ -14,6 +14,7 @@ import net.sf.l2j.gameserver.model.actor.instance.Pet;
 import net.sf.l2j.gameserver.model.actor.instance.Player;
 import net.sf.l2j.gameserver.model.actor.template.NpcTemplate;
 import net.sf.l2j.gameserver.model.pledge.Clan;
+import net.sf.l2j.gameserver.model.zone.ZoneId;
 
 public abstract class AbstractNpcInfo extends L2GameServerPacket
 {
@@ -86,7 +87,7 @@ public abstract class AbstractNpcInfo extends L2GameServerPacket
 				_title = "Lv " + _npc.getLevel() + (_npc.getTemplate().getAggroRange() > 0 ? "* " : " ") + _title;
 			
 			// NPC crest system
-			if (Config.SHOW_NPC_CREST && _npc.getCastle() != null && _npc.getCastle().getOwnerId() != 0)
+			if (Config.SHOW_NPC_CREST && _npc.getCastle() != null && _npc.isInsideZone(ZoneId.TOWN) && _npc.getCastle().getOwnerId() != 0)
 			{
 				Clan clan = ClanTable.getInstance().getClan(_npc.getCastle().getOwnerId());
 				_clanCrest = clan.getCrestId();

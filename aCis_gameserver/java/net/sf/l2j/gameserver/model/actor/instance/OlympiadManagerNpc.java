@@ -4,8 +4,8 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import net.sf.l2j.commons.lang.StringUtil;
+
 import net.sf.l2j.gameserver.data.xml.MultisellData;
-import net.sf.l2j.gameserver.events.TvTEvent;
 import net.sf.l2j.gameserver.model.actor.template.NpcTemplate;
 import net.sf.l2j.gameserver.model.entity.Hero;
 import net.sf.l2j.gameserver.model.olympiad.CompetitionType;
@@ -47,7 +47,7 @@ public class OlympiadManagerNpc extends Folk
 	
 	@Override
 	public void showChatWindow(Player player, int val)
-	{
+	{	
 		int npcId = getTemplate().getNpcId();
 		String filename = getHtmlPath(npcId, val);
 		
@@ -173,11 +173,6 @@ public class OlympiadManagerNpc extends Folk
 		}
 		else if (command.startsWith("Olympiad"))
 		{
-			if (TvTEvent.isPlayerParticipant(player.getName()))
-			{
-				player.sendMessage("You cannot do this while you are in TvT list.");
-				return;
-			}
 			int val = Integer.parseInt(command.substring(9, 10));
 			
 			final NpcHtmlMessage html = new NpcHtmlMessage(getObjectId());

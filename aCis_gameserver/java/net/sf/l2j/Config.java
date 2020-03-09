@@ -38,7 +38,7 @@ public final class Config
 	public static final String PLAYERS_FILE = "./config/players.properties";
 	public static final String SERVER_FILE = "./config/server.properties";
 	public static final String SIEGE_FILE = "./config/siege.properties";
-	public static final String CHECK_LIMITS_FILE = "./config/customs/limits.properties";
+	public static final String CHECK_LIMITS_FILE = "./config/customs/chat.properties";
 	public static final String NEWBIE_FILE = "./config/customs/newbies_system.properties";
 	public static final String MANAGER_FILE = "./config/customs/npcs_manager.properties";
 	public static final String BANK_FILE = "./config/customs/bank.properties";
@@ -50,6 +50,7 @@ public final class Config
 	public static final String TVT_FILE = "./config/customs/tvt.properties";
 	public static final String COMMAND_LIST = "./config/customs/commandlist.properties";
 	public static final String RANDOM_ZONE = "./config/customs/randompvpzone.properties";
+	public static final String RAID_FILE = "./config/customs/raidbosses.properties";
 	
 	// --------------------------------------------------
 	// Custom settings
@@ -64,9 +65,9 @@ public final class Config
 	public static int PVP_LIMITS;
 	
 	/** CHAT LIMITS */
-	public static int CHAT_LEVEL;
-	public static int CHAT_GLOBAL_LEVEL;
-	public static int CHAT_TRADE_LEVEL;
+	public static boolean ALLOW_PVP_CHAT;
+	public static int PVPS_TO_TALK_ON_SHOUT;
+	public static int PVPS_TO_TALK_ON_TRADE;
 	public static boolean EMOTION_CHAT_SYSTEM;
 	public static Map<String, Integer> EMOTION_CHAT_LIST;
 	public static boolean CHAT_RESTRICTION_WORDS;
@@ -80,13 +81,6 @@ public final class Config
 	
 	/** NEW CHAR TITLE */
 	public static String NEW_CHAR_TITLE;
-	
-	/** Protections Bow/Heavy */
-	public static boolean ANTIHEAVY_PROTECTION;
-	public static boolean ANTIBOW_PROTECTION;
-	
-	/** ALLOW TELEPORT INTO GRANDBOSSES */
-	public static boolean ALLOW_DIRECT_TP_TO_BOSS_ROOM;
 	
 	/** SUB-CLASS LEVEL */
 	public static int SUBCLASS_LEVEL;
@@ -267,23 +261,22 @@ public final class Config
 	public static int VIP_RATE_DROP_ITEMS_BY_RAID;
 	public static int VIP_DROP_RATES;
 	
+	/** Raidbosses settings */
 	public static boolean FLAG_RB;
-	
 	public static boolean ANNOUNCE_RB_SPAWN;
-	
 	public static boolean GRAND_BOSS_ANNOUNCE;
+	public static boolean ANNOUNCE_DEAD_RB;
+	public static boolean ALLOW_DIRECT_TP_TO_BOSS_ROOM;
 	
-	public static int[] OLY_PERIOD;
-	
+	/** Custom Olympiad Settings */
 	public static boolean OLYMPIAD_END_ANNOUNE;
 	
+	/** onEnter Messages/Effect */
 	public static boolean WELCOME_EFFECT;
-	
 	public static boolean PM_MESSAGE;
 	public static String PM_SERVER_NAME;
 	public static String PM_TEXT1;
 	public static String PM_TEXT2;
-	
 	public static boolean ANNOUNCE_CASTLE_LORDS;
 	public static boolean ANNOUNCE_HEROES;
 	
@@ -292,6 +285,7 @@ public final class Config
 	public static String PVP_TITLE_PREFIX;
 	public static String PK_TITLE_PREFIX;
 	
+	/** Baking System */
 	public static int BANKING_SYSTEM_GOLDBARS;
 	public static int BANKING_SYSTEM_ADENA;
 	
@@ -302,14 +296,17 @@ public final class Config
 	public static boolean ENABLE_STARTUP;
 	public static int NEWBIE_LVL;
 	
+	/** Startup Buffs */
 	public static String NEWBIE_MAGE_SET;
 	public static int[] NEWBIE_MAGE_BUFFS;
 	public static String NEWBIE_FIGHTER_SET;
 	public static int[] NEWBIE_FIGHTER_BUFFS;
-	
 	public static int[] TELE_TO_LOCATION = new int[3];
 	
-	// TvT Event settings
+	/** Unstuck Time */
+	public static int UNSTUCK_TIME;
+	
+	/** TvT Event settings */
 	public static boolean TVT_EVENT_ENABLED;
 	public static int TVT_EVENT_INTERVAL;
 	public static int TVT_EVENT_PARTICIPATION_TIME;
@@ -447,6 +444,12 @@ public final class Config
 	public static int ALT_OLY_DIVIDER_NON_CLASSED;
 	public static int ALT_OLY_RESTORE_IN_SECOND_COUNTDOWN;
 	public static boolean ALT_OLY_ANNOUNCE_GAMES;
+	public static boolean ALT_USE_CUSTOM_PERIOD;
+	public static int[] ALT_CYSTOM_PERIOD;
+	public static boolean ALT_OLY_RECHARGE_SKILLS;
+	public static boolean ALT_OLY_SHOW_MONTHLY_WINNERS;
+	public static boolean ALT_OLY_ALLOW_APPLY_AUGMENT_ON_CHAR;
+	public static List<Integer> ALT_OLY_SKILLS_ALLOW_APPLY_AUGMENT;
 	
 	public static List<Integer> LIST_OLY_RESTRICTED_ITEMS = new ArrayList<>();
 	public static boolean ALT_OLY_GRADE_RESTRICTION_ITEMS;
@@ -1042,12 +1045,10 @@ public final class Config
 	private static final void loadLimits()
 	{
 		final ExProperties limits = initProperties(CHECK_LIMITS_FILE);
-		PVP_LIMITS_OLY_ENABLE = limits.getProperty("PvPKillsOlympiadLimits", true);
-		PVP_LIMITS = limits.getProperty("PvPKills", 10);
-		
-		CHAT_LEVEL = limits.getProperty("ChatLevel", 40);
-		CHAT_GLOBAL_LEVEL = limits.getProperty("GlobalChatLevel", 40);
-		CHAT_TRADE_LEVEL = limits.getProperty("TradeChatLevel", 10);
+		EMOTION_CHAT_SYSTEM = limits.getProperty("PvPsChatSystem", false);
+		ALLOW_PVP_CHAT = limits.getProperty("AllowPvPChat", false);
+		PVPS_TO_TALK_ON_SHOUT = limits.getProperty("PvPsToTalkOnShout", 40);
+		PVPS_TO_TALK_ON_TRADE = limits.getProperty("PvPsToTalkOnTrade", 40);
 		
 		EMOTION_CHAT_SYSTEM = limits.getProperty("EmotionChatSystem", false);
 		EMOTION_CHAT_LIST = new HashMap<>();
@@ -1061,10 +1062,6 @@ public final class Config
 		CHAT_RESTRICTION_WORDS_LIST = new ArrayList<>();
 		for (String words : limits.getProperty("ChatRestrictionWordsList").split(";"))
 			CHAT_RESTRICTION_WORDS_LIST.add(words);
-		
-		KARMA_PLAYER_CAN_USE_BUFFER = limits.getProperty("KarmaFlagPlayerCanUseBuffer", false);
-		EXPERTISE_PENALTY = limits.getProperty("ExpertisePenalty", true);
-		
 	}
 	
 	private static final void loadOfflineshop()
@@ -1109,9 +1106,6 @@ public final class Config
 	private static final void loadCustoms()
 	{
 		final ExProperties customs = initProperties(CUSTOMS_FILE);
-		ANTIHEAVY_PROTECTION = customs.getProperty("AntiHeavyProtection", false);
-		ANTIBOW_PROTECTION = customs.getProperty("AntiBowProtection", false);
-		ALLOW_DIRECT_TP_TO_BOSS_ROOM = customs.getProperty("AllowGrandBossesTeleport", false);
 		DISARM_WEP = customs.getProperty("DisarmWepOnLogin", false);
 		NEW_CHAR_TITLE = customs.getProperty("NewCharTitle", "L2Surrender");
 		SUBCLASS_LEVEL = customs.getProperty("SubclassLevel", 52);
@@ -1246,18 +1240,6 @@ public final class Config
 		
 		ENABLE_SKIPPING = customs.getProperty("EnableSkippingItems", false);
 		
-		FLAG_RB = customs.getProperty("FlagRbZones", false);
-		
-		ANNOUNCE_RB_SPAWN = customs.getProperty("AnnounceRbSpawn", false);
-		GRAND_BOSS_ANNOUNCE = customs.getProperty("AnnounceGrandBossStatus", false);
-		
-		pvp_reward_splitted_1 = customs.getProperty("OlympiadPeriod", "1").split(",");
-		OLY_PERIOD = new int[pvp_reward_splitted_1.length];
-		for (int i = 0; i < pvp_reward_splitted_1.length; i++)
-		{
-			OLY_PERIOD[i] = Integer.parseInt(pvp_reward_splitted_1[i]);
-		}
-		
 		OLYMPIAD_END_ANNOUNE = customs.getProperty("OlyEndAnnounce", true);
 		
 		WELCOME_EFFECT = customs.getProperty("NewCharEffect", true);
@@ -1299,6 +1281,20 @@ public final class Config
 		PVP_PK_TITLE = Boolean.parseBoolean(customs.getProperty("PvpPkTitle", "True"));
 		PVP_TITLE_PREFIX = customs.getProperty("PvPTitlePrefix", " ");
 		PK_TITLE_PREFIX = customs.getProperty("PkTitlePrefix", " ");
+		
+		UNSTUCK_TIME = customs.getProperty("UnstuckTime", 30);
+	}
+	
+	private static final void loadRaidboss()
+	{
+		// Raid config
+		final ExProperties raid = initProperties(RAID_FILE);
+		
+		FLAG_RB = raid.getProperty("FlagRbZones", false);
+		ANNOUNCE_RB_SPAWN = raid.getProperty("AnnounceRbSpawn", false);
+		ANNOUNCE_DEAD_RB = raid.getProperty("AnnounceDeadRb", false);
+		GRAND_BOSS_ANNOUNCE = raid.getProperty("AnnounceGrandBossStatus", false);
+		ALLOW_DIRECT_TP_TO_BOSS_ROOM = raid.getProperty("AllowGrandBossesTeleport", false);
 	}
 	
 	private static final void loadManager()
@@ -1721,6 +1717,16 @@ public final class Config
 		ALT_OLY_DIVIDER_CLASSED = events.getProperty("AltOlyDividerClassed", 3);
 		ALT_OLY_DIVIDER_NON_CLASSED = events.getProperty("AltOlyDividerNonClassed", 3);
 		ALT_OLY_ANNOUNCE_GAMES = events.getProperty("AltOlyAnnounceGames", true);
+		ALT_USE_CUSTOM_PERIOD = events.getProperty("AltUseCustomPeriod", true);
+		ALT_CYSTOM_PERIOD = events.getProperty("AltCustomPeriod", new int[]
+		{
+			7,
+			0,
+			12,
+			0,
+			0
+		});
+		ALT_OLY_RECHARGE_SKILLS = events.getProperty("AltRechargeSkills", false);
 		
 		ALT_OLY_ALLOW_DUALBOX_OLY = events.getProperty("AltOlyAllowSameIPInOly", false);
 		LIST_OLY_RESTRICTED_ITEMS = new ArrayList<>();
@@ -1732,6 +1738,15 @@ public final class Config
 		for (String items : events.getProperty("AltOlyGradeRestrictionItemsList", "").split(","))
 			ALT_OLY_LIST_OF_GRADE_RESTRICTION_ITEMS.add(Integer.parseInt(items));
 		ALT_OLY_RESTORE_IN_SECOND_COUNTDOWN = events.getProperty("AltOlyRestoreInSecondCountdown", 20);
+		ALT_OLY_SHOW_MONTHLY_WINNERS = events.getProperty("AltShowMonthlyWinners", false);
+		ALT_OLY_ALLOW_APPLY_AUGMENT_ON_CHAR = events.getProperty("AltOlyAllowApplyAugmentOnChar", false);
+		
+		ALT_OLY_SKILLS_ALLOW_APPLY_AUGMENT = new ArrayList<>();
+		for (String skill : events.getProperty("AltOlySkillsAllowApplyAugment", "").split(","))
+			ALT_OLY_SKILLS_ALLOW_APPLY_AUGMENT.add(Integer.parseInt(skill));
+		
+		PVP_LIMITS_OLY_ENABLE = events.getProperty("PvPKillsOlympiadLimits", true);
+		PVP_LIMITS = events.getProperty("PvPKills", 10);
 		
 		ALT_GAME_CASTLE_DAWN = events.getProperty("AltCastleForDawn", true);
 		ALT_GAME_CASTLE_DUSK = events.getProperty("AltCastleForDusk", true);
@@ -2092,6 +2107,8 @@ public final class Config
 		STORE_SKILL_COOLTIME = players.getProperty("StoreSkillCooltime", true);
 		
 		STARTING_ADENA = players.getProperty("StartingAdena", 10000000);
+		KARMA_PLAYER_CAN_USE_BUFFER = players.getProperty("KarmaFlagPlayerCanUseBuffer", false);
+		EXPERTISE_PENALTY = players.getProperty("ExpertisePenalty", true);
 	}
 	
 	/**
@@ -2333,6 +2350,9 @@ public final class Config
 		
 		// limits settings
 		loadLimits();
+		
+		// Raidbosses settings
+		loadRaidboss();
 		
 		// Npc Manager settings
 		loadManager();

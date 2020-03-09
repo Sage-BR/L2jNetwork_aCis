@@ -14,6 +14,7 @@ import net.sf.l2j.gameserver.data.SkillTable;
 import net.sf.l2j.gameserver.data.xml.AdminData;
 import net.sf.l2j.gameserver.data.xml.AnnouncementData;
 import net.sf.l2j.gameserver.data.xml.FakePcsData;
+import net.sf.l2j.gameserver.data.xml.ItemRestrictionData;
 import net.sf.l2j.gameserver.data.xml.MultisellData;
 import net.sf.l2j.gameserver.data.xml.SkipDropData;
 import net.sf.l2j.gameserver.data.xml.TeleportLocationData;
@@ -177,6 +178,7 @@ public class AdminAdmin implements IAdminCommandHandler
 					else if (type.startsWith("config"))
 					{
 						Config.loadGameServer();
+						ItemRestrictionData.getInstance().load();
 						activeChar.sendMessage("Configs files have been reloaded.");
 					}
 					else if (type.startsWith("crest"))

@@ -7,6 +7,7 @@ import java.util.logging.Logger;
 
 import net.sf.l2j.Config;
 import net.sf.l2j.gameserver.data.ItemTable;
+import net.sf.l2j.gameserver.data.xml.ItemRestrictionData;
 import net.sf.l2j.gameserver.model.WorldObject;
 import net.sf.l2j.gameserver.model.actor.Creature;
 import net.sf.l2j.gameserver.model.actor.Summon;
@@ -471,6 +472,19 @@ public abstract class Item
 				activeChar.getActingPlayer().sendPacket(SystemMessageId.THIS_ITEM_IS_NOT_AVAILABLE_FOR_THE_OLYMPIAD_EVENT);
 			
 			return false;
+		}
+		
+		if (activeChar instanceof Player)
+		{
+			Player player = activeChar.getActingPlayer();
+			if (ItemRestrictionData.getInstance().isClassInItemRestriction(player))
+			{
+				if (ItemRestrictionData.getInstance().getClassItemRestriction(player).itemIsBlocked(this))
+				{
+					player.sendPacket(SystemMessageId.CANNOT_EQUIP_ITEM_DUE_TO_BAD_CONDITION);
+					return false;
+				}
+			}
 		}
 		
 		if (_preConditions == null)

@@ -64,6 +64,7 @@ public final class EventManager
 				switch (counter)
 				{
 					case 300:
+						announce(counter / 60 + " min(s) left to register use .register to leave .unregister " + getCurrentEvent().getString("eventName"));
 					case 240:
 					case 180:
 					case 120:
@@ -71,7 +72,7 @@ public final class EventManager
 						announce(counter / 60 + " min(s) left to register use .register to leave .unregister " + getCurrentEvent().getString("eventName"));
 						break;
 					case 30:
-					case 10:
+					case 15:
 						announce(counter + " seconds left to register use .register to leave .unregister!");
 						break;
 				}
@@ -145,15 +146,15 @@ public final class EventManager
 						setCurrentEvent(eventIds.get(rnd.nextInt(eventIds.size())));
 					
 					announce("The next event will be: " + getCurrentEvent().getString("eventName"));
-					announce("Registering period started! You have " + getInt("registerTime") / 60 + " minutes to register!");
-					announce("To register use .register");
+					announce("Let's register! You have " + getInt("registerTime") / 60 + " minutes to register!");
+					announce("Type .register to register.");
 					setStatus(State.REGISTERING);
 					counter = getInt("registerTime") - 1;
 					ThreadPool.schedule(cdtask, 1);
 					break;
 				
 				case REGISTERING:
-					announce("Registering phase ended!");
+					announce("Registering period ended!");
 					if (players.size() < getCurrentEvent().getInt("minPlayers"))
 					{
 						announce("There are not enough participants! Next event in " + getInt("betweenEventsTime") / 60 + "mins!");
@@ -750,8 +751,8 @@ public final class EventManager
 	{
 		setCurrentEvent(eventId);
 		announce("The next event will be: " + getCurrentEvent().getString("eventName"));
-		announce("Registering phase started! You have " + getInt("registerTime") / 60 + " minutes to register!");
-		announce("To register use .register or visit the event manager.");
+		announce("Registering period started! You have " + getInt("registerTime") / 60 + " minutes to register!");
+		announce("Type .register or visit the event manager to register.");
 		setStatus(State.REGISTERING);
 		counter = getInt("registerTime") - 1;
 	}

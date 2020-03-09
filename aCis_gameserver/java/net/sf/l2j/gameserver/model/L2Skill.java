@@ -130,7 +130,7 @@ public abstract class L2Skill implements IChanceSkillTrigger
 	private final int _abnormalLvl; // Abnormal levels for skills and their canceling
 	private final int _effectAbnormalLvl;
 	
-	private final int _hitTime; // all times in milliseconds
+	private int _hitTime; // all times in milliseconds
 	private final int _coolTime;
 	
 	private final int _reuseDelay;
@@ -879,6 +879,11 @@ public abstract class L2Skill implements IChanceSkillTrigger
 	public final int getReuseHashCode()
 	{
 		return _reuseHashCode;
+	}
+	
+	public void setHitTime(int value)
+	{
+		_hitTime = value;
 	}
 	
 	public final int getHitTime()

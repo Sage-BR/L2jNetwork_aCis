@@ -59,13 +59,8 @@ public class ChatAll implements IChatHandler
 			
 			for (Player player : activeChar.getKnownTypeInRadius(Player.class, 1250))
 			{
-				if (!BlockList.isBlocked(player, activeChar) && activeChar.getLevel() >= Config.CHAT_LEVEL)
+				if (!BlockList.isBlocked(player, activeChar))
 					player.sendPacket(cs);
-			}
-			if (!(activeChar.getLevel() >= Config.CHAT_LEVEL))
-			{
-				activeChar.sendMessage("Your level must be more than " + Config.CHAT_LEVEL + " to use this chat!");
-				return;
 			}
 			activeChar.sendPacket(cs);
 		}

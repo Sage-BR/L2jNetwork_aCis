@@ -46,6 +46,7 @@ import net.sf.l2j.gameserver.data.xml.FakePcsData;
 import net.sf.l2j.gameserver.data.xml.FishData;
 import net.sf.l2j.gameserver.data.xml.HennaData;
 import net.sf.l2j.gameserver.data.xml.HerbDropData;
+import net.sf.l2j.gameserver.data.xml.ItemRestrictionData;
 import net.sf.l2j.gameserver.data.xml.MultisellData;
 import net.sf.l2j.gameserver.data.xml.NewbieBuffData;
 import net.sf.l2j.gameserver.data.xml.SkipDropData;
@@ -316,6 +317,7 @@ public class GameServer
 		System.out.println("Fake Players NPCs: Loaded");
 		EnchantData.getInstance();
 		ZoneRandom.getInstance();
+		ItemRestrictionData.getInstance().load();
 		
 		EventManager.getInstance();
 		EventStats.getInstance();

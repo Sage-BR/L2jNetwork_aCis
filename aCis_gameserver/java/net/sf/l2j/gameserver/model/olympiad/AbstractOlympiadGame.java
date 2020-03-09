@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import net.sf.l2j.Config;
 import net.sf.l2j.gameserver.data.MapRegionTable;
 import net.sf.l2j.gameserver.data.SkillTable;
 import net.sf.l2j.gameserver.model.L2Skill;
@@ -210,15 +211,6 @@ public abstract class AbstractOlympiadGame
 					party.removePartyMember(player, MessageType.EXPELLED);
 			}
 			
-			// reuse skills under 15minutes timer
-			for (L2Skill skill : player.getSkills().values())
-			{
-				if (skill.getReuseDelay() <= 900000)
-				{
-					player.enableSkill(skill);
-				}
-			}
-			
 			player.checkItemRestriction();
 			
 			// Remove shot automation
@@ -228,6 +220,10 @@ public abstract class AbstractOlympiadGame
 			ItemInstance item = player.getActiveWeaponInstance();
 			if (item != null)
 				item.unChargeAllShots();
+			
+			// Refresh the skills.
+			if (Config.ALT_OLY_RECHARGE_SKILLS)
+				player.refreshSkillsCoolDown();
 			
 			player.sendSkillList();
 		}
@@ -243,20 +239,14 @@ public abstract class AbstractOlympiadGame
 	 */
 	protected static final void buffPlayer(Player player)
 	{
+		if (player == null)
+			return;
+		
 		L2Skill skill = SkillTable.getInstance().getInfo(1204, 2); // Windwalk 2
 		if (skill != null)
 		{
 			skill.getEffects(player, player);
 			player.sendPacket(SystemMessage.getSystemMessage(SystemMessageId.YOU_FEEL_S1_EFFECT).addSkillName(1204));
-		}
-		if (player.isMageClass())
-		{
-			skill = SkillTable.getInstance().getInfo(1085, 1); // acumen 1
-			if (skill != null)
-			{
-				skill.getEffects(player, player);
-				player.sendPacket(SystemMessage.getSystemMessage(SystemMessageId.YOU_FEEL_S1_EFFECT).addSkillName(1085));
-			}
 		}
 		
 		if (!player.isMageClass())
@@ -266,6 +256,15 @@ public abstract class AbstractOlympiadGame
 			{
 				skill.getEffects(player, player);
 				player.sendPacket(SystemMessage.getSystemMessage(SystemMessageId.YOU_FEEL_S1_EFFECT).addSkillName(1086));
+			}
+		}
+		else
+		{
+			skill = SkillTable.getInstance().getInfo(1085, 1); // Acumen 1
+			if (skill != null)
+			{
+				skill.getEffects(player, player);
+				player.sendPacket(SystemMessage.getSystemMessage(SystemMessageId.YOU_FEEL_S1_EFFECT).addSkillName(1085));
 			}
 		}
 	}
@@ -342,6 +341,10 @@ public abstract class AbstractOlympiadGame
 				player.setCurrentHp(player.getMaxHp());
 				player.setCurrentMp(player.getMaxMp());
 			}
+			
+			// Refresh the skills.
+			if (Config.ALT_OLY_RECHARGE_SKILLS)
+				player.refreshSkillsCoolDown();
 			
 			// Add Hero Skills
 			if (player.isHero())

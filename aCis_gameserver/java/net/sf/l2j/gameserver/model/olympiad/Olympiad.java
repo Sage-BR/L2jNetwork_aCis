@@ -51,7 +51,7 @@ public class Olympiad
 	private static final String OLYMPIAD_GET_HEROS = "SELECT olympiad_nobles.char_id, characters.char_name FROM olympiad_nobles, characters WHERE characters.obj_Id = olympiad_nobles.char_id AND olympiad_nobles.class_id = ? AND olympiad_nobles.competitions_done >= " + Config.ALT_OLY_MIN_MATCHES + " AND olympiad_nobles.competitions_won > 0 ORDER BY olympiad_nobles.olympiad_points DESC, olympiad_nobles.competitions_done DESC, olympiad_nobles.competitions_won DESC";
 	private static final String GET_ALL_CLASSIFIED_NOBLESS = "SELECT char_id from olympiad_nobles_eom WHERE competitions_done >= " + Config.ALT_OLY_MIN_MATCHES + " ORDER BY olympiad_points DESC, competitions_done DESC, competitions_won DESC";
 	private static final String GET_EACH_CLASS_LEADER = "SELECT characters.char_name from olympiad_nobles, characters WHERE characters.obj_Id = olympiad_nobles.char_id AND olympiad_nobles.class_id = ? AND olympiad_nobles.competitions_done >= " + Config.ALT_OLY_MIN_MATCHES + " ORDER BY olympiad_nobles.olympiad_points DESC, olympiad_nobles.competitions_done DESC, olympiad_nobles.competitions_won DESC LIMIT 10";
-	
+	private static final String GET_EACH_CLASS_LEADER_CURRENT = "SELECT characters.char_name from olympiad_nobles, characters " + "WHERE characters.obj_Id = olympiad_nobles.char_id AND olympiad_nobles.class_id = ? " + "AND olympiad_nobles.competitions_done >= 9 " + "ORDER BY olympiad_nobles.olympiad_points DESC, olympiad_nobles.competitions_done DESC LIMIT 10";
 	private static final String OLYMPIAD_DELETE_ALL = "TRUNCATE olympiad_nobles";
 	private static final String OLYMPIAD_MONTH_CLEAR = "TRUNCATE olympiad_nobles_eom";
 	private static final String OLYMPIAD_MONTH_CREATE = "INSERT INTO olympiad_nobles_eom SELECT char_id, class_id, olympiad_points, competitions_done, competitions_won, competitions_lost, competitions_drawn FROM olympiad_nobles";
@@ -506,25 +506,25 @@ public class Olympiad
 		Broadcast.toAllOnlinePlayers(SystemMessage.getSystemMessage(SystemMessageId.OLYMPIAD_PERIOD_S1_HAS_STARTED).addNumber(_currentCycle));
 		
 		Calendar currentTime = Calendar.getInstance();
-		int nearest = 0;
-		Calendar[] cals = new Calendar[Config.OLY_PERIOD.length];
-		for (int i = 0; i < cals.length; i++)
+		if (Config.ALT_USE_CUSTOM_PERIOD)
 		{
-			cals[i] = Calendar.getInstance();
-			cals[i].set(Calendar.DAY_OF_MONTH, Config.OLY_PERIOD[i]);
-			if (cals[i].before(currentTime))
-			{
-				cals[i].add(Calendar.MONTH, 1);
-			}
-			if (cals[i].before(cals[nearest]))
-			{
-				nearest = i;
-			}
+			currentTime.add(Calendar.WEEK_OF_YEAR, Config.ALT_CYSTOM_PERIOD[0]);
+			currentTime.set(Calendar.DAY_OF_WEEK, Config.ALT_CYSTOM_PERIOD[1]);
+			currentTime.set(Calendar.HOUR_OF_DAY, Config.ALT_CYSTOM_PERIOD[2]);
+			currentTime.set(Calendar.MINUTE, Config.ALT_CYSTOM_PERIOD[3]);
+			currentTime.set(Calendar.SECOND, Config.ALT_CYSTOM_PERIOD[4]);
 		}
-		cals[nearest].set(Calendar.HOUR_OF_DAY, 12);
-		cals[nearest].set(Calendar.MINUTE, 0);
-		cals[nearest].set(Calendar.SECOND, 0);
-		_olympiadEnd = cals[nearest].getTimeInMillis();
+		else
+		{
+			currentTime.add(Calendar.MONTH, 1);
+			currentTime.set(Calendar.DAY_OF_MONTH, 1);
+			currentTime.set(Calendar.AM_PM, Calendar.AM);
+			currentTime.set(Calendar.HOUR, 12);
+			currentTime.set(Calendar.MINUTE, 0);
+			currentTime.set(Calendar.SECOND, 0);
+		}
+		
+		_olympiadEnd = currentTime.getTimeInMillis();
 		
 		Calendar nextChange = Calendar.getInstance();
 		_nextWeeklyChange = nextChange.getTimeInMillis() + WEEKLY_PERIOD;
@@ -760,7 +760,7 @@ public class Olympiad
 		List<String> names = new ArrayList<>();
 		try (Connection con = L2DatabaseFactory.getInstance().getConnection())
 		{
-			PreparedStatement statement = con.prepareStatement(GET_EACH_CLASS_LEADER);
+			PreparedStatement statement = con.prepareStatement(Config.ALT_OLY_SHOW_MONTHLY_WINNERS ? GET_EACH_CLASS_LEADER : GET_EACH_CLASS_LEADER_CURRENT);
 			statement.setInt(1, classId);
 			ResultSet rset = statement.executeQuery();
 			

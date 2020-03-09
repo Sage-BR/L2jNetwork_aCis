@@ -13,7 +13,6 @@ import net.sf.l2j.gameserver.model.holder.IntIntHolder;
 import net.sf.l2j.gameserver.model.item.instance.ItemInstance;
 import net.sf.l2j.gameserver.model.item.kind.Item;
 import net.sf.l2j.gameserver.model.item.type.ActionType;
-import net.sf.l2j.gameserver.model.item.type.ArmorType;
 import net.sf.l2j.gameserver.model.item.type.EtcItemType;
 import net.sf.l2j.gameserver.model.item.type.WeaponType;
 import net.sf.l2j.gameserver.model.itemcontainer.Inventory;
@@ -98,33 +97,7 @@ public final class UseItem extends L2GameClientPacket
 		
 		if (activeChar.isAlikeDead() || activeChar.isStunned() || activeChar.isSleeping() || activeChar.isParalyzed() || activeChar.isAfraid())
 			return;
-		if (Config.ANTIHEAVY_PROTECTION)
-		{
-			if ((item.getItem().getItemType() == ArmorType.HEAVY) && (activeChar.getClassId().getId() == 8) || (item.getItem().getItemType() == ArmorType.HEAVY) && (activeChar.getClassId().getId() == 23) || (item.getItem().getItemType() == ArmorType.HEAVY) && (activeChar.getClassId().getId() == 35) || (item.getItem().getItemType() == ArmorType.HEAVY) && (activeChar.getClassId().getId() == 93) || (item.getItem().getItemType() == ArmorType.HEAVY) && (activeChar.getClassId().getId() == 101) || (item.getItem().getItemType() == ArmorType.HEAVY) && (activeChar.getClassId().getId() == 108) || (item.getItem().getItemType() == ArmorType.HEAVY) && (activeChar.getClassId().getId() == 9) || (item.getItem().getItemType() == ArmorType.HEAVY) && (activeChar.getClassId().getId() == 24) || (item.getItem().getItemType() == ArmorType.HEAVY) && (activeChar.getClassId().getId() == 37) || (item.getItem().getItemType() == ArmorType.HEAVY) && (activeChar.getClassId().getId() == 92) || (item.getItem().getItemType() == ArmorType.HEAVY) && (activeChar.getClassId().getId() == 102) || (item.getItem().getItemType() == ArmorType.HEAVY) && (activeChar.getClassId().getId() == 109))
-			{
-				activeChar.sendMessage("Your class can't equip heavy type armors.");
-				return;
-			}
-		}
-		if (Config.ANTIBOW_PROTECTION)
-		{
-			int classes = activeChar.getClassId().getId();
-			switch (classes)
-			{
-				case 89:
-				case 90:
-				case 91:
-				case 99:
-				case 106:
-				case 113:
-					if (item.getItemType() == WeaponType.BOW && !activeChar.isInOlympiadMode())
-					{
-						activeChar.sendMessage("Bow is allowed for your class only for Olympiad Matches!");
-						return;
-					}
-					break;
-			}
-		}
+		
 		if (!Config.KARMA_PLAYER_CAN_TELEPORT && activeChar.getKarma() > 0)
 		{
 			final IntIntHolder[] sHolders = item.getItem().getSkills();

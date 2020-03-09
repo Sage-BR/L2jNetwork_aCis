@@ -11021,6 +11021,16 @@ public final class Player extends Playable
 		sendSkillList();
 	}
 	
+	public void refreshSkillsCoolDown()
+	{
+		getReuseTimeStamp().clear();
+		
+		if (!(getDisabledSkills() == null))
+			getDisabledSkills().clear();
+		
+		sendPacket(new SkillCoolTime(this));
+	}
+	
 	/**
 	 * @param z
 	 * @return true if character falling now On the start of fall return false for correct coord sync !

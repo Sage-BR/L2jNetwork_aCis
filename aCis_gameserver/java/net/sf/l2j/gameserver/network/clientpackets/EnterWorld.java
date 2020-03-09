@@ -25,24 +25,21 @@ import net.sf.l2j.gameserver.instancemanager.CastleManager;
 import net.sf.l2j.gameserver.instancemanager.ClanHallManager;
 import net.sf.l2j.gameserver.instancemanager.CoupleManager;
 import net.sf.l2j.gameserver.instancemanager.DimensionalRiftManager;
-import net.sf.l2j.gameserver.instancemanager.StartupManager;
 import net.sf.l2j.gameserver.instancemanager.PetitionManager;
 import net.sf.l2j.gameserver.instancemanager.SevenSigns;
 import net.sf.l2j.gameserver.instancemanager.SevenSigns.CabalType;
 import net.sf.l2j.gameserver.instancemanager.SevenSigns.SealType;
+import net.sf.l2j.gameserver.instancemanager.StartupManager;
 import net.sf.l2j.gameserver.instancemanager.ZoneRandom;
 import net.sf.l2j.gameserver.model.L2Skill;
 import net.sf.l2j.gameserver.model.World;
 import net.sf.l2j.gameserver.model.actor.instance.Player;
-import net.sf.l2j.gameserver.model.base.ClassId;
 import net.sf.l2j.gameserver.model.base.ClassRace;
 import net.sf.l2j.gameserver.model.entity.Castle;
 import net.sf.l2j.gameserver.model.entity.ClanHall;
 import net.sf.l2j.gameserver.model.entity.Siege;
 import net.sf.l2j.gameserver.model.entity.Siege.SiegeSide;
 import net.sf.l2j.gameserver.model.holder.IntIntHolder;
-import net.sf.l2j.gameserver.model.item.instance.ItemInstance;
-import net.sf.l2j.gameserver.model.item.type.WeaponType;
 import net.sf.l2j.gameserver.model.olympiad.Olympiad;
 import net.sf.l2j.gameserver.model.pledge.Clan;
 import net.sf.l2j.gameserver.model.pledge.Clan.SubPledge;
@@ -233,22 +230,7 @@ public class EnterWorld extends L2GameClientPacket
 			activeChar.sendPacket(new UserInfo(activeChar));
 			activeChar.sendPacket(new PledgeStatusChanged(clan));
 		}
-		if (Config.ANTIBOW_PROTECTION)
-		{
-			if (activeChar.getClassId() == ClassId.PHOENIX_KNIGHT && activeChar.getClassId() == ClassId.TITAN && activeChar.getClassId() == ClassId.SHILLIEN_TEMPLAR && activeChar.getClassId() == ClassId.EVAS_TEMPLAR && activeChar.getClassId() == ClassId.HELL_KNIGHT && activeChar.getClassId() == ClassId.DREADNOUGHT)
-			{
-				for (ItemInstance item : activeChar.getInventory().getPaperdollItems())
-				{
-					if (item != null && item.getItemType() == WeaponType.BOW) // weapons is bow type
-					
-					{
-						int slot = activeChar.getInventory().getSlotFromItem(item);
-						activeChar.getInventory().unEquipItemInBodySlot(slot); // unequip the bow
-						
-					}
-				}
-			}
-		}
+		
 		// Updating Seal of Strife Buff/Debuff
 		if (SevenSigns.getInstance().isSealValidationPeriod() && SevenSigns.getInstance().getSealOwner(SealType.STRIFE) != CabalType.NORMAL)
 		{

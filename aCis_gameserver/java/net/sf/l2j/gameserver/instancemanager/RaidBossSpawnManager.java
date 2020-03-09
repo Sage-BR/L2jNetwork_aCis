@@ -168,6 +168,8 @@ public class RaidBossSpawnManager
 			
 			if (!_schedules.containsKey(boss.getNpcId()))
 			{
+				if (Config.ANNOUNCE_DEAD_RB)
+					Broadcast.announceToOnlinePlayers("Raidboss " + boss.getName() + " is dead.", true);
 				_log.info("RaidBoss: " + boss.getName() + " - " + new SimpleDateFormat("dd-MM-yyyy HH:mm").format(respawnTime) + " (" + respawnDelay + "h).");
 				_respawns.put(boss.getNpcId(), Calendar.getInstance().getTimeInMillis() + (respawnDelay * 3600000L));
 				_schedules.put(boss.getNpcId(), ThreadPool.schedule(new spawnSchedule(boss.getNpcId()), respawnDelay * 3600000));

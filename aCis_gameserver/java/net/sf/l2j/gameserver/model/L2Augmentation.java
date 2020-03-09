@@ -2,6 +2,7 @@ package net.sf.l2j.gameserver.model;
 
 import java.util.List;
 
+import net.sf.l2j.Config;
 import net.sf.l2j.gameserver.data.SkillTable;
 import net.sf.l2j.gameserver.data.xml.AugmentationData;
 import net.sf.l2j.gameserver.data.xml.AugmentationData.AugStat;
@@ -112,6 +113,11 @@ public final class L2Augmentation
 		// add the skill if any
 		if (_skill != null)
 		{
+			if (!Config.ALT_OLY_ALLOW_APPLY_AUGMENT_ON_CHAR)
+			{
+				if (player.isInOlympiadMode() && !Config.ALT_OLY_SKILLS_ALLOW_APPLY_AUGMENT.contains(_skill.getId()))
+					return;
+			}
 			player.addSkill(_skill);
 			if (_skill.isActive())
 			{
@@ -142,6 +148,11 @@ public final class L2Augmentation
 		// remove the skill if any
 		if (_skill != null)
 		{
+			if (!Config.ALT_OLY_ALLOW_APPLY_AUGMENT_ON_CHAR)
+			{
+				if (player.isInOlympiadMode() && !Config.ALT_OLY_SKILLS_ALLOW_APPLY_AUGMENT.contains(_skill.getId()))
+					return;
+			}
 			if (_skill.isPassive())
 				player.removeSkill(_skill, false, true);
 			else

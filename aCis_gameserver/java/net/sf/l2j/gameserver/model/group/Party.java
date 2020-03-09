@@ -88,7 +88,7 @@ public class Party extends AbstractGroup
 	
 	private static final int PARTY_POSITION_BROADCAST = 12000;
 	
-	public final static List<Player> _members = new CopyOnWriteArrayList<>();
+	public final List<Player> _members = new CopyOnWriteArrayList<>();
 	private final LootRule _lootRule;
 	
 	private boolean _pendingInvitation;
@@ -273,7 +273,7 @@ public class Party extends AbstractGroup
 	 * @param target : the object of which the member must be within a certain range (must not be null).
 	 * @return a random member from this party or {@code null} if none of the members have inventory space for the specified item.
 	 */
-	private static Player getRandomMember(int itemId, Creature target)
+	private Player getRandomMember(int itemId, Creature target)
 	{
 		final List<Player> availableMembers = new ArrayList<>();
 		for (Player member : _members)
@@ -519,7 +519,7 @@ public class Party extends AbstractGroup
 	 * @param name : the name of the player to search.
 	 * @return a party member by its name.
 	 */
-	private static Player getPlayerByName(String name)
+	private Player getPlayerByName(String name)
 	{
 		for (Player member : _members)
 		{
