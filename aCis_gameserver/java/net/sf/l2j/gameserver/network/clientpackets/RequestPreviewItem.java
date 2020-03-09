@@ -129,7 +129,7 @@ public final class RequestPreviewItem extends L2GameClientPacket
 			return;
 		}
 		
-		int totalPrice = 0;
+		long totalPrice = 0;
 		_listId = buyList.getListId();
 		_itemList = new HashMap<>();
 		
@@ -160,7 +160,8 @@ public final class RequestPreviewItem extends L2GameClientPacket
 			_itemList.put(slot, itemId);
 			
 			totalPrice += Config.WEAR_PRICE;
-			if (totalPrice > Integer.MAX_VALUE)
+			// Check for overflow
+			if (totalPrice > Integer.MAX_VALUE || totalPrice < 0)
 			{
 				Util.handleIllegalPlayerAction(activeChar, activeChar.getName() + " of account " + activeChar.getAccountName() + " tried to purchase over " + Integer.MAX_VALUE + " adena worth of goods.", Config.DEFAULT_PUNISH);
 				return;
@@ -168,7 +169,7 @@ public final class RequestPreviewItem extends L2GameClientPacket
 		}
 		
 		// Charge buyer and add tax to castle treasury if not owned by npc clan because a Try On is not Free
-		if (totalPrice < 0 || !activeChar.reduceAdena("Wear", totalPrice, activeChar.getCurrentFolkNPC(), true))
+		if (!activeChar.reduceAdena("Wear", (int)totalPrice, activeChar.getCurrentFolkNPC(), true))
 		{
 			activeChar.sendPacket(SystemMessageId.YOU_NOT_ENOUGH_ADENA);
 			return;

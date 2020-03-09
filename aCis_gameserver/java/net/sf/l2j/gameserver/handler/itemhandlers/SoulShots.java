@@ -28,6 +28,7 @@ import net.sf.l2j.gameserver.util.Broadcast;
 
 public class SoulShots implements IItemHandler
 {
+	
 	@Override
 	public void useItem(L2Playable playable, ItemInstance item, boolean forceUse)
 	{

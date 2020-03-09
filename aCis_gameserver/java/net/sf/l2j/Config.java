@@ -51,6 +51,177 @@ public final class Config
 	public static final String PLAYERS_FILE = "./config/players.properties";
 	public static final String SERVER_FILE = "./config/server.properties";
 	public static final String SIEGE_FILE = "./config/siege.properties";
+	public static final String CHECK_LIMITS_FILE = "./config/customs/limits.properties";
+	public static final String NEWBIE_FILE = "./config/customs/newbies_system.properties";
+	public static final String MANAGER_FILE = "./config/customs/npcs_manager.properties";
+	public static final String BANK_FILE = "./config/customs/bank.properties";
+	public static final String CUSTOMS_FILE = "./config/customs/customs.properties";
+	public static final String VOTE_FILE = "./config/customs/vote.properties";
+	public static final String PROTECT_FILE = "./config/customs/protection.properties";
+	public static final String OFFLINESHOP_FILE = "./config/customs/offlineshop.properties";
+	
+	// --------------------------------------------------
+	// Custom settings
+	// --------------------------------------------------
+	
+	/** PVP_LIMITS */
+	public static boolean PVP_LIMITS_OLY_ENABLE;
+	public static int PVP_LIMITS;
+	
+	/** LEVEL CHAT LIMITS */
+	public static int CHAT_GLOBAL_LEVEL;
+	public static int CHAT_TRADE_LEVEL;
+	
+	/** NEW CHAR TITLE */
+	public static String NEW_CHAR_TITLE;
+	
+	/** Protections Bow/Heavy */
+	public static boolean ANTIHEAVY_PROTECTION;
+	public static boolean ANTIBOW_PROTECTION;
+	
+	/** ALLOW TELEPORT INTO GRANDBOSSES */
+	public static boolean ALLOW_DIRECT_TP_TO_BOSS_ROOM;
+	
+	/** SUB-CLASS LEVEL */
+	public static int SUBCLASS_LEVEL;
+	
+	/** PvP Color System */
+	public static boolean ALLOW_COLOR_SYSTEM;
+	public static String PVPS_COLORS;
+	public static HashMap<Integer, Integer> PVPS_COLORS_LIST;
+	public static String PKS_COLORS;
+	public static HashMap<Integer, Integer> PKS_COLORS_LIST;
+	
+	/** Starting Level System */
+	public static int START_LEVEL;
+	
+	/** Vote reward */
+	public static boolean ALLOW_TOPZONE_VOTE_REWARD;
+	public static String TOPZONE_SERVER_LINK;
+	public static int TOPZONE_VOTES_DIFFERENCE;
+	public static int TOPZONE_REWARD_CHECK_TIME;
+	public static Map<Integer, Integer> TOPZONE_REWARD = new HashMap<>();
+	public static int TOPZONE_DUALBOXES_ALLOWED;
+	public static boolean ALLOW_TOPZONE_GAME_SERVER_REPORT;
+	public static boolean ALLOW_HOPZONE_VOTE_REWARD;
+	public static String HOPZONE_SERVER_LINK;
+	public static int HOPZONE_VOTES_DIFFERENCE;
+	public static int HOPZONE_REWARD_CHECK_TIME;
+	public static Map<Integer, Integer> HOPZONE_REWARD = new HashMap<>();
+	public static int HOPZONE_DUALBOXES_ALLOWED;
+	public static boolean ALLOW_HOPZONE_GAME_SERVER_REPORT;
+	
+	/** VoteManager Settings */
+	public static boolean VOTE_MANAGER_ENABLED;
+	public static String VOTES_SITE_TOPZONE_URL;
+	public static String VOTES_SITE_HOPZONE_URL;
+	public static String VOTES_SITE_L2NETWORK_URL;
+	public static int VOTE_REWARD_ID;
+	public static int VOTE_REWARD_ID_COUNT;
+	public static int TIME_TO_VOTE;
+	
+	/** Starting Spawn System */
+	public static int X;
+	public static int Y;
+	public static int Z;
+	
+	/** SubClass Everywhere */
+	public static boolean ALT_GAME_SUBCLASS_EVERYWHERE;
+	
+	public static boolean PVP_REWARD_SYSTEM;
+	public static Map<Integer, Integer> PVP_REWARD = new HashMap<>();
+	
+	public static boolean PVP_COUNT_SYSTEM;
+	
+	public static boolean STARTING_ITEMS_SYSTEM;
+	public static Map<Integer, Integer> STARTING_ITEMS = new HashMap<>();
+	
+	/** Party Teleporter */
+	public static int NPC_ID_PT_TELEPORTER;
+	public static int NPC_PT_TELEPORTER_X;
+	public static int NPC_PT_TELEPORTER_Y;
+	public static int NPC_PT_TELEPORTER_Z;
+	public static int NPC_PT_ZONEID;
+	public static int NPC_PT_MINPT_MEMBERS;
+	public static int NPC_PT_ITEMCONSUME_ID;
+	public static int NPC_PT_ITEMCOMSUME_QT;
+	public static boolean NPC_PT_SHOWINSIDE_PLAYERS;
+	public static boolean NPC_PT_SHOWINSIDE_PARTIES;
+	
+	/** Clan Manager */
+	public static int CLAN_ITEM_ID;
+	public static int CLAN_COUNT;
+	
+	/** Services Npc */
+	public static int NOBL_ID;
+	public static int NOBL_AMOUNT;
+	public static int GENDER_ID;
+	public static int GENDER_AMOUNT;
+	public static int NAME_ID;
+	public static int NAME_AMOUNT;
+	public static int PK_ID;
+	public static int PK_AMOUNT;
+	public static int CLAN_NAME_ID;
+	public static int CLAN_NAME_AMOUNT;
+	
+	/** Bot Protection */
+	public static boolean BOTS_PREVENTION;
+	public static int KILLS_COUNTER;
+	public static int KILLS_COUNTER_RANDOMIZATION;
+	public static int VALIDATION_TIME;
+	public static int PUNISHMENT;
+	public static int PUNISHMENT_TIME;
+	
+	/** Noble Item */
+	public static boolean NOBLE_ITEM;
+	public static int NOBLE_ITEM_ID;
+	
+	/** Online List */
+	public static boolean ENABLE_ONLINE;
+	
+	/** Skipped Drop */
+	public static boolean ENABLE_SKIPPING;
+	
+	/** Offline Shop */
+	public static boolean OFFLINE_TRADE_ENABLE;
+	public static boolean OFFLINE_CRAFT_ENABLE;
+	public static boolean OFFLINE_MODE_IN_PEACE_ZONE;
+	public static boolean OFFLINE_MODE_NO_DAMAGE;
+	public static boolean RESTORE_OFFLINERS;
+	public static int OFFLINE_MAX_DAYS;
+	public static boolean OFFLINE_DISCONNECT_FINISHED;
+	public static boolean OFFLINE_SET_NAME_COLOR;
+	public static int OFFLINE_NAME_COLOR;
+	public static boolean OFFLINE_SET_SLEEP;
+	
+	public static boolean FLAG_RB;
+	
+	public static boolean ANNOUNCE_RB_SPAWN;
+	
+	public static int OLY_WEEKS_PERIOD;
+	public static boolean OLYMPIAD_END_ANNOUNE;
+	
+	public static boolean WELCOME_EFFECT;
+	
+	public static boolean PM_MESSAGE;
+	public static String PM_SERVER_NAME;
+	public static String PM_TEXT1;
+	public static String PM_TEXT2;
+	
+	public static int BANKING_SYSTEM_GOLDBARS;
+	public static int BANKING_SYSTEM_ADENA;
+	
+	/** Newbie System */
+	public static int NEWBIE_LVL;
+	
+	public static String NEWBIE_MAGE_SET;
+	public static int[] NEWBIE_MAGE_BUFFS;
+	public static String NEWBIE_FIGHTER_SET;
+	public static int[] NEWBIE_FIGHTER_BUFFS;
+	
+	public static int SETX;
+	public static int SETY;
+	public static int SETZ;
 	
 	// --------------------------------------------------
 	// Clans settings
@@ -222,6 +393,34 @@ public final class Config
 	public static int ALT_FISH_CHAMPIONSHIP_REWARD_4;
 	public static int ALT_FISH_CHAMPIONSHIP_REWARD_5;
 	
+	// Events settings
+	// --------------------------------------------------
+	public static boolean TVT_EVENT_ENABLED;
+	public static int TVT_EVENT_INTERVAL;
+	public static int TVT_EVENT_PARTICIPATION_TIME;
+	public static int TVT_EVENT_RUNNING_TIME;
+	public static int TVT_EVENT_PARTICIPATION_NPC_ID;
+	public static int TVT_EVENT_MIN_PLAYERS_IN_TEAMS;
+	public static int TVT_EVENT_MAX_PLAYERS_IN_TEAMS;
+	public static int TVT_EVENT_RESPAWN_TELEPORT_DELAY;
+	public static int TVT_EVENT_START_LEAVE_TELEPORT_DELAY;
+	public static String TVT_EVENT_TEAM_1_NAME;
+	public static int[] TVT_EVENT_BACK_COORDINATES = new int[3];
+	public static int[] TVT_EVENT_TEAM_1_COORDINATES = new int[3];
+	public static String TVT_EVENT_TEAM_2_NAME;
+	public static int[] TVT_EVENT_TEAM_2_COORDINATES = new int[3];
+	public static List<int[]> TVT_EVENT_REWARDS = new ArrayList<>();
+	public static boolean TVT_EVENT_TARGET_TEAM_MEMBERS_ALLOWED;
+	public static boolean TVT_EVENT_POTIONS_ALLOWED;
+	public static boolean TVT_EVENT_SUMMON_BY_ITEM_ALLOWED;
+	public static List<Integer> TVT_EVENT_DOOR_IDS = new ArrayList<>();
+	public static byte TVT_EVENT_MIN_LVL;
+	public static byte TVT_EVENT_MAX_LVL;
+	public static boolean TVT_EVENT_REMOVE_BUFFS;
+	public static boolean TVT_EVENT_HEAL_PLAYERS;
+	public static boolean TVT_KILLS_REWARD_ENABLED;
+	public static List<int[]> TVT_KILLS_REWARD = new ArrayList<>();
+	
 	// --------------------------------------------------
 	// GeoEngine
 	// --------------------------------------------------
@@ -297,6 +496,10 @@ public final class Config
 	public static int CHAMPION_REWARD_QTY;
 	
 	/** Buffer */
+	public static String FIGHTER_SET;
+	public static int[] FIGHTER_SET_LIST;
+	public static String MAGE_SET;
+	public static int[] MAGE_SET_LIST;
 	public static int BUFFER_MAX_SCHEMES;
 	public static int BUFFER_MAX_SKILLS;
 	public static int BUFFER_STATIC_BUFF_COST;
@@ -418,6 +621,19 @@ public final class Config
 	public static int ENCHANT_MAX_ARMOR;
 	public static int ENCHANT_SAFE_MAX;
 	public static int ENCHANT_SAFE_MAX_FULL;
+	
+	public static int CRYSTAL_ENCHANT_MAX_WEAPON;
+	public static int CRYSTAL_ENCHANT_MAX_ARMOR;
+	public static double ENCHANT_BLESSED_CHANCE_ARMOR;
+	public static double ENCHANT_CRYSTAL_CHANCE_ARMOR;
+	public static double ENCHANT_BLESSED_CHANCE_WEAPON_MAGIC;
+	public static double ENCHANT_BLESSED_CHANCE_WEAPON_MAGIC_15PLUS;
+	public static double ENCHANT_BLESSED_CHANCE_WEAPON_NONMAGIC;
+	public static double ENCHANT_BLESSED_CHANCE_WEAPON_NONMAGIC_15PLUS;
+	public static double ENCHANT_CRYSTAL_CHANCE_WEAPON_MAGIC;
+	public static double ENCHANT_CRYSTAL_CHANCE_WEAPON_MAGIC_15PLUS;
+	public static double ENCHANT_CRYSTAL_CHANCE_WEAPON_NONMAGIC;
+	public static double ENCHANT_CRYSTAL_CHANCE_WEAPON_NONMAGIC_15PLUS;
 	
 	/** Augmentations */
 	public static int AUGMENTATION_NG_SKILL_CHANCE;
@@ -687,6 +903,234 @@ public final class Config
 		{
 			_log.info("Loading gameserver configuration files.");
 			
+			// L:imits config
+			ExProperties limits = load(CHECK_LIMITS_FILE);
+			PVP_LIMITS_OLY_ENABLE = limits.getProperty("PvPKillsOlympiadLimits", true);
+			PVP_LIMITS = limits.getProperty("PvPKills", 10);
+			
+			CHAT_GLOBAL_LEVEL = limits.getProperty("GlobalChatLevel", 40);
+			CHAT_TRADE_LEVEL = limits.getProperty("TradeChatLevel", 10);
+			
+			// Customs config
+			ExProperties offlineshop = load(OFFLINESHOP_FILE);
+			OFFLINE_TRADE_ENABLE = offlineshop.getProperty("OfflineTradeEnable", false);
+			OFFLINE_CRAFT_ENABLE = offlineshop.getProperty("OfflineCraftEnable", false);
+			OFFLINE_MODE_IN_PEACE_ZONE = offlineshop.getProperty("OfflineModeInPeaceZone", false);
+			OFFLINE_MODE_NO_DAMAGE = offlineshop.getProperty("OfflineModeNoDamage", false);
+			OFFLINE_SET_NAME_COLOR = offlineshop.getProperty("OfflineSetNameColor", false);
+			OFFLINE_NAME_COLOR = Integer.decode("0x" + offlineshop.getProperty("OfflineNameColor", 808080));
+			OFFLINE_SET_SLEEP = offlineshop.getProperty("OfflineSetSleepEffect", false);
+			RESTORE_OFFLINERS = offlineshop.getProperty("RestoreOffliners", false);
+			OFFLINE_MAX_DAYS = offlineshop.getProperty("OfflineMaxDays", 10);
+			OFFLINE_DISCONNECT_FINISHED = offlineshop.getProperty("OfflineDisconnectFinished", true);
+			
+			// Customs config
+			ExProperties customs = load(CUSTOMS_FILE);
+			ANTIHEAVY_PROTECTION = customs.getProperty("AntiHeavyProtection", false);
+			ANTIBOW_PROTECTION = customs.getProperty("AntiBowProtection", false);
+			ALLOW_DIRECT_TP_TO_BOSS_ROOM = customs.getProperty("AllowGrandBossesTeleport", false);
+			NEW_CHAR_TITLE = customs.getProperty("NewCharTitle", "L2Surrender");
+			SUBCLASS_LEVEL = customs.getProperty("SubclassLevel", 52);
+			
+			ALLOW_COLOR_SYSTEM = Boolean.parseBoolean(customs.getProperty("AllowPvpTitleColorSystem", "false"));
+			
+			PVPS_COLORS = customs.getProperty("PvpsColors", "");
+			PVPS_COLORS_LIST = new HashMap<>();
+			
+			String[] splitted_pvps_colors = PVPS_COLORS.split(";");
+			
+			for (String iii : splitted_pvps_colors)
+			{
+				
+				String[] pvps_colors = iii.split(",");
+				
+				if (pvps_colors.length != 2)
+				{
+					System.out.println("Invalid properties.");
+				}
+				else
+				{
+					PVPS_COLORS_LIST.put(Integer.parseInt(pvps_colors[0]), Integer.decode("0x" + pvps_colors[1]));
+				}
+				
+			}
+			
+			PKS_COLORS = customs.getProperty("PksColors", "");
+			PKS_COLORS_LIST = new HashMap<>();
+			
+			String[] splitted_pks_colors = PKS_COLORS.split(";");
+			
+			for (String iii : splitted_pks_colors)
+			{
+				
+				String[] pks_colors = iii.split(",");
+				
+				if (pks_colors.length != 2)
+				{
+					System.out.println("Invalid properties.");
+				}
+				else
+				{
+					PKS_COLORS_LIST.put(Integer.parseInt(pks_colors[0]), Integer.decode("0x" + pks_colors[1]));
+				}
+				
+			}
+		
+			START_LEVEL = customs.getProperty("StartLevel", 1);
+			X = customs.getProperty("SetX", 83278);
+			Y = customs.getProperty("SetY", 148273);
+			Z = customs.getProperty("SetZ", -3407);
+			
+			ALT_GAME_SUBCLASS_EVERYWHERE = customs.getProperty("SubclassEverywhere", false);
+			
+			/** PvpReward */
+			PVP_REWARD_SYSTEM = customs.getProperty("PvpRewardSystem", false);
+			String PVP_REWARD_VALUE = customs.getProperty("PvpReward", "57,100000000;");
+			String[] pvp_reward_splitted_1 = PVP_REWARD_VALUE.split(";");
+			for (String i : pvp_reward_splitted_1)
+			{
+				String[] pvp_reward_splitted_2 = i.split(",");
+				PVP_REWARD.put(Integer.parseInt(pvp_reward_splitted_2[1]), Integer.parseInt(pvp_reward_splitted_2[0]));
+			}
+			
+			/** PvpCount */
+			PVP_COUNT_SYSTEM = customs.getProperty("PvpCountSystem", false);
+			
+			/** Starting Items */
+			STARTING_ITEMS_SYSTEM = customs.getProperty("StartingItemsSystem", false);
+			String START_VALUE = customs.getProperty("StartingItems", "3470,1;");
+			String[] start_splitted_1 = START_VALUE.split(";");
+			for (String i : start_splitted_1)
+			{
+				String[] start_splitted_2 = i.split(",");
+				STARTING_ITEMS.put(Integer.parseInt(start_splitted_2[1]), Integer.parseInt(start_splitted_2[0]));
+			}
+			
+			NOBLE_ITEM = Boolean.parseBoolean(customs.getProperty("EnableNobleCustomItem", "true"));
+			NOBLE_ITEM_ID = Integer.parseInt(customs.getProperty("NobleCustomItemId", "3481"));
+			
+			ENABLE_ONLINE = Boolean.parseBoolean(customs.getProperty("OnlineCmd", "true"));
+			
+			ENABLE_SKIPPING = customs.getProperty("EnableSkippingItems", false);
+			
+			FLAG_RB = customs.getProperty("FlagRbZones", false);
+			
+			ANNOUNCE_RB_SPAWN = customs.getProperty("AnnounceRbSpawn", false);
+			
+			OLY_WEEKS_PERIOD = customs.getProperty("OlyPeriodWeeks", 1);
+			
+			OLYMPIAD_END_ANNOUNE = customs.getProperty("OlyEndAnnounce", true);
+			
+			WELCOME_EFFECT = customs.getProperty("NewCharEffect", true);
+			
+			PM_MESSAGE = customs.getProperty("PmMessage", true);
+			PM_SERVER_NAME = customs.getProperty("PMServerName", "L2World");
+			PM_TEXT1 = customs.getProperty("PMText1", "Have Fun and Nice Stay on");
+			PM_TEXT2 = customs.getProperty("PMText2", "Vote for us every 12h");
+			
+			// npcs managerconfig
+			ExProperties managers = load(MANAGER_FILE);
+			
+			/** Party Teleproter */
+			NPC_ID_PT_TELEPORTER = managers.getProperty("NpcPtTeleporterId", 36614);
+			NPC_PT_TELEPORTER_X = managers.getProperty("PtTeleportX", -56742);
+			NPC_PT_TELEPORTER_Y = managers.getProperty("PtTeleportY", 140569);
+			NPC_PT_TELEPORTER_Z = managers.getProperty("PtTeleportZ", -2625);
+			NPC_PT_ZONEID = managers.getProperty("NpcPtZoneID", 155);
+			NPC_PT_MINPT_MEMBERS = managers.getProperty("NpcPtMinPartyMembers", 2);
+			NPC_PT_ITEMCONSUME_ID = managers.getProperty("NpcPtConsumeItemId", 57);
+			NPC_PT_ITEMCOMSUME_QT = managers.getProperty("NpcPtConsumeItemQt", 100);
+			NPC_PT_SHOWINSIDE_PLAYERS = managers.getProperty("NpcPtShowInsidePlayers", true);
+			NPC_PT_SHOWINSIDE_PARTIES = managers.getProperty("NpcPtShowInsideParties", true);
+			
+			/** Clan Manager */
+			CLAN_ITEM_ID = managers.getProperty("ClanItemID", 57);
+			CLAN_COUNT = managers.getProperty("ClanAmount", 100);
+			
+			/** Services Npc */
+			NOBL_ID = managers.getProperty("NoblItemID", 57);
+			NOBL_AMOUNT = managers.getProperty("NoblAmount", 100);
+			GENDER_ID = managers.getProperty("ChangeGenderItemID", 57);
+			GENDER_AMOUNT = managers.getProperty("ChangeGenderAmount", 100);
+			NAME_ID = managers.getProperty("ChangeNameItemID", 57);
+			NAME_AMOUNT = managers.getProperty("ChangeNameAmount", 100);
+			PK_ID = managers.getProperty("CleanPkItemID", 57);
+			PK_AMOUNT = managers.getProperty("CleanPkAmount", 100);
+			CLAN_NAME_ID = managers.getProperty("ClanNameItemID", 57);
+			CLAN_NAME_AMOUNT = managers.getProperty("ClanNameAmount", 100);
+			
+			// Bank config
+			ExProperties bank = load(BANK_FILE);
+			BANKING_SYSTEM_GOLDBARS = Integer.parseInt(bank.getProperty("BankingGoldbarCount", "1"));
+			BANKING_SYSTEM_ADENA = Integer.parseInt(bank.getProperty("BankingAdenaCount", "500000000"));
+			
+			// Newbie system config
+			ExProperties newbie = load(NEWBIE_FILE);
+			NEWBIE_LVL = Integer.parseInt(newbie.getProperty("NewbiesLevel", "80"));
+			NEWBIE_FIGHTER_SET = newbie.getProperty("FighterSet", "2375,3500,3501,3502,4422,4423,4424,4425,6648,6649,6650");
+			NEWBIE_MAGE_SET = newbie.getProperty("MageSet", "2375,3500,3501,3502,4422,4423,4424,4425,6648,6649,6650");
+			
+			String[] NewFighterList = NEWBIE_FIGHTER_SET.split(",");
+			NEWBIE_FIGHTER_BUFFS = new int[NewFighterList.length];
+			for (int i = 0; i < NewFighterList.length; i++)
+				NEWBIE_FIGHTER_BUFFS[i] = Integer.parseInt(NewFighterList[i]);
+			
+			String[] NewMageList = NEWBIE_MAGE_SET.split(",");
+			NEWBIE_MAGE_BUFFS = new int[NewMageList.length];
+			for (int i = 0; i < NewMageList.length; i++)
+				NEWBIE_MAGE_BUFFS[i] = Integer.parseInt(NewMageList[i]);
+
+			SETX = newbie.getProperty("LocX", 83278);
+			SETY = newbie.getProperty("LocY", 148273);
+			SETZ = newbie.getProperty("LocZ", -3407);
+			
+			
+			// vote config
+			ExProperties vote = load(VOTE_FILE);
+			ALLOW_TOPZONE_VOTE_REWARD = vote.getProperty("AllowTopzoneVoteReward", false);
+			TOPZONE_SERVER_LINK = vote.getProperty("TopzoneServerLink", "");
+			TOPZONE_VOTES_DIFFERENCE = vote.getProperty("TopzoneVotesDifference", 5);
+			TOPZONE_REWARD_CHECK_TIME = vote.getProperty("TopzoneRewardCheckTime", 5);
+			String TOPZONE_SMALL_REWARD_VALUE = vote.getProperty("TopzoneReward", "57,100000000;");
+			String[] topzone_small_reward_splitted_1 = TOPZONE_SMALL_REWARD_VALUE.split(";");
+			for (String i : topzone_small_reward_splitted_1)
+			{
+				String[] topzone_small_reward_splitted_2 = i.split(",");
+				TOPZONE_REWARD.put(Integer.parseInt(topzone_small_reward_splitted_2[0]), Integer.parseInt(topzone_small_reward_splitted_2[1]));
+			}
+			TOPZONE_DUALBOXES_ALLOWED = vote.getProperty("TopzoneDualboxesAllowed", 1);
+			ALLOW_TOPZONE_GAME_SERVER_REPORT = vote.getProperty("AllowTopzoneGameServerReport", false);
+			ALLOW_HOPZONE_VOTE_REWARD = vote.getProperty("AllowHopzoneVoteReward", false);
+			HOPZONE_SERVER_LINK = vote.getProperty("HopzoneServerLink", "");
+			HOPZONE_VOTES_DIFFERENCE = vote.getProperty("HopzoneVotesDifference", 5);
+			HOPZONE_REWARD_CHECK_TIME = vote.getProperty("HopzoneRewardCheckTime", 5);
+			String HOPZONE_SMALL_REWARD_VALUE = vote.getProperty("HopzoneReward", "57,100000000;");
+			String[] hopzone_small_reward_splitted_1 = HOPZONE_SMALL_REWARD_VALUE.split(";");
+			for (String i : hopzone_small_reward_splitted_1)
+			{
+				String[] hopzone_small_reward_splitted_2 = i.split(",");
+				HOPZONE_REWARD.put(Integer.parseInt(hopzone_small_reward_splitted_2[0]), Integer.parseInt(hopzone_small_reward_splitted_2[1]));
+			}
+			HOPZONE_DUALBOXES_ALLOWED = vote.getProperty("HopzoneDualboxesAllowed", 1);
+			ALLOW_HOPZONE_GAME_SERVER_REPORT = vote.getProperty("AllowHopzoneGameServerReport", false);
+			
+			VOTE_MANAGER_ENABLED = vote.getProperty("EnableVoteManager", false);
+			VOTES_SITE_HOPZONE_URL = vote.getProperty("HopzoneUrl", "");
+			VOTES_SITE_TOPZONE_URL = vote.getProperty("TopzoneUrl", "");
+			VOTES_SITE_L2NETWORK_URL = vote.getProperty("NetworkUrl", "");
+			VOTE_REWARD_ID = vote.getProperty("VoteRewardId", 57);
+			VOTE_REWARD_ID_COUNT = vote.getProperty("VoteRewardCount", 20);
+			TIME_TO_VOTE = vote.getProperty("TimeToVote", 60);
+			
+			// bot config
+			ExProperties protection = load(PROTECT_FILE);
+			BOTS_PREVENTION = protection.getProperty("EnableBotsPrevention", false);
+			KILLS_COUNTER = protection.getProperty("KillsCounter", 60);
+			KILLS_COUNTER_RANDOMIZATION = protection.getProperty("KillsCounterRandomization", 50);
+			VALIDATION_TIME = protection.getProperty("ValidationTime", 60);
+			PUNISHMENT = protection.getProperty("Punishment", 0);
+			PUNISHMENT_TIME = protection.getProperty("PunishmentTime", 60);
+			
 			// Clans settings
 			ExProperties clans = load(CLANS_FILE);
 			ALT_CLAN_JOIN_DAYS = clans.getProperty("DaysBeforeJoinAClan", 5);
@@ -843,6 +1287,143 @@ public final class Config
 			ALT_FISH_CHAMPIONSHIP_REWARD_4 = events.getProperty("AltFishChampionshipReward4", 200000);
 			ALT_FISH_CHAMPIONSHIP_REWARD_5 = events.getProperty("AltFishChampionshipReward5", 100000);
 			
+			TVT_EVENT_ENABLED = events.getProperty("TvTEventEnabled", false);
+			TVT_EVENT_INTERVAL = events.getProperty("TvTEventInterval", 18000);
+			TVT_EVENT_PARTICIPATION_TIME = events.getProperty("TvTEventParticipationTime", 3600);
+			TVT_EVENT_RUNNING_TIME = events.getProperty("TvTEventRunningTime", 1800);
+			TVT_EVENT_PARTICIPATION_NPC_ID = events.getProperty("TvTEventParticipationNpcId", 0);
+			TVT_EVENT_REMOVE_BUFFS = events.getProperty("TvTEventRemoveBuffs", false);
+			TVT_KILLS_REWARD_ENABLED = events.getProperty("TvTKillsRewardEnable", false);
+			TVT_EVENT_HEAL_PLAYERS = events.getProperty("TvTHealPlayersEnable", false);
+			
+			if (TVT_EVENT_PARTICIPATION_NPC_ID == 0)
+			{
+				TVT_EVENT_ENABLED = false;
+				System.out.println("TvTEventEngine[Config.load()]: invalid config property -> TvTEventParticipationNpcId");
+			}
+			else
+			{
+				String[] propertySplit = events.getProperty("TvTEventParticipationNpcCoordinates", "0,0,0").split(",");
+				
+				if (propertySplit.length < 3)
+				{
+					TVT_EVENT_ENABLED = false;
+					System.out.println("TvTEventEngine[Config.load()]: invalid config property -> TvTEventParticipationNpcCoordinates");
+				}
+				else
+				{
+					TVT_EVENT_BACK_COORDINATES[0] = Integer.parseInt(propertySplit[0]);
+					TVT_EVENT_BACK_COORDINATES[1] = Integer.parseInt(propertySplit[1]);
+					TVT_EVENT_BACK_COORDINATES[2] = Integer.parseInt(propertySplit[2]);
+					
+					TVT_EVENT_MIN_PLAYERS_IN_TEAMS = Integer.parseInt(events.getProperty("TvTEventMinPlayersInTeams", "1"));
+					TVT_EVENT_MAX_PLAYERS_IN_TEAMS = Integer.parseInt(events.getProperty("TvTEventMaxPlayersInTeams", "20"));
+					TVT_EVENT_MIN_LVL = (byte) Integer.parseInt(events.getProperty("TvTEventMinPlayerLevel", "1"));
+					TVT_EVENT_MAX_LVL = (byte) Integer.parseInt(events.getProperty("TvTEventMaxPlayerLevel", "80"));
+					TVT_EVENT_RESPAWN_TELEPORT_DELAY = Integer.parseInt(events.getProperty("TvTEventRespawnTeleportDelay", "20"));
+					TVT_EVENT_START_LEAVE_TELEPORT_DELAY = Integer.parseInt(events.getProperty("TvTEventStartLeaveTeleportDelay", "20"));
+					
+					TVT_EVENT_TEAM_1_NAME = events.getProperty("TvTEventTeam1Name", "Team1");
+					propertySplit = events.getProperty("TvTEventTeam1Coordinates", "0,0,0").split(",");
+					
+					if (propertySplit.length < 3)
+					{
+						TVT_EVENT_ENABLED = false;
+						System.out.println("TvTEventEngine[Config.load()]: invalid config property -> TvTEventTeam1Coordinates");
+					}
+					else
+					{
+						TVT_EVENT_TEAM_1_COORDINATES[0] = Integer.parseInt(propertySplit[0]);
+						TVT_EVENT_TEAM_1_COORDINATES[1] = Integer.parseInt(propertySplit[1]);
+						TVT_EVENT_TEAM_1_COORDINATES[2] = Integer.parseInt(propertySplit[2]);
+						
+						TVT_EVENT_TEAM_2_NAME = events.getProperty("TvTEventTeam2Name", "Team2");
+						propertySplit = events.getProperty("TvTEventTeam2Coordinates", "0,0,0").split(",");
+						
+						if (propertySplit.length < 3)
+						{
+							TVT_EVENT_ENABLED = false;
+							System.out.println("TvTEventEngine[Config.load()]: invalid config property -> TvTEventTeam2Coordinates");
+						}
+						else
+						{
+							TVT_EVENT_TEAM_2_COORDINATES[0] = Integer.parseInt(propertySplit[0]);
+							TVT_EVENT_TEAM_2_COORDINATES[1] = Integer.parseInt(propertySplit[1]);
+							TVT_EVENT_TEAM_2_COORDINATES[2] = Integer.parseInt(propertySplit[2]);
+							propertySplit = events.getProperty("TvTEventReward", "57,100000").split(";");
+							
+							for (String reward : propertySplit)
+							{
+								String[] rewardSplit = reward.split(",");
+								
+								if (rewardSplit.length != 2)
+									System.out.println("TvTEventEngine[Config.load()]: invalid config property -> TvTEventReward \"" + reward + "\"");
+								else
+								{
+									try
+									{
+										TVT_EVENT_REWARDS.add(new int[]
+										{
+											Integer.valueOf(rewardSplit[0]),
+											Integer.valueOf(rewardSplit[1])
+										});
+									}
+									catch (NumberFormatException nfe)
+									{
+										if (!reward.equals(""))
+											System.out.println("TvTEventEngine[Config.load()]: invalid config property -> TvTEventReward \"" + reward + "\"");
+									}
+								}
+							}
+							
+							propertySplit = events.getProperty("TvTKillsReward", "57,100000").split(";");
+							
+							for (String rewardKills : propertySplit)
+							{
+								String[] rewardSplit = rewardKills.split(",");
+								
+								if (rewardSplit.length != 2)
+									System.out.println("TvTEventEngine[Config.load()]: invalid config property -> TvTEventReward \"" + rewardKills + "\"");
+								else
+								{
+									try
+									{
+										TVT_KILLS_REWARD.add(new int[]
+										{
+											Integer.valueOf(rewardSplit[0]),
+											Integer.valueOf(rewardSplit[1])
+										});
+									}
+									catch (NumberFormatException nfe)
+									{
+										if (!rewardKills.equals(""))
+											System.out.println("TvTEventEngine[Config.load()]: invalid config property -> TvTEventReward \"" + rewardKills + "\"");
+									}
+								}
+							}
+							
+							TVT_EVENT_TARGET_TEAM_MEMBERS_ALLOWED = Boolean.parseBoolean(events.getProperty("TvTEventTargetTeamMembersAllowed", "true"));
+							TVT_EVENT_POTIONS_ALLOWED = Boolean.parseBoolean(events.getProperty("TvTEventPotionsAllowed", "false"));
+							TVT_EVENT_SUMMON_BY_ITEM_ALLOWED = Boolean.parseBoolean(events.getProperty("TvTEventSummonByItemAllowed", "false"));
+							propertySplit = events.getProperty("TvTEventDoorsCloseOpenOnStartEnd", "").split(";");
+							
+							for (String door : propertySplit)
+							{
+								try
+								{
+									TVT_EVENT_DOOR_IDS.add(Integer.valueOf(door));
+								}
+								catch (NumberFormatException nfe)
+								{
+									if (!door.equals(""))
+										System.out.println("TvTEventEngine[Config.load()]: invalid config property -> TvTEventDoorsCloseOpenOnStartEnd \"" + door + "\"");
+								}
+							}
+						}
+					}
+				}
+			}
+			
 			// Geoengine
 			ExProperties geoengine = load(GEOENGINE_FILE);
 			GEODATA = geoengine.getProperty("GeoData", 0);
@@ -885,6 +1466,18 @@ public final class Config
 			BUFFER_MAX_SKILLS = npcs.getProperty("BufferMaxSkillsPerScheme", 24);
 			BUFFER_STATIC_BUFF_COST = npcs.getProperty("BufferStaticCostPerBuff", -1);
 			BUFFER_BUFFS = npcs.getProperty("BufferBuffs");
+			FIGHTER_SET = npcs.getProperty("FighterSet", "2375,3500,3501,3502,4422,4423,4424,4425,6648,6649,6650");
+			MAGE_SET = npcs.getProperty("MageSet", "2375,3500,3501,3502,4422,4423,4424,4425,6648,6649,6650");
+			
+			String[] FighterList = FIGHTER_SET.split(",");
+			FIGHTER_SET_LIST = new int[FighterList.length];
+			for (int i = 0; i < FighterList.length; i++)
+				FIGHTER_SET_LIST[i] = Integer.parseInt(FighterList[i]);
+			
+			String[] MageList = MAGE_SET.split(",");
+			MAGE_SET_LIST = new int[MageList.length];
+			for (int i = 0; i < MageList.length; i++)
+				MAGE_SET_LIST[i] = Integer.parseInt(MageList[i]);
 			
 			BUFFER_BUFFLIST = new HashMap<>();
 			for (String skillInfo : BUFFER_BUFFS.split(";"))
@@ -1000,6 +1593,20 @@ public final class Config
 			ENCHANT_MAX_ARMOR = players.getProperty("EnchantMaxArmor", 0);
 			ENCHANT_SAFE_MAX = players.getProperty("EnchantSafeMax", 3);
 			ENCHANT_SAFE_MAX_FULL = players.getProperty("EnchantSafeMaxFull", 4);
+			
+			ENCHANT_BLESSED_CHANCE_WEAPON_MAGIC = players.getProperty("BlessedEnchantChanceMagicWeapon", 0.99);
+			ENCHANT_BLESSED_CHANCE_WEAPON_MAGIC_15PLUS = players.getProperty("BlessedEnchantChanceMagicWeapon15Plus", 0.99);
+			ENCHANT_BLESSED_CHANCE_WEAPON_NONMAGIC = players.getProperty("BlessedEnchantChanceNonMagicWeapon", 0.99);
+			ENCHANT_BLESSED_CHANCE_WEAPON_NONMAGIC_15PLUS = players.getProperty("BlessedEnchantChanceNonMagicWeapon15Plus", 0.99);
+			ENCHANT_BLESSED_CHANCE_ARMOR = players.getProperty("BlessedEnchantChanceArmor", 0.99);
+			
+			ENCHANT_CRYSTAL_CHANCE_WEAPON_MAGIC = players.getProperty("CrystalEnchantChanceMagicWeapon", 0.88);
+			ENCHANT_CRYSTAL_CHANCE_WEAPON_MAGIC_15PLUS = players.getProperty("CrystalEnchantChanceMagicWeapon15Plus", 0.88);
+			ENCHANT_CRYSTAL_CHANCE_WEAPON_NONMAGIC = players.getProperty("CrystalEnchantChanceNonMagicWeapon", 0.88);
+			ENCHANT_CRYSTAL_CHANCE_WEAPON_NONMAGIC_15PLUS = players.getProperty("CrystalEnchantChanceNonMagicWeapon15Plus", 0.88);
+			ENCHANT_CRYSTAL_CHANCE_ARMOR = players.getProperty("CrystalEnchantChanceArmor", 0.88);
+			CRYSTAL_ENCHANT_MAX_WEAPON = players.getProperty("CrystalEnchantMaxWeapon", 14);
+			CRYSTAL_ENCHANT_MAX_ARMOR = players.getProperty("CrystalEnchantMaxArmor", 14);
 			
 			AUGMENTATION_NG_SKILL_CHANCE = players.getProperty("AugmentationNGSkillChance", 15);
 			AUGMENTATION_NG_GLOW_CHANCE = players.getProperty("AugmentationNGGlowChance", 0);
@@ -1226,6 +1833,7 @@ public final class Config
 			DISABLE_TUTORIAL = server.getProperty("DisableTutorial", false);
 		}
 		else if (Server.serverMode == Server.MODE_LOGINSERVER)
+		
 		{
 			_log.info("Loading loginserver configuration files.");
 			

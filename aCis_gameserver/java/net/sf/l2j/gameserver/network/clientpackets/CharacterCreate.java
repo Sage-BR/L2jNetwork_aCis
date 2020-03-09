@@ -14,6 +14,8 @@
  */
 package net.sf.l2j.gameserver.network.clientpackets;
 
+import java.util.Set;
+
 import net.sf.l2j.Config;
 import net.sf.l2j.commons.lang.StringUtil;
 import net.sf.l2j.gameserver.datatables.CharNameTable;
@@ -22,15 +24,20 @@ import net.sf.l2j.gameserver.datatables.SkillTable;
 import net.sf.l2j.gameserver.datatables.SkillTreeTable;
 import net.sf.l2j.gameserver.idfactory.IdFactory;
 import net.sf.l2j.gameserver.model.L2ShortCut;
+import net.sf.l2j.gameserver.model.L2Skill;
 import net.sf.l2j.gameserver.model.L2SkillLearn;
 import net.sf.l2j.gameserver.model.L2World;
 import net.sf.l2j.gameserver.model.actor.instance.L2PcInstance;
 import net.sf.l2j.gameserver.model.actor.template.PcTemplate;
+import net.sf.l2j.gameserver.model.base.ClassId;
+import net.sf.l2j.gameserver.model.base.Experience;
 import net.sf.l2j.gameserver.model.item.instance.ItemInstance;
 import net.sf.l2j.gameserver.model.item.kind.Item;
+import net.sf.l2j.gameserver.network.SystemMessageId;
 import net.sf.l2j.gameserver.network.serverpackets.CharCreateFail;
 import net.sf.l2j.gameserver.network.serverpackets.CharCreateOk;
 import net.sf.l2j.gameserver.network.serverpackets.CharSelectInfo;
+import net.sf.l2j.gameserver.network.serverpackets.SystemMessage;
 import net.sf.l2j.gameserver.scripting.Quest;
 import net.sf.l2j.gameserver.scripting.ScriptManager;
 
@@ -144,8 +151,22 @@ public final class CharacterCreate extends L2GameClientPacket
 		L2World.getInstance().addObject(newChar);
 		
 		newChar.addAdena("Init", Config.STARTING_ADENA, null, false);
-		newChar.setXYZInvisible(template.getSpawnX(), template.getSpawnY(), template.getSpawnZ());
-		newChar.setTitle("");
+		
+		if (Config.STARTING_ITEMS_SYSTEM)
+		{
+			Set<Integer> rewards = Config.STARTING_ITEMS.keySet();
+			for (Integer i : rewards)
+			{
+				newChar.getInventory().addItem("Start.", Config.STARTING_ITEMS.get(i), i, newChar, newChar);
+			}
+		}
+		
+		if (Config.X > 0)
+			newChar.setXYZInvisible(Config.X, Config.Y, Config.Z);
+		else
+			newChar.setXYZInvisible(template.getSpawnX(), template.getSpawnY(), template.getSpawnZ());
+		
+		newChar.setTitle(Config.NEW_CHAR_TITLE);
 		
 		newChar.registerShortCut(new L2ShortCut(0, 0, 3, 2, -1, 1)); // attack shortcut
 		newChar.registerShortCut(new L2ShortCut(3, 0, 3, 5, -1, 1)); // take shortcut
@@ -172,6 +193,11 @@ public final class CharacterCreate extends L2GameClientPacket
 			
 			if (skill.getId() == 1216)
 				newChar.registerShortCut(new L2ShortCut(9, 0, 2, skill.getId(), 1, 1));
+		}
+		
+		if (Config.START_LEVEL > 1)
+		{
+			newChar.addExpAndSp(Experience.LEVEL[Config.START_LEVEL], 0);
 		}
 		
 		if (!Config.DISABLE_TUTORIAL)

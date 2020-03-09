@@ -603,7 +603,12 @@ public class L2Party
 		
 		final int count = adena / toReward.size();
 		for (L2PcInstance member : toReward)
-			member.addAdena("Party", count, player, true);
+		{
+			if (member.getInventory().getAdenaInstance() != null)
+				member.addAdena("Party", count, player, true);
+			else
+				member.addItem("Party", 57, count, player, true);
+		}
 	}
 	
 	/**
@@ -611,7 +616,9 @@ public class L2Party
 	 * <BR>
 	 * <B><U> Actions</U> :</B><BR>
 	 * <BR>
-	 * <li>Get the L2PcInstance owner of the L2SummonInstance (if necessary)</li> <li>Calculate the Experience and SP reward distribution rate</li> <li>Add Experience and SP to the L2PcInstance</li><BR>
+	 * <li>Get the L2PcInstance owner of the L2SummonInstance (if necessary)</li>
+	 * <li>Calculate the Experience and SP reward distribution rate</li>
+	 * <li>Add Experience and SP to the L2PcInstance</li><BR>
 	 * <BR>
 	 * <FONT COLOR=#FF0000><B> <U>Caution</U> : This method DOESN'T GIVE rewards to L2PetInstance</B></FONT><BR>
 	 * <BR>

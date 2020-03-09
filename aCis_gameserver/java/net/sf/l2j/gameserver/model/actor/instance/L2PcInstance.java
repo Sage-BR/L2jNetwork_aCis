@@ -46,6 +46,7 @@ import net.sf.l2j.gameserver.ai.NextAction;
 import net.sf.l2j.gameserver.ai.model.L2CharacterAI;
 import net.sf.l2j.gameserver.ai.model.L2PlayerAI;
 import net.sf.l2j.gameserver.ai.model.L2SummonAI;
+import net.sf.l2j.gameserver.colorsystem.ColorSystem;
 import net.sf.l2j.gameserver.communitybbs.BB.Forum;
 import net.sf.l2j.gameserver.communitybbs.Manager.ForumsBBSManager;
 import net.sf.l2j.gameserver.datatables.AccessLevels;
@@ -62,6 +63,7 @@ import net.sf.l2j.gameserver.datatables.RecipeTable;
 import net.sf.l2j.gameserver.datatables.SkillTable;
 import net.sf.l2j.gameserver.datatables.SkillTable.FrequentSkill;
 import net.sf.l2j.gameserver.datatables.SkillTreeTable;
+import net.sf.l2j.gameserver.events.TvTEvent;
 import net.sf.l2j.gameserver.geoengine.PathFinding;
 import net.sf.l2j.gameserver.handler.IItemHandler;
 import net.sf.l2j.gameserver.handler.ItemHandler;
@@ -155,12 +157,14 @@ import net.sf.l2j.gameserver.model.zone.ZoneId;
 import net.sf.l2j.gameserver.model.zone.type.L2BossZone;
 import net.sf.l2j.gameserver.network.L2GameClient;
 import net.sf.l2j.gameserver.network.SystemMessageId;
+import net.sf.l2j.gameserver.network.clientpackets.Say2;
 import net.sf.l2j.gameserver.network.serverpackets.AbstractNpcInfo;
 import net.sf.l2j.gameserver.network.serverpackets.ActionFailed;
 import net.sf.l2j.gameserver.network.serverpackets.ChairSit;
 import net.sf.l2j.gameserver.network.serverpackets.ChangeWaitType;
 import net.sf.l2j.gameserver.network.serverpackets.CharInfo;
 import net.sf.l2j.gameserver.network.serverpackets.ConfirmDlg;
+import net.sf.l2j.gameserver.network.serverpackets.CreatureSay;
 import net.sf.l2j.gameserver.network.serverpackets.EtcStatusUpdate;
 import net.sf.l2j.gameserver.network.serverpackets.ExAutoSoulShot;
 import net.sf.l2j.gameserver.network.serverpackets.ExDuelUpdateUserInfo;
@@ -234,6 +238,7 @@ import net.sf.l2j.gameserver.skills.funcs.FuncHennaWIT;
 import net.sf.l2j.gameserver.skills.funcs.FuncMaxCpMul;
 import net.sf.l2j.gameserver.skills.l2skills.L2SkillSiegeFlag;
 import net.sf.l2j.gameserver.skills.l2skills.L2SkillSummon;
+import net.sf.l2j.gameserver.taskmanager.AfkTaskManager;
 import net.sf.l2j.gameserver.taskmanager.AttackStanceTaskManager;
 import net.sf.l2j.gameserver.taskmanager.GameTimeTaskManager;
 import net.sf.l2j.gameserver.taskmanager.ItemsOnGroundTaskManager;
@@ -251,6 +256,7 @@ import net.sf.l2j.gameserver.util.Util;
  */
 public final class L2PcInstance extends L2Playable
 {
+	
 	public enum PrivateStoreType
 	{
 		NONE(0),
@@ -271,6 +277,16 @@ public final class L2PcInstance extends L2Playable
 		public int getId()
 		{
 			return _id;
+		}
+		
+		public static PrivateStoreType findById(int id)
+		{
+			for (PrivateStoreType privateStoreType : values())
+			{
+				if (privateStoreType.getId() == id)
+					return privateStoreType;
+			}
+			return null;
 		}
 	}
 	
@@ -377,6 +393,8 @@ public final class L2PcInstance extends L2Playable
 	private PcAppearance _appearance;
 	
 	private long _expBeforeDeath;
+	public int _tvtkills;
+	public int _killCount;
 	private int _karma;
 	private int _pvpKills;
 	private int _pkKills;
@@ -388,6 +406,7 @@ public final class L2PcInstance extends L2Playable
 	
 	private boolean _isInWater;
 	private boolean _isIn7sDungeon = false;
+	public boolean atEvent = false;
 	
 	private PunishLevel _punishLevel = PunishLevel.NONE;
 	private long _punishTimer = 0;
@@ -416,11 +435,14 @@ public final class L2PcInstance extends L2Playable
 	public int _telemode = 0;
 	private boolean _inCrystallize;
 	private boolean _inCraftMode;
+	private boolean _isVoting;
+	private long _offlineShopStart;
 	
 	private final Map<Integer, RecipeList> _dwarvenRecipeBook = new HashMap<>();
 	private final Map<Integer, RecipeList> _commonRecipeBook = new HashMap<>();
 	
 	private boolean _waitTypeSitting;
+	private boolean _isAfking;
 	
 	private final Location _savedLocation = new Location(0, 0, 0);
 	private boolean _observerMode = false;
@@ -503,6 +525,8 @@ public final class L2PcInstance extends L2Playable
 	private boolean _messageRefusal = false; // message refusal mode
 	private boolean _tradeRefusal = false; // Trade refusal
 	private boolean _exchangeRefusal = false; // Exchange refusal
+	private boolean _isPartyInRefuse; // Party Refusal Mode
+	private boolean _cantGainXP = false;
 	
 	private L2Party _party;
 	
@@ -707,7 +731,15 @@ public final class L2PcInstance extends L2Playable
 	
 	public String getAccountName()
 	{
+		if (getClient() == null)
+			return getAccountNamePlayer();
+		
 		return getClient().getAccountName();
+	}
+	
+	public String getAccountNamePlayer()
+	{
+		return _accountName;
 	}
 	
 	public Map<Integer, String> getAccountChars()
@@ -940,6 +972,16 @@ public final class L2PcInstance extends L2Playable
 	public boolean isInStoreMode()
 	{
 		return _privateStoreType != PrivateStoreType.NONE;
+	}
+	
+	public boolean isAfking()
+	{
+		return _isAfking;
+	}
+	
+	public void setAfking(boolean state)
+	{
+		_isAfking = state;
 	}
 	
 	public boolean isInCraftMode()
@@ -2323,6 +2365,7 @@ public final class L2PcInstance extends L2Playable
 		{
 			NextAction nextAction = new NextAction(CtrlEvent.EVT_ARRIVED, CtrlIntention.MOVE_TO, new Runnable()
 			{
+				
 				@Override
 				public void run()
 				{
@@ -2353,6 +2396,7 @@ public final class L2PcInstance extends L2Playable
 						}
 					}
 				}
+				
 			});
 			
 			// Binding next action to AI.
@@ -2472,7 +2516,12 @@ public final class L2PcInstance extends L2Playable
 			_inventory.addAdena(process, count, this, reference);
 			
 			InventoryUpdate iu = new InventoryUpdate();
-			iu.addItem(_inventory.getAdenaInstance());
+			
+			if (_inventory.getAdenaInstance() != null)
+				iu.addModifiedItem(_inventory.getAdenaInstance());
+			else
+				iu.addItem(_inventory.getAdenaInstance());
+			
 			sendPacket(iu);
 		}
 	}
@@ -3208,6 +3257,12 @@ public final class L2PcInstance extends L2Playable
 	@Override
 	public void onAction(L2PcInstance player)
 	{
+		if (!TvTEvent.onAction(player.getName(), getName()))
+		{
+			player.sendPacket(ActionFailed.STATIC_PACKET);
+			return;
+		}
+		
 		// Set the target of the player
 		if (player.getTarget() != this)
 			player.setTarget(this);
@@ -4019,11 +4074,16 @@ public final class L2PcInstance extends L2Playable
 		if (isMounted())
 			stopFeed();
 		
+		_tvtkills = 0;
+		_killCount = 0;
+		
 		synchronized (this)
 		{
 			if (isFakeDeath())
 				stopFakeDeath(true);
 		}
+		
+		TvTEvent.onKill(killer, this);
 		
 		if (killer != null)
 		{
@@ -4084,7 +4144,7 @@ public final class L2PcInstance extends L2Playable
 		for (L2Character character : getKnownList().getKnownType(L2Character.class))
 			if (character.getFusionSkill() != null && character.getFusionSkill().getTarget() == this)
 				character.abortCast();
-		
+			
 		if (isInParty() && getParty().isInDimensionalRift())
 			getParty().getDimensionalRift().getDeadMemberList().add(this);
 		
@@ -4100,6 +4160,11 @@ public final class L2PcInstance extends L2Playable
 		updateEffectIcons();
 		
 		return true;
+	}
+	
+	public boolean isInFunEvent()
+	{
+		return (atEvent || (TvTEvent.isStarted() && TvTEvent.isPlayerParticipant(getName())) && !isGM());
 	}
 	
 	private void onDieDropItem(L2Character killer)
@@ -4232,6 +4297,86 @@ public final class L2PcInstance extends L2Playable
 			{
 				// Add PvP point to attacker.
 				setPvpKills(getPvpKills() + 1);
+				
+				if (Config.PVP_COUNT_SYSTEM)
+				{
+					// Count the kill
+					_killCount++;
+					
+					switch (_killCount)
+					{
+						
+						case 1:
+							sendPacket(new CreatureSay(0, Say2.PARTYROOM_COMMANDER, "PvP System", " FIRST BLOOD!"));
+							break;
+						case 2:
+							sendPacket(new CreatureSay(0, Say2.PARTYROOM_COMMANDER, "PvP System", " DOUBLE KILL!"));
+							break;
+						case 3:
+							sendPacket(new CreatureSay(0, Say2.PARTYROOM_COMMANDER, "PvP System", " TRIPLE KILL!"));
+							break;
+						case 4:
+							sendPacket(new CreatureSay(0, Say2.PARTYROOM_COMMANDER, "PvP System", " QUADRA KILL!"));
+							break;
+						case 5:
+							sendPacket(new CreatureSay(0, Say2.PARTYROOM_COMMANDER, "PvP System", " PENTA KILL!"));
+							break;
+						case 6:
+							sendPacket(new CreatureSay(0, Say2.PARTYROOM_COMMANDER, "PvP System", " MEGA KILL!"));
+							break;
+						case 7:
+							sendPacket(new CreatureSay(0, Say2.PARTYROOM_COMMANDER, "PvP System", " ULTRA KILL!"));
+							break;
+						case 8:
+							sendPacket(new CreatureSay(0, Say2.PARTYROOM_COMMANDER, "PvP System", " MONSTER KILL!"));
+							break;
+						case 9:
+						case 10:
+						case 11:
+						case 12:
+						case 13:
+						case 14:
+						case 15:
+							sendPacket(new CreatureSay(0, Say2.PARTYROOM_COMMANDER, "PvP System", " LEGENDARY KILL!"));
+							break;
+					}
+					switch (_killCount)
+					{
+						case 2:
+							Broadcast.toAllOnlinePlayers(new CreatureSay(0, 3, "[PvP]", getName() + " has scored a DOUBLE KILL!"));
+							break;
+						case 3:
+							Broadcast.toAllOnlinePlayers(new CreatureSay(0, 3, "[PvP]", getName() + " has scored a TRIPLE kill!"));
+							break;
+						case 5:
+							Broadcast.toAllOnlinePlayers(new CreatureSay(0, 3, "[PvP]", getName() + " has scored a PENTA Kill!"));
+							break;
+						case 7:
+							Broadcast.toAllOnlinePlayers(new CreatureSay(0, 3, "[PvP]", getName() + " has scored a MEGA KILL!"));
+							break;
+						case 9:
+							Broadcast.toAllOnlinePlayers(new CreatureSay(0, 3, "[PvP]", getName() + " has scored a ULTRA KILL!"));
+							break;
+						case 11:
+							Broadcast.toAllOnlinePlayers(new CreatureSay(0, 3, "[PvP]", getName() + " has scored a MONSTER KILL!"));
+							break;
+						case 15:
+							Broadcast.toAllOnlinePlayers(new CreatureSay(0, 3, "[PvP]", getName() + " has scored a KILLING SPREE!"));
+							break;
+					}
+				}
+				if (Config.PVP_REWARD_SYSTEM)
+				{
+					Set<Integer> rewards = Config.PVP_REWARD.keySet();
+					for (Integer i : rewards)
+					{
+						addItem("PvP reward.", Config.PVP_REWARD.get(i), i, this, true);
+					}
+				}
+				
+				ColorSystem pvpcolor = new ColorSystem();
+				pvpcolor.updateNameColor(this);
+				pvpcolor.updateTitleColor(this);
 				
 				// Send UserInfo packet to attacker with its Karma and PK Counter
 				sendPacket(new UserInfo(this));
@@ -4392,6 +4537,7 @@ public final class L2PcInstance extends L2Playable
 		stopChargeTask();
 		
 		AttackStanceTaskManager.getInstance().remove(this);
+		AfkTaskManager.getInstance().remove(this);
 		PvpFlagTaskManager.getInstance().remove(this);
 		GameTimeTaskManager.getInstance().remove(this);
 		ShadowItemTaskManager.getInstance().remove(this);
@@ -4653,6 +4799,12 @@ public final class L2PcInstance extends L2Playable
 	public void setPrivateStoreType(PrivateStoreType type)
 	{
 		_privateStoreType = type;
+		
+		if (Config.OFFLINE_DISCONNECT_FINISHED && type == PrivateStoreType.NONE && (getClient() == null || getClient().isDetached()))
+		{
+			deleteMe();
+			logout();
+		}
 	}
 	
 	/**
@@ -6890,7 +7042,7 @@ public final class L2PcInstance extends L2Playable
 		
 		switch (sklTargetType)
 		{
-		// Target the player if skill type is AURA, PARTY, CLAN or SELF
+			// Target the player if skill type is AURA, PARTY, CLAN or SELF
 			case TARGET_AURA:
 			case TARGET_FRONT_AURA:
 			case TARGET_BEHIND_AURA:
@@ -7864,6 +8016,16 @@ public final class L2PcInstance extends L2Playable
 		broadcastUserInfo();
 	}
 	
+	public long getOfflineStartTime()
+	{
+		return _offlineShopStart;
+	}
+	
+	public void setOfflineStartTime(long time)
+	{
+		_offlineShopStart = time;
+	}
+	
 	public void leaveObserverMode()
 	{
 		setTarget(null);
@@ -7967,9 +8129,29 @@ public final class L2PcInstance extends L2Playable
 		return _race[i];
 	}
 	
+	public boolean isPartyInRefuse()
+	{
+		return _isPartyInRefuse;
+	}
+	
+	public void setIsPartyInRefuse(boolean mode)
+	{
+		_isPartyInRefuse = mode;
+	}
+	
 	public boolean isInRefusalMode()
 	{
 		return _messageRefusal;
+	}
+	
+	public void SetcantGainXP(boolean mode)
+	{
+		_cantGainXP = mode;
+	}
+	
+	public boolean cantGainXP()
+	{
+		return _cantGainXP;
 	}
 	
 	public void setInRefusalMode(boolean mode)
@@ -8150,7 +8332,7 @@ public final class L2PcInstance extends L2Playable
 		else
 			for (L2Skill s : SkillTable.getNobleSkills())
 				super.removeSkill(s); // Just Remove skills without deleting from Sql
-			
+				
 		_noble = val;
 		
 		sendSkillList();
@@ -8496,7 +8678,7 @@ public final class L2PcInstance extends L2Playable
 			for (L2Character character : getKnownList().getKnownType(L2Character.class))
 				if (character.getFusionSkill() != null && character.getFusionSkill().getTarget() == this)
 					character.abortCast();
-			
+				
 			store();
 			_reuseTimeStamps.clear();
 			
@@ -8892,7 +9074,7 @@ public final class L2PcInstance extends L2Playable
 		// Force a revalidation
 		revalidateZone(true);
 		
-		if (Config.PLAYER_SPAWN_PROTECTION > 0)
+		if (Config.PLAYER_SPAWN_PROTECTION > 0 && !isInsideZone(ZoneId.FLAG))
 			setProtection(true);
 		
 		// Stop toggles upon teleport.
@@ -9113,7 +9295,7 @@ public final class L2PcInstance extends L2Playable
 			for (L2Character character : getKnownList().getKnownType(L2Character.class))
 				if (character.getFusionSkill() != null && character.getFusionSkill().getTarget() == this)
 					character.abortCast();
-			
+				
 			// Stop signets & toggles effects.
 			for (L2Effect effect : getAllEffects())
 			{
@@ -9170,7 +9352,7 @@ public final class L2PcInstance extends L2Playable
 			// If the L2PcInstance is a GM, remove it from the GM List
 			if (isGM())
 				GmListTable.getInstance().deleteGm(this);
-			
+				
 			// Check if the L2PcInstance is in observer mode to set its position to its position
 			// before entering in observer mode
 			if (inObserverMode())
@@ -9285,13 +9467,13 @@ public final class L2PcInstance extends L2Playable
 			case 7809: // yellow for beginners
 			case 8486: // prize-winning for beginners
 				return 0;
-				
+			
 			case 8485: // prize-winning luminous
 			case 8506: // green luminous
 			case 8509: // purple luminous
 			case 8512: // yellow luminous
 				return 2;
-				
+			
 			default:
 				return 1;
 		}
@@ -9848,6 +10030,7 @@ public final class L2PcInstance extends L2Playable
 				if (!isInsideZone(ZoneId.JAIL))
 					teleToLocation(-114356, -249645, -2984, 20);
 			}
+			
 		}
 	}
 	
@@ -10643,6 +10826,16 @@ public final class L2PcInstance extends L2Playable
 	public List<Integer> getSelectedBlocksList()
 	{
 		return _selectedBlocksList;
+	}
+	
+	public final boolean isVoting()
+	{
+		return _isVoting;
+	}
+	
+	public final void setIsVoting(boolean value)
+	{
+		_isVoting = value;
 	}
 	
 	@Override

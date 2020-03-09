@@ -37,6 +37,7 @@ import net.sf.l2j.gameserver.geoengine.GeoData;
 import net.sf.l2j.gameserver.geoengine.PathFinding;
 import net.sf.l2j.gameserver.handler.ISkillHandler;
 import net.sf.l2j.gameserver.handler.SkillHandler;
+import net.sf.l2j.gameserver.instancemanager.BotsPreventionManager;
 import net.sf.l2j.gameserver.instancemanager.DimensionalRiftManager;
 import net.sf.l2j.gameserver.model.ChanceSkillList;
 import net.sf.l2j.gameserver.model.CharEffectList;
@@ -131,6 +132,18 @@ import net.sf.l2j.gameserver.util.Util;
  */
 public abstract class L2Character extends L2Object
 {
+	private boolean _isBuffProtected = false;
+	
+	public final void setIsBuffProtected(boolean value)
+	{
+		_isBuffProtected = value;
+	}
+	
+	public boolean isBuffProtected()
+	{
+		return _isBuffProtected;
+	}
+	
 	private volatile boolean _isCastingNow = false;
 	private volatile boolean _isCastingSimultaneouslyNow = false;
 	private L2Skill _lastSkillCast;
@@ -1294,7 +1307,7 @@ public abstract class L2Character extends L2Object
 		int level = skill.getLevel();
 		if (level < 1)
 			level = 1;
-		
+			
 		// Send MagicSkillUse with target, displayId, level, skillTime, reuseDelay
 		// to the L2Character AND to all L2PcInstance in the _KnownPlayers of the L2Character
 		if (!skill.isPotion())
@@ -1545,6 +1558,11 @@ public abstract class L2Character extends L2Object
 		stopAllEffectsExceptThoseThatLastThroughDeath();
 		
 		calculateRewards(killer);
+		
+		if (Config.BOTS_PREVENTION)
+		{
+			BotsPreventionManager.getInstance().updatecounter(killer, this);
+		}
 		
 		// Send the Server->Client packet StatusUpdate with current HP and MP to all other L2PcInstance to inform
 		broadcastStatusUpdate();
@@ -3400,7 +3418,7 @@ public abstract class L2Character extends L2Object
 		final boolean verticalMovementOnly = isFlying() && distance == 0 && dz != 0;
 		if (verticalMovementOnly)
 			distance = Math.abs(dz);
-		
+			
 		// TODO: really necessary?
 		// adjust target XYZ when swiming in water (can be easily over 3000)
 		if (Config.GEODATA > 0 && isInsideZone(ZoneId.WATER) && distance > 700)
@@ -4204,7 +4222,7 @@ public abstract class L2Character extends L2Object
 		{
 			case BOW:
 				return 1500 * 345 / getStat().getPAtkSpd();
-				
+			
 			default:
 				return Formulas.calcPAtkSpd(this, target, getStat().getPAtkSpd());
 		}
@@ -4484,7 +4502,7 @@ public abstract class L2Character extends L2Object
 		{
 			switch (skill.getTargetType())
 			{
-			// only AURA-type skills can be cast without target
+				// only AURA-type skills can be cast without target
 				case TARGET_AURA:
 				case TARGET_FRONT_AURA:
 				case TARGET_BEHIND_AURA:

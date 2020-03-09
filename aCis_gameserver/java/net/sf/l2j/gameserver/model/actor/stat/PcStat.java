@@ -49,6 +49,9 @@ public class PcStat extends PlayableStat
 		if (!getActiveChar().getAccessLevel().canGainExp())
 			return false;
 		
+		if (getActiveChar().cantGainXP())
+			return false;
+		
 		if (!super.addExp(value))
 			return false;
 		
@@ -74,6 +77,9 @@ public class PcStat extends PlayableStat
 	{
 		// GM check concerning canGainExp().
 		if (!getActiveChar().getAccessLevel().canGainExp())
+			return false;
+		
+		if (getActiveChar().cantGainXP())
 			return false;
 		
 		// If this player has a pet, give the xp to the pet now (if any).

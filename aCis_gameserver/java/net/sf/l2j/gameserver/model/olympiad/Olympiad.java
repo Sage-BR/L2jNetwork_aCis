@@ -62,7 +62,7 @@ public class Olympiad
 	private static final String OLYMPIAD_UPDATE_NOBLES = "UPDATE olympiad_nobles SET olympiad_points = ?, competitions_done = ?, competitions_won = ?, competitions_lost = ?, competitions_drawn = ? WHERE char_id = ?";
 	private static final String OLYMPIAD_GET_HEROS = "SELECT olympiad_nobles.char_id, characters.char_name FROM olympiad_nobles, characters WHERE characters.obj_Id = olympiad_nobles.char_id AND olympiad_nobles.class_id = ? AND olympiad_nobles.competitions_done >= " + Config.ALT_OLY_MIN_MATCHES + " AND olympiad_nobles.competitions_won > 0 ORDER BY olympiad_nobles.olympiad_points DESC, olympiad_nobles.competitions_done DESC, olympiad_nobles.competitions_won DESC";
 	private static final String GET_ALL_CLASSIFIED_NOBLESS = "SELECT char_id from olympiad_nobles_eom WHERE competitions_done >= " + Config.ALT_OLY_MIN_MATCHES + " ORDER BY olympiad_points DESC, competitions_done DESC, competitions_won DESC";
-	private static final String GET_EACH_CLASS_LEADER = "SELECT characters.char_name from olympiad_nobles_eom, characters WHERE characters.obj_Id = olympiad_nobles_eom.char_id AND olympiad_nobles_eom.class_id = ? AND olympiad_nobles_eom.competitions_done >= " + Config.ALT_OLY_MIN_MATCHES + " ORDER BY olympiad_nobles_eom.olympiad_points DESC, olympiad_nobles_eom.competitions_done DESC, olympiad_nobles_eom.competitions_won DESC LIMIT 10";
+	private static final String GET_EACH_CLASS_LEADER = "SELECT characters.char_name from olympiad_nobles, characters WHERE characters.obj_Id = olympiad_nobles.char_id AND olympiad_nobles.class_id = ? AND olympiad_nobles.competitions_done >= " + Config.ALT_OLY_MIN_MATCHES + " ORDER BY olympiad_nobles.olympiad_points DESC, olympiad_nobles.competitions_done DESC, olympiad_nobles.competitions_won DESC LIMIT 10";
 	
 	private static final String OLYMPIAD_DELETE_ALL = "TRUNCATE olympiad_nobles";
 	private static final String OLYMPIAD_MONTH_CLEAR = "TRUNCATE olympiad_nobles_eom";
@@ -86,8 +86,8 @@ public class Olympiad
 	public static final String COMP_LOST = "competitions_lost";
 	public static final String COMP_DRAWN = "competitions_drawn";
 	
-	protected long _olympiadEnd;
-	protected long _validationEnd;
+	protected static long _olympiadEnd;
+	protected static long _validationEnd;
 	
 	/**
 	 * The current period of the olympiad.<br>
@@ -454,7 +454,7 @@ public class Olympiad
 		}, getMillisToCompBegin());
 	}
 	
-	private long getMillisToOlympiadEnd()
+	public static long getMillisToOlympiadEnd()
 	{
 		return (_olympiadEnd - Calendar.getInstance().getTimeInMillis());
 	}
@@ -467,7 +467,7 @@ public class Olympiad
 		_scheduledOlympiadEnd = ThreadPoolManager.getInstance().scheduleGeneral(new OlympiadEndTask(), 0);
 	}
 	
-	protected long getMillisToValidationEnd()
+	public static long getMillisToValidationEnd()
 	{
 		if (_validationEnd > Calendar.getInstance().getTimeInMillis())
 			return (_validationEnd - Calendar.getInstance().getTimeInMillis());
@@ -485,8 +485,8 @@ public class Olympiad
 		Broadcast.toAllOnlinePlayers(SystemMessage.getSystemMessage(SystemMessageId.OLYMPIAD_PERIOD_S1_HAS_STARTED).addNumber(_currentCycle));
 		
 		Calendar currentTime = Calendar.getInstance();
-		currentTime.add(Calendar.MONTH, 1);
-		currentTime.set(Calendar.DAY_OF_MONTH, 1);
+		currentTime.add(Calendar.WEEK_OF_MONTH, Config.OLY_WEEKS_PERIOD);
+		currentTime.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY);
 		currentTime.set(Calendar.AM_PM, Calendar.AM);
 		currentTime.set(Calendar.HOUR, 12);
 		currentTime.set(Calendar.MINUTE, 0);

@@ -42,6 +42,7 @@ public final class RequestBuyItem extends L2GameClientPacket
 	protected void readImpl()
 	{
 		_listId = readD();
+		
 		int count = readD();
 		if (count <= 0 || count > Config.MAX_ITEM_IN_PACKET || count * BATCH_LENGTH != _buf.remaining())
 			return;
@@ -98,9 +99,9 @@ public final class RequestBuyItem extends L2GameClientPacket
 				castleTaxRate = merchant.getCastle().getTaxRate();
 		}
 		
-		int subTotal = 0;
+		long totalPrice = 0;
 		int slots = 0;
-		int weight = 0;
+		long weight = 0;
 		
 		for (IntIntHolder i : _items)
 		{
@@ -140,43 +141,37 @@ public final class RequestBuyItem extends L2GameClientPacket
 					return;
 			}
 			
-			if ((Integer.MAX_VALUE / i.getValue()) < price)
-			{
-				Util.handleIllegalPlayerAction(player, player.getName() + " of account " + player.getAccountName() + " tried to purchase over " + Integer.MAX_VALUE + " adena worth of goods.", Config.DEFAULT_PUNISH);
-				return;
-			}
-			
 			// first calculate price per item with tax, then multiply by count
 			price = (int) (price * (1 + castleTaxRate));
-			subTotal += i.getValue() * price;
-			
-			if (subTotal > Integer.MAX_VALUE)
+			totalPrice += (long)i.getValue() * price;
+			// Check for overflow
+			if (Integer.MAX_VALUE / i.getValue() < price || totalPrice > Integer.MAX_VALUE || totalPrice < 0)
 			{
 				Util.handleIllegalPlayerAction(player, player.getName() + " of account " + player.getAccountName() + " tried to purchase over " + Integer.MAX_VALUE + " adena worth of goods.", Config.DEFAULT_PUNISH);
 				return;
 			}
 			
-			weight += i.getValue() * product.getItem().getWeight();
+			weight += (long)i.getValue() * product.getItem().getWeight();
 			if (!product.getItem().isStackable())
 				slots += i.getValue();
 			else if (player.getInventory().getItemByItemId(i.getId()) == null)
 				slots++;
 		}
 		
-		if (weight > Integer.MAX_VALUE || weight < 0 || !player.getInventory().validateWeight(weight))
-		{
-			sendPacket(SystemMessage.getSystemMessage(SystemMessageId.WEIGHT_LIMIT_EXCEEDED));
-			return;
-		}
-		
-		if (slots > Integer.MAX_VALUE || slots < 0 || !player.getInventory().validateCapacity(slots))
+		if (!player.getInventory().validateCapacity(slots))
 		{
 			sendPacket(SystemMessage.getSystemMessage(SystemMessageId.SLOTS_FULL));
 			return;
 		}
 		
+		if (weight > Integer.MAX_VALUE || weight < 0 || !player.getInventory().validateWeight((int)weight))
+		{
+			sendPacket(SystemMessage.getSystemMessage(SystemMessageId.WEIGHT_LIMIT_EXCEEDED));
+			return;
+		}
+		
 		// Charge buyer and add tax to castle treasury if not owned by npc clan
-		if (subTotal < 0 || !player.reduceAdena("Buy", subTotal, player.getCurrentFolkNPC(), false))
+		if (!player.reduceAdena("Buy", (int)totalPrice, player.getCurrentFolkNPC(), false))
 		{
 			sendPacket(SystemMessage.getSystemMessage(SystemMessageId.YOU_NOT_ENOUGH_ADENA));
 			return;
@@ -203,7 +198,7 @@ public final class RequestBuyItem extends L2GameClientPacket
 		
 		// add to castle treasury
 		if (merchant instanceof L2MerchantInstance)
-			((L2MerchantInstance) merchant).getCastle().addToTreasury((int) (subTotal * castleTaxRate));
+			((L2MerchantInstance) merchant).getCastle().addToTreasury((int) (totalPrice * castleTaxRate));
 		
 		StatusUpdate su = new StatusUpdate(player);
 		su.addAttribute(StatusUpdate.CUR_LOAD, player.getCurrentLoad());

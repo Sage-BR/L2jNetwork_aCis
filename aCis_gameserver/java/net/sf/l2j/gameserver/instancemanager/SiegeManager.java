@@ -52,6 +52,9 @@ public class SiegeManager
 	private final Map<Integer, List<TowerSpawn>> _controlTowers = new HashMap<>();
 	private final Map<Integer, List<TowerSpawn>> _flameTowers = new HashMap<>();
 	
+	public static int SIEGE_DAY_1;
+	public static int SIEGE_DAY_2;
+    public static int SIEGE_EVERY_WEEK;
 	public static int MAX_ATTACKERS_NUMBER;
 	public static int ATTACKERS_RESPAWN_DELAY;
 	public static int MAX_DEFENDERS_NUMBER;
@@ -62,6 +65,9 @@ public class SiegeManager
 	protected SiegeManager()
 	{
 		ExProperties sieges = Config.load(Config.SIEGE_FILE);
+		SIEGE_DAY_1 = sieges.getProperty("SiegeDay1", 1);
+	    SIEGE_DAY_2 = sieges.getProperty("SiegeDay2", 7);
+	    SIEGE_EVERY_WEEK = sieges.getProperty("EveryWeek", 1);
 		MAX_ATTACKERS_NUMBER = sieges.getProperty("AttackerMaxClans", 10);
 		ATTACKERS_RESPAWN_DELAY = sieges.getProperty("AttackerRespawn", 10000);
 		MAX_DEFENDERS_NUMBER = sieges.getProperty("DefenderMaxClans", 10);

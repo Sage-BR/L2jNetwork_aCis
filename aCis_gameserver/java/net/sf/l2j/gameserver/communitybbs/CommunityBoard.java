@@ -21,6 +21,7 @@ import net.sf.l2j.gameserver.communitybbs.Manager.FriendsBBSManager;
 import net.sf.l2j.gameserver.communitybbs.Manager.MailBBSManager;
 import net.sf.l2j.gameserver.communitybbs.Manager.PostBBSManager;
 import net.sf.l2j.gameserver.communitybbs.Manager.RegionBBSManager;
+import net.sf.l2j.gameserver.communitybbs.Manager.RepairBBSManager;
 import net.sf.l2j.gameserver.communitybbs.Manager.TopBBSManager;
 import net.sf.l2j.gameserver.communitybbs.Manager.TopicBBSManager;
 import net.sf.l2j.gameserver.model.actor.instance.L2PcInstance;
@@ -66,6 +67,10 @@ public class CommunityBoard
 			TopicBBSManager.getInstance().parseCmd(command, activeChar);
 		else if (command.startsWith("_bbsposts"))
 			PostBBSManager.getInstance().parseCmd(command, activeChar);
+		else if ((command.equals("_bbsShowRepair")) || (command.startsWith("_bbsRepair")))
+		{
+			RepairBBSManager.getInstance().parseCmd(command, activeChar);
+		}
 		else
 			BaseBBSManager.separateAndSend("<html><body><br><br><center>The command: " + command + " isn't implemented.</center></body></html>", activeChar);
 	}

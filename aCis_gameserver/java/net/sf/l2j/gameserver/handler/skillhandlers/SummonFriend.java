@@ -14,6 +14,7 @@
  */
 package net.sf.l2j.gameserver.handler.skillhandlers;
 
+import net.sf.l2j.gameserver.events.TvTEvent;
 import net.sf.l2j.gameserver.handler.ISkillHandler;
 import net.sf.l2j.gameserver.model.L2Object;
 import net.sf.l2j.gameserver.model.L2Skill;
@@ -46,6 +47,13 @@ public class SummonFriend implements ISkillHandler
 		// Check player status.
 		if (!L2PcInstance.checkSummonerStatus(player))
 			return;
+		
+		// Players can't summon anyone on event
+		if (!TvTEvent.isInactive() && TvTEvent.isPlayerParticipant(player.getName()))
+		{
+			player.sendMessage("You can not use this action when it is participating in this event.");
+			return;
+		}
 		
 		for (L2Object obj : targets)
 		{

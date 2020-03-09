@@ -411,7 +411,7 @@ public class L2VillageMasterInstance extends L2NpcInstance
 					
 					player.sendPacket(SystemMessageId.SUBCLASS_TRANSFER_COMPLETED); // Transfer completed.
 					return;
-					
+				
 				case 6: // Change/Cancel Subclass - Choice
 					// validity check
 					if (paramOne < 1 || paramOne > 3)
@@ -626,6 +626,9 @@ public class L2VillageMasterInstance extends L2NpcInstance
 	 */
 	public final boolean checkVillageMaster(PlayerClass pclass)
 	{
+		if (Config.ALT_GAME_SUBCLASS_EVERYWHERE)
+			return true;
+		
 		return checkVillageMasterRace(pclass) && checkVillageMasterTeachType(pclass);
 	}
 	

@@ -90,7 +90,7 @@ public final class RequestSellItem extends L2GameClientPacket
 				return;
 		}
 		
-		int totalPrice = 0;
+		long totalPrice = 0;
 		// Proceed the sell
 		for (IntIntHolder i : _items)
 		{
@@ -99,8 +99,9 @@ public final class RequestSellItem extends L2GameClientPacket
 				continue;
 			
 			int price = item.getReferencePrice() / 2;
-			totalPrice += price * i.getValue();
-			if ((Integer.MAX_VALUE / i.getValue()) < price || totalPrice > Integer.MAX_VALUE)
+			totalPrice += (long)price * i.getValue();
+			// Check for overflow
+			if ((Integer.MAX_VALUE / i.getValue()) < price || totalPrice > Integer.MAX_VALUE || totalPrice < 0)
 			{
 				Util.handleIllegalPlayerAction(player, player.getName() + " of account " + player.getAccountName() + " tried to purchase over " + Integer.MAX_VALUE + " adena worth of goods.", Config.DEFAULT_PUNISH);
 				return;
@@ -108,7 +109,7 @@ public final class RequestSellItem extends L2GameClientPacket
 			item = player.getInventory().destroyItem("Sell", i.getId(), i.getValue(), player, merchant);
 		}
 		
-		player.addAdena("Sell", totalPrice, merchant, false);
+		player.addAdena("Sell", (int)totalPrice, merchant, false);
 		
 		// Send the htm, if existing.
 		String htmlFolder = "";

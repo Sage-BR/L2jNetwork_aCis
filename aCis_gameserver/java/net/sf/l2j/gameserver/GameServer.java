@@ -56,17 +56,20 @@ import net.sf.l2j.gameserver.datatables.MapRegionTable;
 import net.sf.l2j.gameserver.datatables.MultisellData;
 import net.sf.l2j.gameserver.datatables.NpcTable;
 import net.sf.l2j.gameserver.datatables.NpcWalkerRoutesTable;
+import net.sf.l2j.gameserver.datatables.OfflineTradersTable;
 import net.sf.l2j.gameserver.datatables.PetDataTable;
 import net.sf.l2j.gameserver.datatables.RecipeTable;
 import net.sf.l2j.gameserver.datatables.ServerMemo;
 import net.sf.l2j.gameserver.datatables.SkillTable;
 import net.sf.l2j.gameserver.datatables.SkillTreeTable;
+import net.sf.l2j.gameserver.datatables.SkipTable;
 import net.sf.l2j.gameserver.datatables.SoulCrystalsTable;
 import net.sf.l2j.gameserver.datatables.SpawnTable;
 import net.sf.l2j.gameserver.datatables.SpellbookTable;
 import net.sf.l2j.gameserver.datatables.StaticObjects;
 import net.sf.l2j.gameserver.datatables.SummonItemsData;
 import net.sf.l2j.gameserver.datatables.TeleportLocationTable;
+import net.sf.l2j.gameserver.events.TvTEventManager;
 import net.sf.l2j.gameserver.geoengine.GeoData;
 import net.sf.l2j.gameserver.geoengine.PathFinding;
 import net.sf.l2j.gameserver.handler.AdminCommandHandler;
@@ -74,6 +77,7 @@ import net.sf.l2j.gameserver.handler.ChatHandler;
 import net.sf.l2j.gameserver.handler.ItemHandler;
 import net.sf.l2j.gameserver.handler.SkillHandler;
 import net.sf.l2j.gameserver.handler.UserCommandHandler;
+import net.sf.l2j.gameserver.handler.VoicedCommandHandler;
 import net.sf.l2j.gameserver.idfactory.IdFactory;
 import net.sf.l2j.gameserver.instancemanager.AuctionManager;
 import net.sf.l2j.gameserver.instancemanager.AutoSpawnManager;
@@ -113,6 +117,7 @@ import net.sf.l2j.gameserver.model.vehicles.BoatTalkingGludin;
 import net.sf.l2j.gameserver.network.L2GameClient;
 import net.sf.l2j.gameserver.network.L2GamePacketHandler;
 import net.sf.l2j.gameserver.scripting.ScriptManager;
+import net.sf.l2j.gameserver.taskmanager.AfkTaskManager;
 import net.sf.l2j.gameserver.taskmanager.AttackStanceTaskManager;
 import net.sf.l2j.gameserver.taskmanager.DecayTaskManager;
 import net.sf.l2j.gameserver.taskmanager.GameTimeTaskManager;
@@ -124,6 +129,7 @@ import net.sf.l2j.gameserver.taskmanager.RandomAnimationTaskManager;
 import net.sf.l2j.gameserver.taskmanager.ShadowItemTaskManager;
 import net.sf.l2j.gameserver.taskmanager.TaskManager;
 import net.sf.l2j.gameserver.taskmanager.WaterTaskManager;
+import net.sf.l2j.gameserver.votesystem.VoteSystem;
 import net.sf.l2j.gameserver.xmlfactory.XMLDocumentFactory;
 import net.sf.l2j.util.DeadLockDetector;
 import net.sf.l2j.util.IPv4Filter;
@@ -180,6 +186,7 @@ public class GameServer
 		SoulCrystalsTable.load();
 		AugmentationData.getInstance();
 		CursedWeaponsManager.getInstance();
+		SkipTable.getInstance();
 		
 		StringUtil.printSection("Admins");
 		AccessLevels.getInstance();
@@ -225,6 +232,7 @@ public class GameServer
 		
 		StringUtil.printSection("Task Managers");
 		AttackStanceTaskManager.getInstance();
+		AfkTaskManager.getInstance();
 		DecayTaskManager.getInstance();
 		GameTimeTaskManager.getInstance();
 		ItemsOnGroundTaskManager.getInstance();
@@ -295,12 +303,22 @@ public class GameServer
 		_log.config("ItemHandler: Loaded " + ItemHandler.getInstance().size() + " handlers.");
 		_log.config("SkillHandler: Loaded " + SkillHandler.getInstance().size() + " handlers.");
 		_log.config("UserCommandHandler: Loaded " + UserCommandHandler.getInstance().size() + " handlers.");
+		_log.config("VoicedCommandHandler: Loaded " + VoicedCommandHandler.getInstance().size() + " handlers.");
 		
 		if (Config.ALLOW_WEDDING)
 			CoupleManager.getInstance();
 		
 		if (Config.ALT_FISH_CHAMPIONSHIP_ENABLED)
 			FishingChampionshipManager.getInstance();
+		
+		if ((Config.OFFLINE_TRADE_ENABLE || Config.OFFLINE_CRAFT_ENABLE) && Config.RESTORE_OFFLINERS)
+			OfflineTradersTable.getInstance().restoreOfflineTraders();
+		
+		StringUtil.printSection("Vote Reward");
+		VoteSystem.initialize();
+		
+		StringUtil.printSection("TvT Event");
+		TvTEventManager.getInstance();
 		
 		StringUtil.printSection("System");
 		TaskManager.getInstance();

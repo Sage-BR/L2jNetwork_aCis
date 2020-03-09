@@ -25,6 +25,7 @@ import java.util.logging.Level;
 import net.sf.l2j.gameserver.ThreadPoolManager;
 import net.sf.l2j.gameserver.datatables.NpcTable;
 import net.sf.l2j.gameserver.datatables.SummonItemsData;
+import net.sf.l2j.gameserver.events.TvTEvent;
 import net.sf.l2j.gameserver.handler.IItemHandler;
 import net.sf.l2j.gameserver.model.L2Object;
 import net.sf.l2j.gameserver.model.L2Spawn;
@@ -64,6 +65,9 @@ public class SummonItems implements IItemHandler
 			return;
 		
 		if (activeChar.isAllSkillsDisabled() || activeChar.isCastingNow())
+			return;
+		
+		if (!TvTEvent.onItemSummon(playable.getName()))
 			return;
 		
 		final SummonItem sitem = SummonItemsData.getInstance().getSummonItem(item.getItemId());

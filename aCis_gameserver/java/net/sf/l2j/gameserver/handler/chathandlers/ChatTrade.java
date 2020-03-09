@@ -14,6 +14,7 @@
  */
 package net.sf.l2j.gameserver.handler.chathandlers;
 
+import net.sf.l2j.Config;
 import net.sf.l2j.gameserver.datatables.MapRegionTable;
 import net.sf.l2j.gameserver.handler.IChatHandler;
 import net.sf.l2j.gameserver.model.BlockList;
@@ -41,10 +42,13 @@ public class ChatTrade implements IChatHandler
 		
 		for (L2PcInstance player : L2World.getInstance().getPlayers())
 		{
-			if (!BlockList.isBlocked(player, activeChar) && region == MapRegionTable.getMapRegion(player.getX(), player.getY()))
+			if (!BlockList.isBlocked(player, activeChar) && region == MapRegionTable.getMapRegion(player.getX(), player.getY()) && activeChar.getLevel() >= Config.CHAT_TRADE_LEVEL)
 				player.sendPacket(cs);
 		}
-	}
+			if (!(activeChar.getLevel() >= Config.CHAT_TRADE_LEVEL))
+				activeChar.sendMessage("Your level must be more than " + Config.CHAT_TRADE_LEVEL + " to use Trade Chat!");
+			return;
+		}
 	
 	@Override
 	public int[] getChatTypeList()

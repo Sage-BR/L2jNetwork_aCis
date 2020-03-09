@@ -27,9 +27,11 @@ import net.sf.l2j.Config;
 import net.sf.l2j.commons.lang.StringUtil;
 import net.sf.l2j.gameserver.datatables.BufferTable;
 import net.sf.l2j.gameserver.datatables.SkillTable;
+import net.sf.l2j.gameserver.model.L2Skill;
 import net.sf.l2j.gameserver.model.actor.L2Character;
 import net.sf.l2j.gameserver.model.actor.L2Summon;
 import net.sf.l2j.gameserver.model.actor.template.NpcTemplate;
+import net.sf.l2j.gameserver.network.serverpackets.MagicSkillUse;
 import net.sf.l2j.gameserver.network.serverpackets.NpcHtmlMessage;
 
 public class L2BufferInstance extends L2NpcInstance
@@ -44,6 +46,7 @@ public class L2BufferInstance extends L2NpcInstance
 	{
 		StringTokenizer st = new StringTokenizer(command, " ");
 		String currentCommand = st.nextToken();
+		int buffid = 0;
 		
 		if (currentCommand.startsWith("menu"))
 		{
@@ -52,13 +55,28 @@ public class L2BufferInstance extends L2NpcInstance
 			html.replace("%objectId%", getObjectId());
 			player.sendPacket(html);
 		}
+		if (currentCommand.startsWith("chat"))
+		{
+			final NpcHtmlMessage html = new NpcHtmlMessage(0);
+			html.setFile(getHtmlPath(getNpcId(), Integer.parseInt(st.nextToken())));
+			html.replace("%objectId%", getObjectId());
+			player.sendPacket(html);
+		}
 		else if (currentCommand.startsWith("cleanup"))
 		{
+			L2Skill buff;
+			buff = SkillTable.getInstance().getInfo(1056, 1);
+			buff.getEffects(this, player);
 			player.stopAllEffectsExceptThoseThatLastThroughDeath();
+			player.broadcastPacket(new MagicSkillUse(this, player, 1056, 1, 5, 0));
 			
 			final L2Summon summon = player.getPet();
 			if (summon != null)
+			{
+				buff.getEffects(this, summon);
+				summon.broadcastPacket(new MagicSkillUse(this, summon, 1056, 1, 5, 0));
 				summon.stopAllEffectsExceptThoseThatLastThroughDeath();
+			}
 			
 			final NpcHtmlMessage html = new NpcHtmlMessage(0);
 			html.setFile(getHtmlPath(getNpcId(), 0));
@@ -69,10 +87,17 @@ public class L2BufferInstance extends L2NpcInstance
 		{
 			player.setCurrentHpMp(player.getMaxHp(), player.getMaxMp());
 			player.setCurrentCp(player.getMaxCp());
+			L2Skill buff = SkillTable.getInstance().getInfo(1218, 1);
+			buff.getEffects(this, player);
+			player.broadcastPacket(new MagicSkillUse(this, player, 1218, 1, 5, 0));
 			
 			final L2Summon summon = player.getPet();
 			if (summon != null)
+			{
+				buff.getEffects(this, player);
+				summon.broadcastPacket(new MagicSkillUse(this, summon, 1218, 1, 5, 0));
 				summon.setCurrentHpMp(summon.getMaxHp(), summon.getMaxMp());
+			}
 			
 			final NpcHtmlMessage html = new NpcHtmlMessage(0);
 			html.setFile(getHtmlPath(getNpcId(), 0));
@@ -102,6 +127,53 @@ public class L2BufferInstance extends L2NpcInstance
 		else if (currentCommand.startsWith("editschemes"))
 		{
 			showEditSchemeWindow(player, st.nextToken(), st.nextToken());
+		}
+		if (currentCommand.startsWith("getbuff"))
+		{
+			buffid = Integer.parseInt(st.nextToken());
+			int nextWindow = Integer.parseInt(st.nextToken());
+			if (buffid != 0)
+			{
+				L2Skill buff = SkillTable.getInstance().getInfo(buffid, SkillTable.getInstance().getMaxLevel(buffid));
+				buff.getEffects(this, player);
+				player.broadcastPacket(new MagicSkillUse(this, player, buffid, SkillTable.getInstance().getMaxLevel(buffid), 0, 0));
+				final NpcHtmlMessage html = new NpcHtmlMessage(0);
+				html.setFile(getHtmlPath(getNpcId(), nextWindow));
+				html.replace("%objectId%", getObjectId());
+				player.sendPacket(html);
+			}
+		}
+		else if (currentCommand.startsWith("fighterSet"))
+		{
+			int fighterSet[] = Config.FIGHTER_SET_LIST;
+			player.stopAllEffectsExceptThoseThatLastThroughDeath();
+			L2Skill buff;
+			for (int id : fighterSet)
+			{
+				buff = SkillTable.getInstance().getInfo(id, SkillTable.getInstance().getMaxLevel(id));
+				buff.getEffects(this, player);
+				player.broadcastPacket(new MagicSkillUse(this, player, id, buff.getLevel(), 0, 0));
+			}
+			final NpcHtmlMessage html = new NpcHtmlMessage(0);
+			html.setFile(getHtmlPath(getNpcId(), 0));
+			html.replace("%objectId%", getObjectId());
+			player.sendPacket(html);
+		}
+		else if (currentCommand.startsWith("mageSet"))
+		{
+			int mageSet[] = Config.MAGE_SET_LIST;
+			player.stopAllEffectsExceptThoseThatLastThroughDeath();
+			L2Skill buff;
+			for (int id : mageSet)
+			{
+				buff = SkillTable.getInstance().getInfo(id, SkillTable.getInstance().getMaxLevel(id));
+				buff.getEffects(this, player);
+				player.broadcastPacket(new MagicSkillUse(this, player, id, buff.getLevel(), 0, 0));
+			}
+			final NpcHtmlMessage html = new NpcHtmlMessage(0);
+			html.setFile(getHtmlPath(getNpcId(), 0));
+			html.replace("%objectId%", getObjectId());
+			player.sendPacket(html);
 		}
 		else if (currentCommand.startsWith("skill"))
 		{
@@ -226,7 +298,7 @@ public class L2BufferInstance extends L2NpcInstance
 		
 		final Map<String, ArrayList<Integer>> schemes = BufferTable.getInstance().getPlayerSchemes(player.getObjectId());
 		if (schemes == null || schemes.isEmpty())
-			sb.append("<font color=\"LEVEL\">You haven't defined any scheme, please go to 'Manage my schemes' and create at least one valid scheme.</font>");
+			sb.append("<center><font color=\"LEVEL\">You haven't defined any scheme</font></center>");
 		else
 		{
 			for (Map.Entry<String, ArrayList<Integer>> scheme : schemes.entrySet())
@@ -254,12 +326,12 @@ public class L2BufferInstance extends L2NpcInstance
 		
 		final Map<String, ArrayList<Integer>> schemes = BufferTable.getInstance().getPlayerSchemes(player.getObjectId());
 		if (schemes == null || schemes.isEmpty())
-			sb.append("<font color=\"LEVEL\">You haven't created any scheme.</font>");
+			sb.append("<center><font color=\"3399CC\">You haven't created any scheme.</font></center>");
 		else
 		{
-			sb.append("<table>");
+			sb.append("<table bgcolor=000000 width =300>");
 			for (Map.Entry<String, ArrayList<Integer>> scheme : schemes.entrySet())
-				StringUtil.append(sb, "<tr><td width=140>", scheme.getKey(), " (", scheme.getValue().size(), " skill(s))</td><td width=60><button value=\"Clear\" action=\"bypass -h npc_%objectId%_clearscheme ", scheme.getKey(), "\" width=55 height=15 back=\"sek.cbui94\" fore=\"sek.cbui92\"></td><td width=60><button value=\"Drop\" action=\"bypass -h npc_%objectId%_deletescheme ", scheme.getKey(), "\" width=55 height=15 back=\"sek.cbui94\" fore=\"sek.cbui92\"></td></tr>");
+				StringUtil.append(sb, "<tr><td width=140><font color=\"3399CC\">", scheme.getKey(), " (", scheme.getValue().size(), " skill(s))</font></td><td width=60><button value=\"Clear\" action=\"bypass -h npc_%objectId%_clearscheme ", scheme.getKey(), "\" width=75 height=15 back=\"L2UI.DefaultButton_click\" fore=\"L2UI.DefaultButton\"></td><td width=60><button value=\"Drop\" action=\"bypass -h npc_%objectId%_deletescheme ", scheme.getKey(), "\" width=75 height=15 back=\"L2UI.DefaultButton_click\" fore=\"L2UI.DefaultButton\"></td></tr>");
 			
 			sb.append("</table>");
 		}
@@ -311,17 +383,17 @@ public class L2BufferInstance extends L2NpcInstance
 	{
 		final Map<String, ArrayList<Integer>> schemes = BufferTable.getInstance().getPlayerSchemes(player.getObjectId());
 		if (schemes == null || schemes.isEmpty())
-			return "Please create at least one scheme.";
+			return "<table bgcolor=000000 width =300><tr><td align=center width=300><font color=\"3399CC\">Please create at least one scheme.</font></td></tr></table>";
 		
 		final StringBuilder sb = new StringBuilder(200);
-		sb.append("<table>");
+		sb.append("<table bgcolor=000000 width =300>");
 		
 		for (Map.Entry<String, ArrayList<Integer>> scheme : schemes.entrySet())
 		{
 			if (schemeName.equalsIgnoreCase(scheme.getKey()))
-				StringUtil.append(sb, "<tr><td width=200>", scheme.getKey(), " (<font color=\"LEVEL\">", scheme.getValue().size(), "</font> / ", Config.BUFFER_MAX_SKILLS, " skill(s))</td></tr>");
+				StringUtil.append(sb, "<tr><td align=center width=300>", scheme.getKey(), " (<font color=\"LEVEL\">", scheme.getValue().size(), "</font> / ", Config.BUFFER_MAX_SKILLS, " skill(s))</td></tr>");
 			else
-				StringUtil.append(sb, "<tr><td width=200><a action=\"bypass -h npc_%objectId%_editschemes none ", scheme.getKey(), "\">", scheme.getKey(), " (", scheme.getValue().size(), " / ", Config.BUFFER_MAX_SKILLS, " skill(s))</a></td></tr>");
+				StringUtil.append(sb, "<tr><td align=center width=300><font color=\"3399CC\"><a action=\"bypass -h npc_%objectId%_editschemes none ", scheme.getKey(), "\">", scheme.getKey(), " (", scheme.getValue().size(), " / ", Config.BUFFER_MAX_SKILLS, " skill(s))</a></font></td></tr>");
 		}
 		
 		sb.append("</table>");
@@ -394,7 +466,7 @@ public class L2BufferInstance extends L2NpcInstance
 	{
 		final List<Integer> skills = BufferTable.getInstance().getScheme(player.getObjectId(), schemeName);
 		if (skills.isEmpty())
-			return "That scheme is empty.";
+			return "<font color=\"3399CC\">That scheme is empty.</font>";
 		
 		final StringBuilder sb = new StringBuilder(500);
 		sb.append("<table>");

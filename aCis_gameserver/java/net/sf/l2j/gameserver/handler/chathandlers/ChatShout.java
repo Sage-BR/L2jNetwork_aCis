@@ -14,7 +14,7 @@
  */
 package net.sf.l2j.gameserver.handler.chathandlers;
 
-import net.sf.l2j.gameserver.datatables.MapRegionTable;
+import net.sf.l2j.Config;
 import net.sf.l2j.gameserver.handler.IChatHandler;
 import net.sf.l2j.gameserver.model.BlockList;
 import net.sf.l2j.gameserver.model.L2World;
@@ -37,14 +37,15 @@ public class ChatShout implements IChatHandler
 			return;
 		
 		final CreatureSay cs = new CreatureSay(activeChar.getObjectId(), type, activeChar.getName(), text);
-		final int region = MapRegionTable.getMapRegion(activeChar.getX(), activeChar.getY());
-		
 		for (L2PcInstance player : L2World.getInstance().getPlayers())
 		{
-			if (!BlockList.isBlocked(player, activeChar) && region == MapRegionTable.getMapRegion(player.getX(), player.getY()))
+			if (!BlockList.isBlocked(player, activeChar) && activeChar.getLevel() >= Config.CHAT_GLOBAL_LEVEL)
 				player.sendPacket(cs);
 		}
-	}
+			if (!(activeChar.getLevel() >= Config.CHAT_GLOBAL_LEVEL))
+				activeChar.sendMessage("Your level must be more than " + Config.CHAT_GLOBAL_LEVEL + " to use Global Chat!");
+			return;
+		}
 	
 	@Override
 	public int[] getChatTypeList()

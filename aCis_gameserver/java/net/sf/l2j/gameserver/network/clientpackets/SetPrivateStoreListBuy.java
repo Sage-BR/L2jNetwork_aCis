@@ -101,7 +101,7 @@ public final class SetPrivateStoreListBuy extends L2GameClientPacket
 			return;
 		}
 		
-		int totalCost = 0;
+		long totalCost = 0;
 		for (Item i : _items)
 		{
 			if (!i.addToTradeList(tradeList))
@@ -112,7 +112,7 @@ public final class SetPrivateStoreListBuy extends L2GameClientPacket
 			}
 			
 			totalCost += i.getCost();
-			if (totalCost > Integer.MAX_VALUE)
+			if (totalCost > Integer.MAX_VALUE || totalCost < 0)
 			{
 				player.sendPacket(SystemMessageId.EXCEEDED_THE_MAXIMUM);
 				player.sendPacket(new PrivateStoreManageListBuy(player));

@@ -138,11 +138,6 @@ public class SoulCrystalsTable
 									for (int i = 0; i < str.length; i++)
 									{
 										Integer value = Integer.parseInt(str[i].trim());
-										if (value == null)
-										{
-											_log.severe("SoulCrystalsTable: Bad level value for npcId=" + npcId + ", token=" + str[i]);
-											continue;
-										}
 										levelList[i] = value;
 									}
 								}

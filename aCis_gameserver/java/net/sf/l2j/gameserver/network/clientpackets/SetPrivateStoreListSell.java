@@ -103,7 +103,7 @@ public final class SetPrivateStoreListSell extends L2GameClientPacket
 		tradeList.clear();
 		tradeList.setPackaged(_packageSale);
 		
-		int totalCost = player.getAdena();
+		long totalCost = player.getAdena();
 		for (Item i : _items)
 		{
 			if (!i.addToTradeList(tradeList))
@@ -114,7 +114,7 @@ public final class SetPrivateStoreListSell extends L2GameClientPacket
 			}
 			
 			totalCost += i.getPrice();
-			if (totalCost > Integer.MAX_VALUE)
+			if (totalCost > Integer.MAX_VALUE || totalCost < 0)
 			{
 				player.sendPacket(SystemMessageId.EXCEEDED_THE_MAXIMUM);
 				player.sendPacket(new PrivateStoreManageListSell(player, _packageSale));

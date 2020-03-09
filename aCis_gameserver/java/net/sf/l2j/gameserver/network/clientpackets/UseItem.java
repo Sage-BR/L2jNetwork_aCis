@@ -21,10 +21,12 @@ import net.sf.l2j.gameserver.handler.ItemHandler;
 import net.sf.l2j.gameserver.model.L2Skill;
 import net.sf.l2j.gameserver.model.actor.instance.L2PcInstance;
 import net.sf.l2j.gameserver.model.actor.instance.L2PetInstance;
+import net.sf.l2j.gameserver.model.base.ClassId;
 import net.sf.l2j.gameserver.model.holder.IntIntHolder;
 import net.sf.l2j.gameserver.model.item.instance.ItemInstance;
 import net.sf.l2j.gameserver.model.item.kind.Item;
 import net.sf.l2j.gameserver.model.item.type.ActionType;
+import net.sf.l2j.gameserver.model.item.type.ArmorType;
 import net.sf.l2j.gameserver.model.item.type.EtcItemType;
 import net.sf.l2j.gameserver.model.item.type.WeaponType;
 import net.sf.l2j.gameserver.model.itemcontainer.Inventory;
@@ -33,6 +35,7 @@ import net.sf.l2j.gameserver.network.serverpackets.ItemList;
 import net.sf.l2j.gameserver.network.serverpackets.PetItemList;
 import net.sf.l2j.gameserver.scripting.Quest;
 import net.sf.l2j.gameserver.scripting.QuestState;
+import net.sf.l2j.gameserver.taskmanager.AfkTaskManager;
 import net.sf.l2j.gameserver.templates.skills.L2SkillType;
 
 public final class UseItem extends L2GameClientPacket
@@ -78,6 +81,11 @@ public final class UseItem extends L2GameClientPacket
 		if (activeChar == null)
 			return;
 		
+		if (activeChar.isAfking())
+			activeChar.setAfking(false);
+		
+		AfkTaskManager.getInstance().add(activeChar);
+		
 		if (activeChar.isInStoreMode())
 		{
 			activeChar.sendPacket(SystemMessageId.ITEMS_UNAVAILABLE_FOR_STORE_MANUFACTURE);
@@ -102,7 +110,22 @@ public final class UseItem extends L2GameClientPacket
 		
 		if (activeChar.isAlikeDead() || activeChar.isStunned() || activeChar.isSleeping() || activeChar.isParalyzed() || activeChar.isAfraid())
 			return;
-		
+		if (Config.ANTIHEAVY_PROTECTION)
+		{
+			if ((item.getItem().getItemType() == ArmorType.HEAVY) && (activeChar.getClassId().getId() == 8) || (item.getItem().getItemType() == ArmorType.HEAVY) && (activeChar.getClassId().getId() == 23) || (item.getItem().getItemType() == ArmorType.HEAVY) && (activeChar.getClassId().getId() == 35) || (item.getItem().getItemType() == ArmorType.HEAVY) && (activeChar.getClassId().getId() == 93) || (item.getItem().getItemType() == ArmorType.HEAVY) && (activeChar.getClassId().getId() == 101) || (item.getItem().getItemType() == ArmorType.HEAVY) && (activeChar.getClassId().getId() == 108) || (item.getItem().getItemType() == ArmorType.HEAVY) && (activeChar.getClassId().getId() == 9) || (item.getItem().getItemType() == ArmorType.HEAVY) && (activeChar.getClassId().getId() == 24) || (item.getItem().getItemType() == ArmorType.HEAVY) && (activeChar.getClassId().getId() == 37) || (item.getItem().getItemType() == ArmorType.HEAVY) && (activeChar.getClassId().getId() == 92) || (item.getItem().getItemType() == ArmorType.HEAVY) && (activeChar.getClassId().getId() == 102) || (item.getItem().getItemType() == ArmorType.HEAVY) && (activeChar.getClassId().getId() == 109))
+			{
+				activeChar.sendMessage("Your class can't equip heavy type armors.");
+				return;
+			}
+		}
+		if (Config.ANTIBOW_PROTECTION)
+		{
+			if (item.getItemType() == WeaponType.BOW && activeChar.getClassId() == ClassId.titan || item.getItemType() == WeaponType.BOW && activeChar.getClassId() == ClassId.dreadnought || item.getItemType() == WeaponType.BOW && activeChar.getClassId() == ClassId.hellKnight || item.getItemType() == WeaponType.BOW && activeChar.getClassId() == ClassId.phoenixKnight || item.getItemType() == WeaponType.BOW && activeChar.getClassId() == ClassId.evaTemplar || item.getItemType() == WeaponType.BOW && activeChar.getClassId() == ClassId.shillenElder && !activeChar.isInOlympiadMode())
+			{
+				activeChar.sendMessage("You Are Allowed To Use This Weapon Only In Olympiad");
+				return;
+			}
+		}
 		if (!Config.KARMA_PLAYER_CAN_TELEPORT && activeChar.getKarma() > 0)
 		{
 			final IntIntHolder[] sHolders = item.getItem().getSkills();

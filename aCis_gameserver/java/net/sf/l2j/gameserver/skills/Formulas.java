@@ -683,7 +683,7 @@ public final class Formulas
 		double mAtk = attacker.getMAtk(target, skill);
 		
 		if (bss)
-			mAtk *= 4;
+			mAtk *= 3;
 		else if (ss)
 			mAtk *= 2;
 		

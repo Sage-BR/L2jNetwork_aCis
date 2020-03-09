@@ -137,7 +137,7 @@ public class L2WeddingManagerInstance extends L2NpcInstance
 			}
 			
 			// Simple checks to avoid exploits
-			if (partner.isInJail() || partner.isInOlympiadMode() || partner.isInDuel() || partner.isFestivalParticipant() || (partner.isInParty() && partner.getParty().isInDimensionalRift()) || partner.inObserverMode())
+			if (partner.isInFunEvent() || partner.isInJail() || partner.isInOlympiadMode() || partner.isInDuel() || partner.isFestivalParticipant() || (partner.isInParty() && partner.getParty().isInDimensionalRift()) || partner.inObserverMode())
 			{
 				player.sendMessage("Due to the current partner's status, the teleportation failed.");
 				return;

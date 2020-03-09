@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import net.sf.l2j.Config;
 import net.sf.l2j.gameserver.datatables.MapRegionTable;
 import net.sf.l2j.gameserver.instancemanager.GrandBossManager;
 import net.sf.l2j.gameserver.model.actor.L2Attackable;
@@ -79,8 +80,12 @@ public class L2BossZone extends L2ZoneType
 				final L2PcInstance player = (L2PcInstance) character;
 				player.setInsideZone(ZoneId.NO_SUMMON_FRIEND, true);
 				
+				// Enable/Disable Flag.
+				if (Config.FLAG_RB)
+				player.updatePvPFlag(1);
+				
 				// Skip other checks for GM.
-				if (player.isGM())
+				 if(player.isGM() || Config.ALLOW_DIRECT_TP_TO_BOSS_ROOM)
 					return;
 				
 				// Get player object id.
@@ -134,6 +139,7 @@ public class L2BossZone extends L2ZoneType
 				// Get player and set zone info.
 				final L2PcInstance player = (L2PcInstance) character;
 				player.setInsideZone(ZoneId.NO_SUMMON_FRIEND, false);
+				player.updatePvPFlag(0);
 				
 				// Skip other checks for GM.
 				if (player.isGM())

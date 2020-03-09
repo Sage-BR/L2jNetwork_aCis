@@ -86,9 +86,9 @@ public class RequestBuySeed extends L2GameClientPacket
 		if (!player.isInsideRadius(manager, INTERACTION_DISTANCE, true, false))
 			return;
 		
-		int totalPrice = 0;
+		long totalPrice = 0;
 		int slots = 0;
-		int totalWeight = 0;
+		long weight = 0;
 		
 		Castle castle = CastleManager.getInstance().getCastleById(_manorId);
 		
@@ -98,25 +98,19 @@ public class RequestBuySeed extends L2GameClientPacket
 				return;
 			
 			totalPrice += i.getPrice();
-			
-			if (totalPrice > Integer.MAX_VALUE)
+			// Check for overflow
+			if (totalPrice > Integer.MAX_VALUE || totalPrice < 0)
 			{
 				Util.handleIllegalPlayerAction(player, player.getName() + " of account " + player.getAccountName() + " tried to purchase over " + Integer.MAX_VALUE + " adena worth of goods.", Config.DEFAULT_PUNISH);
 				return;
 			}
 			
 			Item template = ItemTable.getInstance().getTemplate(i.getSeedId());
-			totalWeight += i.getCount() * template.getWeight();
+			weight += (long)i.getCount() * template.getWeight();
 			if (!template.isStackable())
 				slots += i.getCount();
 			else if (player.getInventory().getItemByItemId(i.getSeedId()) == null)
 				slots++;
-		}
-		
-		if (!player.getInventory().validateWeight(totalWeight))
-		{
-			sendPacket(SystemMessage.getSystemMessage(SystemMessageId.WEIGHT_LIMIT_EXCEEDED));
-			return;
 		}
 		
 		if (!player.getInventory().validateCapacity(slots))
@@ -125,8 +119,14 @@ public class RequestBuySeed extends L2GameClientPacket
 			return;
 		}
 		
+		if (weight > Integer.MAX_VALUE || weight < 0 || !player.getInventory().validateWeight((int)weight))
+		{
+			sendPacket(SystemMessage.getSystemMessage(SystemMessageId.WEIGHT_LIMIT_EXCEEDED));
+			return;
+		}
+		
 		// test adena
-		if (totalPrice < 0 || player.getAdena() < totalPrice)
+		if (player.getAdena() < totalPrice)
 		{
 			sendPacket(SystemMessage.getSystemMessage(SystemMessageId.YOU_NOT_ENOUGH_ADENA));
 			return;
@@ -151,7 +151,7 @@ public class RequestBuySeed extends L2GameClientPacket
 		if (totalPrice > 0)
 		{
 			castle.addToTreasuryNoTax(totalPrice);
-			player.sendPacket(SystemMessage.getSystemMessage(SystemMessageId.S1_DISAPPEARED_ADENA).addItemNumber(totalPrice));
+			player.sendPacket(SystemMessage.getSystemMessage(SystemMessageId.S1_DISAPPEARED_ADENA).addItemNumber((int)totalPrice));
 		}
 	}
 	

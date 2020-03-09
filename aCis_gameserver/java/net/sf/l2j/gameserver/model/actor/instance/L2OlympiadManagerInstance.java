@@ -18,6 +18,7 @@ import java.util.List;
 
 import net.sf.l2j.commons.lang.StringUtil;
 import net.sf.l2j.gameserver.datatables.MultisellData;
+import net.sf.l2j.gameserver.events.TvTEvent;
 import net.sf.l2j.gameserver.model.actor.template.NpcTemplate;
 import net.sf.l2j.gameserver.model.entity.Hero;
 import net.sf.l2j.gameserver.model.olympiad.CompetitionType;
@@ -182,6 +183,11 @@ public class L2OlympiadManagerInstance extends L2NpcInstance
 		}
 		else if (command.startsWith("Olympiad"))
 		{
+			if (TvTEvent.isParticipating())
+			{
+				player.sendMessage("You can't do that while in a event");
+				return;
+			}
 			int val = Integer.parseInt(command.substring(9, 10));
 			
 			final NpcHtmlMessage html = new NpcHtmlMessage(getObjectId());
@@ -217,6 +223,12 @@ public class L2OlympiadManagerInstance extends L2NpcInstance
 					break;
 				
 				case 3: // Spectator overview
+					if (TvTEvent.isParticipating() || TvTEvent.isStarting() || TvTEvent.isStarted())
+					{
+						player.sendMessage("You can't do that while in a event");
+						return;
+					}
+					
 					html.setFile(Olympiad.OLYMPIAD_HTML_PATH + "olympiad_observe_list.htm");
 					
 					int i = 0;

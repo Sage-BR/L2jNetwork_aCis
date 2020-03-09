@@ -21,6 +21,7 @@ import net.sf.l2j.gameserver.model.actor.L2Attackable;
 import net.sf.l2j.gameserver.model.actor.L2Character;
 import net.sf.l2j.gameserver.model.actor.instance.L2PcInstance;
 import net.sf.l2j.gameserver.model.entity.Castle;
+import net.sf.l2j.gameserver.model.zone.ZoneId;
 
 public class Die extends L2GameServerPacket
 {
@@ -28,9 +29,11 @@ public class Die extends L2GameServerPacket
 	private final boolean _fake;
 	
 	private boolean _sweepable;
+	private boolean _canTeleport;
 	private boolean _allowFixedRes;
 	private L2Clan _clan;
 	L2Character _activeChar;
+	private boolean _funEvent;
 	
 	public Die(L2Character cha)
 	{
@@ -43,6 +46,8 @@ public class Die extends L2GameServerPacket
 			L2PcInstance player = (L2PcInstance) cha;
 			_allowFixedRes = player.getAccessLevel().allowFixedRes();
 			_clan = player.getClan();
+			_canTeleport = !player.isInsideZone(ZoneId.FLAG);
+			_funEvent = !player.isInFunEvent();
 			
 		}
 		else if (cha instanceof L2Attackable)
@@ -57,9 +62,10 @@ public class Die extends L2GameServerPacket
 		
 		writeC(0x06);
 		writeD(_charObjId);
-		writeD(0x01); // to nearest village
+		writeD(_funEvent && _canTeleport ? 0x01 : 0); // to nearest village
 		
-		if (_clan != null)
+		
+		if (_funEvent && _canTeleport && _clan != null)
 		{
 			L2SiegeClan siegeClan = null;
 			boolean isInDefense = false;

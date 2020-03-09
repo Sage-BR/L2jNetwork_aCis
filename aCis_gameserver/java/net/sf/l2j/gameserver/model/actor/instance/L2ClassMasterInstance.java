@@ -114,7 +114,7 @@ public final class L2ClassMasterInstance extends L2NpcInstance
 			super.onBypassFeedback(player, command);
 	}
 	
-	private static final void showHtmlMenu(L2PcInstance player, int objectId, int level)
+	static final void showHtmlMenu(L2PcInstance player, int objectId, int level)
 	{
 		final NpcHtmlMessage html = new NpcHtmlMessage(objectId);
 		
@@ -206,7 +206,7 @@ public final class L2ClassMasterInstance extends L2NpcInstance
 		player.sendPacket(html);
 	}
 	
-	private static final boolean checkAndChangeClass(L2PcInstance player, int val)
+	static final boolean checkAndChangeClass(L2PcInstance player, int val)
 	{
 		final ClassId currentClassId = player.getClassId();
 		if (getMinLevel(currentClassId.level()) > player.getLevel() && !Config.ALLOW_ENTIRE_TREE)

@@ -114,8 +114,8 @@ public final class SendWarehouseWithdrawList extends L2GameClientPacket
 			}
 		}
 		
-		int weight = 0;
 		int slots = 0;
+		long weight = 0;
 		
 		for (IntIntHolder i : _items)
 		{
@@ -127,7 +127,7 @@ public final class SendWarehouseWithdrawList extends L2GameClientPacket
 				return;
 			}
 			
-			weight += i.getValue() * item.getItem().getWeight();
+			weight += (long)i.getValue() * item.getItem().getWeight();
 			
 			if (!item.isStackable())
 				slots += i.getValue();
@@ -143,7 +143,7 @@ public final class SendWarehouseWithdrawList extends L2GameClientPacket
 		}
 		
 		// Weight limit Check
-		if (!player.getInventory().validateWeight(weight))
+		if (weight > Integer.MAX_VALUE || weight < 0 || !player.getInventory().validateWeight((int)weight))
 		{
 			sendPacket(SystemMessage.getSystemMessage(SystemMessageId.WEIGHT_LIMIT_EXCEEDED));
 			return;

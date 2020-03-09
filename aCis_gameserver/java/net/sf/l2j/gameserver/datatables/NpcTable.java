@@ -24,6 +24,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import net.sf.l2j.Config;
 import net.sf.l2j.gameserver.model.L2MinionData;
 import net.sf.l2j.gameserver.model.L2NpcAIData;
 import net.sf.l2j.gameserver.model.L2Skill;
@@ -202,6 +203,9 @@ public class NpcTable
 													_log.warning("Droplist data for undefined itemId: " + dropDat.getItemId());
 													continue;
 												}
+												
+												if (Config.ENABLE_SKIPPING && SkipTable.isSkipped(dropDat.getItemId()))
+													continue;
 												template.addDropData(dropDat, category);
 											}
 										}

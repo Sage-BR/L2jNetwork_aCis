@@ -139,6 +139,7 @@ $MYG < ../sql/siege_clans.sql &> /dev/null
 $MYG < ../sql/spawnlist_4s.sql &> /dev/null
 $MYG < ../sql/spawnlist.sql &> /dev/null
 $MYG < ../sql/topic.sql &> /dev/null
+$MYG < ../sql/custom_spawnlist &> /dev/null
 echo ""
 echo "Was fast, isn't it ?"
 }

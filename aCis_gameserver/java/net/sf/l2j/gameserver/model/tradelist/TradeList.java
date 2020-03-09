@@ -563,8 +563,8 @@ public class TradeList
 			return 1;
 		
 		int slots = 0;
-		int weight = 0;
-		int totalPrice = 0;
+		long weight = 0;
+		long totalPrice = 0;
 		
 		final PcInventory ownerInventory = _owner.getInventory();
 		final PcInventory playerInventory = player.getInventory();
@@ -599,17 +599,9 @@ public class TradeList
 				continue;
 			}
 			
-			// check for overflow in the single item
-			if ((Integer.MAX_VALUE / item.getCount()) < item.getPrice())
-			{
-				// private store attempting to overflow - disable it
-				lock();
-				return 1;
-			}
-			
-			totalPrice += item.getCount() * item.getPrice();
-			// check for overflow of the total price
-			if (Integer.MAX_VALUE < totalPrice || totalPrice < 0)
+			totalPrice += (long)item.getCount() * item.getPrice();
+			// Check for overflow
+			if (Integer.MAX_VALUE / item.getCount() < item.getPrice() || totalPrice > Integer.MAX_VALUE || totalPrice < 0)
 			{
 				// private store attempting to overflow - disable it
 				lock();
@@ -628,7 +620,7 @@ public class TradeList
 			Item template = ItemTable.getInstance().getTemplate(item.getItemId());
 			if (template == null)
 				continue;
-			weight += item.getCount() * template.getWeight();
+			weight += (long)item.getCount() * template.getWeight();
 			if (!template.isStackable())
 				slots += item.getCount();
 			else if (playerInventory.getItemByItemId(item.getItemId()) == null)
@@ -641,15 +633,15 @@ public class TradeList
 			return 1;
 		}
 		
-		if (!playerInventory.validateWeight(weight))
-		{
-			player.sendPacket(SystemMessageId.WEIGHT_LIMIT_EXCEEDED);
-			return 1;
-		}
-		
 		if (!playerInventory.validateCapacity(slots))
 		{
 			player.sendPacket(SystemMessageId.SLOTS_FULL);
+			return 1;
+		}
+		
+		if (weight > Integer.MAX_VALUE || weight < 0 || !playerInventory.validateWeight((int)weight))
+		{
+			player.sendPacket(SystemMessageId.WEIGHT_LIMIT_EXCEEDED);
 			return 1;
 		}
 		
@@ -658,14 +650,14 @@ public class TradeList
 		final InventoryUpdate playerIU = new InventoryUpdate();
 		
 		final ItemInstance adenaItem = playerInventory.getAdenaInstance();
-		if (!playerInventory.reduceAdena("PrivateStore", totalPrice, player, _owner))
+		if (totalPrice < 0 || !playerInventory.reduceAdena("PrivateStore", (int)totalPrice, player, _owner))
 		{
 			player.sendPacket(SystemMessageId.YOU_NOT_ENOUGH_ADENA);
 			return 1;
 		}
 		
 		playerIU.addItem(adenaItem);
-		ownerInventory.addAdena("PrivateStore", totalPrice, _owner, player);
+		ownerInventory.addAdena("PrivateStore", (int)totalPrice, _owner, player);
 		
 		boolean ok = true;
 		
@@ -792,16 +784,9 @@ public class TradeList
 			if (!found)
 				continue;
 			
-			// check for overflow in the single item
-			if ((Integer.MAX_VALUE / item.getCount()) < item.getPrice())
-			{
-				lock();
-				break;
-			}
-			
-			int _totalPrice = totalPrice + item.getCount() * item.getPrice();
-			// check for overflow of the total price
-			if (Integer.MAX_VALUE < _totalPrice || _totalPrice < 0)
+			long _totalPrice = totalPrice + (long)item.getCount() * item.getPrice();
+			// check for overflow
+			if (Integer.MAX_VALUE / item.getCount() < item.getPrice() || _totalPrice > Integer.MAX_VALUE || _totalPrice < 0)
 			{
 				lock();
 				break;
@@ -846,7 +831,7 @@ public class TradeList
 			ok = true;
 			
 			// increase total price only after successful transaction
-			totalPrice = _totalPrice;
+			totalPrice = (int)_totalPrice;
 			
 			// Add changes to inventory update packets
 			if (oldItem.getCount() > 0 && oldItem != newItem)

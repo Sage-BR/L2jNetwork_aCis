@@ -31,6 +31,7 @@ import net.sf.l2j.gameserver.handler.itemhandlers.ItemSkills;
 import net.sf.l2j.gameserver.handler.itemhandlers.Keys;
 import net.sf.l2j.gameserver.handler.itemhandlers.Maps;
 import net.sf.l2j.gameserver.handler.itemhandlers.MercTicket;
+import net.sf.l2j.gameserver.handler.itemhandlers.NobleItem;
 import net.sf.l2j.gameserver.handler.itemhandlers.PaganKeys;
 import net.sf.l2j.gameserver.handler.itemhandlers.PetFood;
 import net.sf.l2j.gameserver.handler.itemhandlers.Recipes;
@@ -82,6 +83,7 @@ public class ItemHandler
 		registerItemHandler(new SoulCrystals());
 		registerItemHandler(new SpiritShot());
 		registerItemHandler(new SummonItems());
+		registerItemHandler(new NobleItem());
 	}
 	
 	public void registerItemHandler(IItemHandler handler)

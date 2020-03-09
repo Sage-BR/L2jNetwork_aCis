@@ -41,9 +41,12 @@ import net.sf.l2j.gameserver.model.CharSelectInfoPackage;
 import net.sf.l2j.gameserver.model.L2Clan;
 import net.sf.l2j.gameserver.model.L2World;
 import net.sf.l2j.gameserver.model.actor.instance.L2PcInstance;
+import net.sf.l2j.gameserver.model.olympiad.OlympiadManager;
+import net.sf.l2j.gameserver.model.zone.ZoneId;
 import net.sf.l2j.gameserver.network.serverpackets.ActionFailed;
 import net.sf.l2j.gameserver.network.serverpackets.L2GameServerPacket;
 import net.sf.l2j.gameserver.network.serverpackets.ServerClose;
+import net.sf.l2j.gameserver.skills.AbnormalEffect;
 import net.sf.l2j.gameserver.util.FloodProtectors;
 
 /**
@@ -66,7 +69,7 @@ public final class L2GameClient extends MMOClient<MMOConnection<L2GameClient>> i
 	// Info
 	private String _accountName;
 	private SessionKey _sessionId;
-	private L2PcInstance _activeChar;
+	public L2PcInstance _activeChar;
 	private final ReentrantLock _activeCharLock = new ReentrantLock();
 	
 	@SuppressWarnings("unused")
@@ -214,7 +217,11 @@ public final class L2GameClient extends MMOClient<MMOConnection<L2GameClient>> i
 	/**
 	 * Method to handle character deletion
 	 * @param charslot The slot to check.
-	 * @return a byte: <li>-1: Error: No char was found for such charslot, caught exception, etc... <li>0: character is not member of any clan, proceed with deletion <li>1: character is member of a clan, but not clan leader <li>2: character is clan leader
+	 * @return a byte:
+	 *         <li>-1: Error: No char was found for such charslot, caught exception, etc...
+	 *         <li>0: character is not member of any clan, proceed with deletion
+	 *         <li>1: character is member of a clan, but not clan leader
+	 *         <li>2: character is clan leader
 	 */
 	public byte markToDeleteChar(int charslot)
 	{
@@ -445,6 +452,9 @@ public final class L2GameClient extends MMOClient<MMOConnection<L2GameClient>> i
 	
 	public void close(L2GameServerPacket gsp)
 	{
+		if (getConnection() == null)
+			return;
+		
 		getConnection().close(gsp);
 	}
 	
@@ -541,6 +551,37 @@ public final class L2GameClient extends MMOClient<MMOConnection<L2GameClient>> i
 				if (getActiveChar() != null && !isDetached())
 				{
 					setDetached(true);
+					if (offlineMode(getActiveChar()))
+					{
+						getActiveChar().leaveParty();
+						OlympiadManager.getInstance().unRegisterNoble(getActiveChar());
+						
+						// If the L2PcInstance has Pet, unsummon it
+						if (getActiveChar().hasPet())
+						{
+							getActiveChar().getPet().unSummon(getActiveChar());
+							// Dead pet wasn't unsummoned, broadcast npcinfo changes (pet will be without owner name - means owner offline)
+							if (getActiveChar().getPet() != null)
+								getActiveChar().getPet().broadcastNpcInfo(0);
+						}
+						
+						if (Config.OFFLINE_SET_NAME_COLOR)
+						{
+							getActiveChar().getAppearance().setNameColor(Config.OFFLINE_NAME_COLOR);
+							getActiveChar().broadcastUserInfo();
+						}
+						
+						if (Config.OFFLINE_SET_SLEEP)
+						{
+							getActiveChar().startAbnormalEffect(AbnormalEffect.SLEEP);
+							getActiveChar().broadcastUserInfo();
+						}
+						
+						if (getActiveChar().getOfflineStartTime() == 0)
+							getActiveChar().setOfflineStartTime(System.currentTimeMillis());
+						
+						return;
+					}
 					fast = !getActiveChar().isInCombat() && !getActiveChar().isLocked();
 				}
 				cleanMe(fast);
@@ -550,6 +591,43 @@ public final class L2GameClient extends MMOClient<MMOConnection<L2GameClient>> i
 				_log.log(Level.WARNING, "error while disconnecting client", e1);
 			}
 		}
+	}
+	
+	/**
+	 * @param player the player to be check.
+	 * @return {@code true} if the player is allowed to remain as off-line shop.
+	 */
+	protected static boolean offlineMode(L2PcInstance player)
+	{
+		if (player.isInOlympiadMode() || player.isFestivalParticipant() || player.isInJail() || player.getVehicle() != null)
+			return false;
+		
+		boolean canSetShop = false;
+		switch (player.getPrivateStoreType())
+		{
+			case SELL:
+			case PACKAGE_SELL:
+			case BUY:
+			{
+				canSetShop = Config.OFFLINE_TRADE_ENABLE;
+				break;
+			}
+			case MANUFACTURE:
+			{
+				canSetShop = Config.OFFLINE_TRADE_ENABLE;
+				break;
+			}
+			default:
+			{
+				canSetShop = Config.OFFLINE_CRAFT_ENABLE && player.isInCraftMode();
+				break;
+			}
+		}
+		
+		if (Config.OFFLINE_MODE_IN_PEACE_ZONE && !player.isInsideZone(ZoneId.PEACE))
+			canSetShop = false;
+		
+		return canSetShop;
 	}
 	
 	public void cleanMe(boolean fast)

@@ -14,12 +14,14 @@
  */
 package net.sf.l2j.gameserver.network.clientpackets;
 
+import net.sf.l2j.gameserver.events.TvTEvent;
 import net.sf.l2j.gameserver.instancemanager.SevenSignsFestival;
 import net.sf.l2j.gameserver.model.actor.instance.L2PcInstance;
 import net.sf.l2j.gameserver.model.zone.ZoneId;
 import net.sf.l2j.gameserver.network.SystemMessageId;
 import net.sf.l2j.gameserver.network.serverpackets.ActionFailed;
 import net.sf.l2j.gameserver.network.serverpackets.SystemMessage;
+import net.sf.l2j.gameserver.taskmanager.AfkTaskManager;
 import net.sf.l2j.gameserver.taskmanager.AttackStanceTaskManager;
 
 public final class Logout extends L2GameClientPacket
@@ -39,6 +41,12 @@ public final class Logout extends L2GameClientPacket
 		if (player.getActiveEnchantItem() != null || player.isLocked())
 		{
 			player.sendPacket(ActionFailed.STATIC_PACKET);
+			return;
+		}
+		
+		if (!TvTEvent.isInactive() && TvTEvent.isPlayerParticipant(player.getName()))
+		{
+			player.sendMessage("You can not leave the game while attending an event.");
 			return;
 		}
 		
@@ -70,6 +78,7 @@ public final class Logout extends L2GameClientPacket
 		}
 		
 		player.removeFromBossZone();
+		AfkTaskManager.getInstance().remove(player);
 		player.logout();
 	}
 }

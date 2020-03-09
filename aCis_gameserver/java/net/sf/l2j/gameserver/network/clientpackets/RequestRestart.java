@@ -14,6 +14,7 @@
  */
 package net.sf.l2j.gameserver.network.clientpackets;
 
+import net.sf.l2j.gameserver.events.TvTEvent;
 import net.sf.l2j.gameserver.instancemanager.SevenSignsFestival;
 import net.sf.l2j.gameserver.model.actor.instance.L2PcInstance;
 import net.sf.l2j.gameserver.model.zone.ZoneId;
@@ -23,6 +24,7 @@ import net.sf.l2j.gameserver.network.SystemMessageId;
 import net.sf.l2j.gameserver.network.serverpackets.CharSelectInfo;
 import net.sf.l2j.gameserver.network.serverpackets.RestartResponse;
 import net.sf.l2j.gameserver.network.serverpackets.SystemMessage;
+import net.sf.l2j.gameserver.taskmanager.AfkTaskManager;
 import net.sf.l2j.gameserver.taskmanager.AttackStanceTaskManager;
 
 public final class RequestRestart extends L2GameClientPacket
@@ -59,6 +61,13 @@ public final class RequestRestart extends L2GameClientPacket
 			return;
 		}
 		
+		if (!TvTEvent.isInactive() && TvTEvent.isPlayerParticipant(player.getName()))
+		{
+			player.sendMessage("You can not restart when you registering in TvTEvent.");
+			sendPacket(RestartResponse.valueOf(false));
+			return;
+		}
+		
 		if (player.isFestivalParticipant())
 		{
 			if (SevenSignsFestival.getInstance().isFestivalInitialized())
@@ -73,6 +82,7 @@ public final class RequestRestart extends L2GameClientPacket
 		}
 		
 		player.removeFromBossZone();
+		AfkTaskManager.getInstance().remove(player);
 		
 		final L2GameClient client = getClient();
 		

@@ -24,6 +24,7 @@ import net.sf.l2j.gameserver.network.SystemMessageId;
 import net.sf.l2j.gameserver.network.serverpackets.ActionFailed;
 import net.sf.l2j.gameserver.network.serverpackets.EnchantResult;
 import net.sf.l2j.gameserver.network.serverpackets.StopMove;
+import net.sf.l2j.gameserver.taskmanager.AfkTaskManager;
 import net.sf.l2j.gameserver.util.Util;
 
 public class MoveBackwardToLocation extends L2GameClientPacket
@@ -68,6 +69,11 @@ public class MoveBackwardToLocation extends L2GameClientPacket
 		final L2PcInstance activeChar = getClient().getActiveChar();
 		if (activeChar == null)
 			return;
+		
+		if (activeChar.isAfking())
+			activeChar.setAfking(false);
+		
+		AfkTaskManager.getInstance().add(activeChar);
 		
 		if (activeChar.isOutOfControl())
 		{

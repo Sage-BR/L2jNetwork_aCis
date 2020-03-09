@@ -19,6 +19,7 @@ import net.sf.l2j.gameserver.ai.CtrlIntention;
 import net.sf.l2j.gameserver.model.actor.instance.L2PcInstance;
 import net.sf.l2j.gameserver.network.SystemMessageId;
 import net.sf.l2j.gameserver.network.serverpackets.SocialAction;
+import net.sf.l2j.gameserver.taskmanager.AfkTaskManager;
 import net.sf.l2j.gameserver.util.FloodProtectors;
 import net.sf.l2j.gameserver.util.FloodProtectors.Action;
 import net.sf.l2j.gameserver.util.Util;
@@ -42,6 +43,11 @@ public class RequestSocialAction extends L2GameClientPacket
 		final L2PcInstance activeChar = getClient().getActiveChar();
 		if (activeChar == null)
 			return;
+		
+		if (activeChar.isAfking())
+			activeChar.setAfking(false);
+		
+		AfkTaskManager.getInstance().add(activeChar);
 		
 		if (activeChar.isFishing())
 		{

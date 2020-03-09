@@ -99,7 +99,7 @@ public class MultiSellChoose extends L2GameClientPacket
 		 * Checks if the amount to purchase is exceeding the inventory slots or weight limit and returns a message to the player.
 		 */
 		int slots = 0;
-		int weight = 0;
+		long weight = 0;
 		for (Ingredient e : entry.getProducts())
 		{
 			int id = e.getItemId();
@@ -115,18 +115,18 @@ public class MultiSellChoose extends L2GameClientPacket
 			else if (player.getInventory().getItemByItemId(id) == null)
 				slots++;
 			
-			weight += e.getItemCount() * _amount * template.getWeight();
-		}
-		
-		if (!inv.validateWeight(weight))
-		{
-			player.sendPacket(SystemMessageId.WEIGHT_LIMIT_EXCEEDED);
-			return;
+			weight += (long)e.getItemCount() * _amount * e.getWeight();
 		}
 		
 		if (!inv.validateCapacity(slots))
 		{
 			player.sendPacket(SystemMessageId.SLOTS_FULL);
+			return;
+		}
+		
+		if (weight > Integer.MAX_VALUE || weight < 0 || !inv.validateWeight((int)weight))
+		{
+			player.sendPacket(SystemMessageId.WEIGHT_LIMIT_EXCEEDED);
 			return;
 		}
 		

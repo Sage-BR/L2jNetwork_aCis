@@ -56,13 +56,13 @@ public abstract class AbstractEnchantPacket extends L2GameClientPacket
 			switch (enchantItem.getItem().getType2())
 			{
 				case Item.TYPE2_WEAPON:
-					if (!_isWeapon || (Config.ENCHANT_MAX_WEAPON > 0 && enchantItem.getEnchantLevel() >= Config.ENCHANT_MAX_WEAPON))
+					if (!_isWeapon || (!isCrystal() && Config.ENCHANT_MAX_WEAPON > 0 && enchantItem.getEnchantLevel() >= Config.ENCHANT_MAX_WEAPON) || (isCrystal() && Config.CRYSTAL_ENCHANT_MAX_WEAPON > 0 && enchantItem.getEnchantLevel() >= Config.CRYSTAL_ENCHANT_MAX_WEAPON))
 						return false;
 					break;
 				
 				case Item.TYPE2_SHIELD_ARMOR:
 				case Item.TYPE2_ACCESSORY:
-					if (_isWeapon || (Config.ENCHANT_MAX_ARMOR > 0 && enchantItem.getEnchantLevel() >= Config.ENCHANT_MAX_ARMOR))
+					if (_isWeapon || (!isCrystal() && Config.ENCHANT_MAX_ARMOR > 0 && enchantItem.getEnchantLevel() >= Config.ENCHANT_MAX_ARMOR) || (isCrystal() && Config.CRYSTAL_ENCHANT_MAX_ARMOR > 0 && enchantItem.getEnchantLevel() >= Config.CRYSTAL_ENCHANT_MAX_ARMOR))
 						return false;
 					break;
 				
@@ -121,15 +121,52 @@ public abstract class AbstractEnchantPacket extends L2GameClientPacket
 			double chance = 0;
 			
 			// Armor formula : 0.66^(current-2), chance is lower and lower for each enchant.
-			if (enchantItem.isArmor())
-				chance = Math.pow(Config.ENCHANT_CHANCE_ARMOR, (enchantItem.getEnchantLevel() - 2));
-			// Weapon formula is 70% for fighter weapon, 40% for mage weapon. Special rates after +14.
-			else if (enchantItem.isWeapon())
+			if (_isBlessed)
 			{
-				if (((Weapon) enchantItem.getItem()).isMagical())
-					chance = (enchantItem.getEnchantLevel() > 14) ? Config.ENCHANT_CHANCE_WEAPON_MAGIC_15PLUS : Config.ENCHANT_CHANCE_WEAPON_MAGIC;
-				else
-					chance = (enchantItem.getEnchantLevel() > 14) ? Config.ENCHANT_CHANCE_WEAPON_NONMAGIC_15PLUS : Config.ENCHANT_CHANCE_WEAPON_NONMAGIC;
+				if (enchantItem.isArmor())
+					chance = Math.pow(Config.ENCHANT_BLESSED_CHANCE_ARMOR, (enchantItem.getEnchantLevel() - 0));
+			}
+			else if (_isCrystal)
+			{
+				if (enchantItem.isArmor())
+					chance = Math.pow(Config.ENCHANT_CRYSTAL_CHANCE_ARMOR, (enchantItem.getEnchantLevel() - 0));
+			}
+			else
+			{
+				if (enchantItem.isArmor())
+					chance = Math.pow(Config.ENCHANT_CHANCE_ARMOR, (enchantItem.getEnchantLevel() - 2));
+			}
+			
+			// Weapon formula is 70% for fighter weapon, 40% for mage weapon. Special rates after +14.
+			if (_isBlessed)
+			{
+				if (enchantItem.isWeapon())
+				{
+					if (((Weapon) enchantItem.getItem()).isMagical())
+						chance = (enchantItem.getEnchantLevel() > 10) ? Config.ENCHANT_BLESSED_CHANCE_WEAPON_MAGIC_15PLUS : Config.ENCHANT_BLESSED_CHANCE_WEAPON_MAGIC;
+					else
+						chance = (enchantItem.getEnchantLevel() > 10) ? Config.ENCHANT_BLESSED_CHANCE_WEAPON_NONMAGIC_15PLUS : Config.ENCHANT_BLESSED_CHANCE_WEAPON_NONMAGIC;
+				}
+			}
+			else if (_isCrystal)
+			{
+				if (enchantItem.isWeapon())
+				{
+					if (((Weapon) enchantItem.getItem()).isMagical())
+						chance = (enchantItem.getEnchantLevel() > 10) ? Config.ENCHANT_CRYSTAL_CHANCE_WEAPON_MAGIC_15PLUS : Config.ENCHANT_CRYSTAL_CHANCE_WEAPON_MAGIC;
+					else
+						chance = (enchantItem.getEnchantLevel() > 10) ? Config.ENCHANT_CRYSTAL_CHANCE_WEAPON_NONMAGIC_15PLUS : Config.ENCHANT_CRYSTAL_CHANCE_WEAPON_NONMAGIC;
+				}
+			}
+			else
+			{
+				if (enchantItem.isWeapon())
+				{
+					if (((Weapon) enchantItem.getItem()).isMagical())
+						chance = (enchantItem.getEnchantLevel() > 10) ? Config.ENCHANT_CHANCE_WEAPON_MAGIC_15PLUS : Config.ENCHANT_CHANCE_WEAPON_MAGIC;
+					else
+						chance = (enchantItem.getEnchantLevel() > 10) ? Config.ENCHANT_CHANCE_WEAPON_NONMAGIC : Config.ENCHANT_CHANCE_WEAPON_NONMAGIC;
+				}
 			}
 			
 			return chance;

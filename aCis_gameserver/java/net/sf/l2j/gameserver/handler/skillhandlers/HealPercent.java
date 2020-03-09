@@ -14,13 +14,17 @@
  */
 package net.sf.l2j.gameserver.handler.skillhandlers;
 
+import net.sf.l2j.Config;
 import net.sf.l2j.gameserver.handler.ISkillHandler;
 import net.sf.l2j.gameserver.handler.SkillHandler;
 import net.sf.l2j.gameserver.model.L2Object;
 import net.sf.l2j.gameserver.model.L2Skill;
 import net.sf.l2j.gameserver.model.actor.L2Character;
 import net.sf.l2j.gameserver.model.actor.instance.L2DoorInstance;
+import net.sf.l2j.gameserver.model.actor.instance.L2GrandBossInstance;
+import net.sf.l2j.gameserver.model.actor.instance.L2MonsterInstance;
 import net.sf.l2j.gameserver.model.actor.instance.L2PcInstance;
+import net.sf.l2j.gameserver.model.actor.instance.L2RaidBossInstance;
 import net.sf.l2j.gameserver.model.actor.instance.L2SiegeFlagInstance;
 import net.sf.l2j.gameserver.network.SystemMessageId;
 import net.sf.l2j.gameserver.network.serverpackets.StatusUpdate;
@@ -80,6 +84,20 @@ public class HealPercent implements ISkillHandler
 			
 			// Doors and flags can't be healed in any way
 			if (target instanceof L2DoorInstance || target instanceof L2SiegeFlagInstance)
+				continue;
+			
+			// Mana potions can't be used on event
+			if (((L2PcInstance) activeChar).isInFunEvent() && !Config.TVT_EVENT_POTIONS_ALLOWED)
+			{
+				if (skill.getSkillType() == L2SkillType.MANAHEAL_PERCENT)
+					continue;
+			}
+			
+			if (activeChar instanceof L2PcInstance && target instanceof L2RaidBossInstance || target instanceof L2GrandBossInstance || target instanceof L2MonsterInstance)
+				continue;
+			
+			// Players can't be healed on event
+			if (((L2PcInstance) activeChar).isInFunEvent() && !Config.TVT_EVENT_HEAL_PLAYERS)
 				continue;
 			
 			targetPlayer = target instanceof L2PcInstance;

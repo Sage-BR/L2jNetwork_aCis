@@ -14,6 +14,7 @@
  */
 package net.sf.l2j.gameserver.handler.skillhandlers;
 
+import net.sf.l2j.Config;
 import net.sf.l2j.gameserver.handler.ISkillHandler;
 import net.sf.l2j.gameserver.handler.SkillHandler;
 import net.sf.l2j.gameserver.model.L2Object;
@@ -23,7 +24,10 @@ import net.sf.l2j.gameserver.model.actor.L2Character;
 import net.sf.l2j.gameserver.model.actor.L2Npc;
 import net.sf.l2j.gameserver.model.actor.L2Summon;
 import net.sf.l2j.gameserver.model.actor.instance.L2DoorInstance;
+import net.sf.l2j.gameserver.model.actor.instance.L2GrandBossInstance;
+import net.sf.l2j.gameserver.model.actor.instance.L2MonsterInstance;
 import net.sf.l2j.gameserver.model.actor.instance.L2PcInstance;
+import net.sf.l2j.gameserver.model.actor.instance.L2RaidBossInstance;
 import net.sf.l2j.gameserver.model.actor.instance.L2SiegeFlagInstance;
 import net.sf.l2j.gameserver.network.SystemMessageId;
 import net.sf.l2j.gameserver.network.serverpackets.StatusUpdate;
@@ -111,6 +115,18 @@ public class Heal implements ISkillHandler
 					continue;
 				else if (activeChar instanceof L2PcInstance && ((L2PcInstance) activeChar).isCursedWeaponEquipped())
 					continue;
+				
+				else if (activeChar instanceof L2PcInstance)
+				{
+					if (((L2PcInstance) activeChar).isCursedWeaponEquipped())
+						continue;
+					
+					if (((L2PcInstance) activeChar).isInFunEvent() && !Config.TVT_EVENT_HEAL_PLAYERS)
+						continue;
+					
+					if (target instanceof L2RaidBossInstance || target instanceof L2GrandBossInstance || target instanceof L2MonsterInstance)
+						continue;
+				}
 			}
 			
 			switch (skill.getSkillType())

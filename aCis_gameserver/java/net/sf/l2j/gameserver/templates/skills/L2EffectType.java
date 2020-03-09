@@ -80,5 +80,6 @@ public enum L2EffectType
 	WARP,
 	
 	SIGNET_GROUND,
-	SIGNET_EFFECT
+	SIGNET_EFFECT,
+	PREVENT_BUFF
 }

@@ -29,6 +29,7 @@ import net.sf.l2j.gameserver.datatables.MultisellData;
 import net.sf.l2j.gameserver.datatables.NpcTable;
 import net.sf.l2j.gameserver.datatables.NpcWalkerRoutesTable;
 import net.sf.l2j.gameserver.datatables.SkillTable;
+import net.sf.l2j.gameserver.datatables.SkipTable;
 import net.sf.l2j.gameserver.datatables.TeleportLocationTable;
 import net.sf.l2j.gameserver.handler.IAdminCommandHandler;
 import net.sf.l2j.gameserver.instancemanager.CursedWeaponsManager;
@@ -222,6 +223,11 @@ public class AdminAdmin implements IAdminCommandHandler
 				{
 					ItemTable.getInstance().reload();
 					activeChar.sendMessage("Items' templates have been reloaded.");
+				}
+				else if (type.startsWith("skip"))
+				{
+					SkipTable.getInstance();
+					activeChar.sendMessage("Skip list have been reloaded.");
 				}
 				else if (type.equals("multisell"))
 				{

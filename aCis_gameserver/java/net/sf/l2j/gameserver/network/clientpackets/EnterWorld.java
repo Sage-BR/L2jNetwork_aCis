@@ -15,12 +15,15 @@
 package net.sf.l2j.gameserver.network.clientpackets;
 
 import net.sf.l2j.Config;
+import net.sf.l2j.gameserver.colorsystem.ColorSystem;
 import net.sf.l2j.gameserver.communitybbs.Manager.MailBBSManager;
 import net.sf.l2j.gameserver.datatables.AdminCommandAccessRights;
 import net.sf.l2j.gameserver.datatables.AnnouncementTable;
 import net.sf.l2j.gameserver.datatables.GmListTable;
 import net.sf.l2j.gameserver.datatables.MapRegionTable;
+import net.sf.l2j.gameserver.datatables.SkillTable;
 import net.sf.l2j.gameserver.datatables.SkillTable.FrequentSkill;
+import net.sf.l2j.gameserver.events.TvTEvent;
 import net.sf.l2j.gameserver.instancemanager.ClanHallManager;
 import net.sf.l2j.gameserver.instancemanager.CoupleManager;
 import net.sf.l2j.gameserver.instancemanager.DimensionalRiftManager;
@@ -29,15 +32,20 @@ import net.sf.l2j.gameserver.instancemanager.SevenSigns;
 import net.sf.l2j.gameserver.instancemanager.SiegeManager;
 import net.sf.l2j.gameserver.model.L2Clan;
 import net.sf.l2j.gameserver.model.L2Clan.SubPledge;
+import net.sf.l2j.gameserver.model.L2Skill;
 import net.sf.l2j.gameserver.model.L2World;
 import net.sf.l2j.gameserver.model.actor.instance.L2PcInstance;
+import net.sf.l2j.gameserver.model.base.ClassId;
 import net.sf.l2j.gameserver.model.base.Race;
 import net.sf.l2j.gameserver.model.entity.ClanHall;
 import net.sf.l2j.gameserver.model.entity.Couple;
 import net.sf.l2j.gameserver.model.entity.Siege;
+import net.sf.l2j.gameserver.model.item.instance.ItemInstance;
+import net.sf.l2j.gameserver.model.item.type.WeaponType;
 import net.sf.l2j.gameserver.model.olympiad.Olympiad;
 import net.sf.l2j.gameserver.model.zone.ZoneId;
 import net.sf.l2j.gameserver.network.SystemMessageId;
+import net.sf.l2j.gameserver.network.serverpackets.CreatureSay;
 import net.sf.l2j.gameserver.network.serverpackets.Die;
 import net.sf.l2j.gameserver.network.serverpackets.EtcStatusUpdate;
 import net.sf.l2j.gameserver.network.serverpackets.ExMailArrived;
@@ -45,6 +53,7 @@ import net.sf.l2j.gameserver.network.serverpackets.ExStorageMaxCount;
 import net.sf.l2j.gameserver.network.serverpackets.FriendList;
 import net.sf.l2j.gameserver.network.serverpackets.HennaInfo;
 import net.sf.l2j.gameserver.network.serverpackets.ItemList;
+import net.sf.l2j.gameserver.network.serverpackets.MagicSkillUse;
 import net.sf.l2j.gameserver.network.serverpackets.NpcHtmlMessage;
 import net.sf.l2j.gameserver.network.serverpackets.PlaySound;
 import net.sf.l2j.gameserver.network.serverpackets.PledgeShowMemberListAll;
@@ -59,6 +68,7 @@ import net.sf.l2j.gameserver.network.serverpackets.UserInfo;
 import net.sf.l2j.gameserver.scripting.Quest;
 import net.sf.l2j.gameserver.scripting.QuestState;
 import net.sf.l2j.gameserver.scripting.ScriptManager;
+import net.sf.l2j.gameserver.taskmanager.AfkTaskManager;
 import net.sf.l2j.gameserver.taskmanager.GameTimeTaskManager;
 
 public class EnterWorld extends L2GameClientPacket
@@ -73,6 +83,11 @@ public class EnterWorld extends L2GameClientPacket
 	protected void runImpl()
 	{
 		final L2PcInstance activeChar = getClient().getActiveChar();
+		
+		ColorSystem pvpcolor = new ColorSystem();
+		pvpcolor.updateNameColor(activeChar);
+		pvpcolor.updateTitleColor(activeChar);
+		
 		if (activeChar == null)
 		{
 			_log.warning("EnterWorld failed! activeChar is null...");
@@ -135,7 +150,22 @@ public class EnterWorld extends L2GameClientPacket
 			activeChar.sendPacket(new UserInfo(activeChar));
 			activeChar.sendPacket(new PledgeStatusChanged(clan));
 		}
-		
+		if (Config.ANTIBOW_PROTECTION)
+		{
+			if (activeChar.getClassId() == ClassId.phoenixKnight && activeChar.getClassId() == ClassId.titan && activeChar.getClassId() == ClassId.shillienTemplar && activeChar.getClassId() == ClassId.evaTemplar && activeChar.getClassId() == ClassId.hellKnight && activeChar.getClassId() == ClassId.dreadnought)
+			{
+				for (ItemInstance item : activeChar.getInventory().getPaperdollItems())
+				{
+					if (item != null && item.getItemType() == WeaponType.BOW) // weapons is bow type
+					
+					{
+						int slot = activeChar.getInventory().getSlotFromItem(item);
+						activeChar.getInventory().unEquipItemInBodySlot(slot); // unequip the bow
+						
+					}
+				}
+			}
+		}
 		// Updating Seal of Strife Buff/Debuff
 		if (SevenSigns.getInstance().isSealValidationPeriod() && SevenSigns.getInstance().getSealOwner(SevenSigns.SEAL_STRIFE) != SevenSigns.CABAL_NULL)
 		{
@@ -162,6 +192,31 @@ public class EnterWorld extends L2GameClientPacket
 		// engage and notify Partner
 		if (Config.ALLOW_WEDDING)
 			engage(activeChar);
+		
+		int _period = 0;
+		
+		if (Config.OLYMPIAD_END_ANNOUNE)
+		{
+			long milliToEnd;
+			if (_period == 0)
+			{
+				milliToEnd = Olympiad.getMillisToOlympiadEnd();
+			}
+			else
+			{
+				milliToEnd = Olympiad.getMillisToValidationEnd();
+			}
+			
+			double numSecs = milliToEnd / 1000 % 60;
+			double countDown = (milliToEnd / 1000 - numSecs) / 60;
+			int numMins = (int) Math.floor(countDown % 60);
+			countDown = (countDown - numMins) / 60;
+			int numHours = (int) Math.floor(countDown % 24);
+			int numDays = (int) Math.floor((countDown - numHours) / 24);
+			
+			activeChar.sendPacket(new CreatureSay(0, Say2.ANNOUNCEMENT, "", "Olympiad period ends in " + numDays + " days, " + numHours + " hours and " + numMins + " mins."));
+			
+		}
 		
 		// Announcements, welcome & Seven signs period messages
 		activeChar.sendPacket(SystemMessageId.WELCOME_TO_LINEAGE);
@@ -203,6 +258,24 @@ public class EnterWorld extends L2GameClientPacket
 			activeChar.sendPacket(ExMailArrived.STATIC_PACKET);
 		}
 		
+		if (Config.PM_MESSAGE)
+		{
+			activeChar.sendPacket(new CreatureSay(0, Say2.TELL, Config.PM_TEXT1, Config.PM_SERVER_NAME));
+			activeChar.sendPacket(new CreatureSay(0, Say2.TELL, activeChar.getName(), Config.PM_TEXT2));
+		}
+		
+		if (activeChar.getSp() == 0 && Config.WELCOME_EFFECT)
+		{
+			final L2Skill skill = SkillTable.getInstance().getInfo(2025, 1);
+			if (skill != null)
+			{
+				final MagicSkillUse MSU = new MagicSkillUse(activeChar, activeChar, 2025, 1, 1, 0);
+				activeChar.sendPacket(MSU);
+				activeChar.broadcastPacket(MSU);
+				activeChar.useMagic(skill, false, false);
+			}
+		}
+		
 		// Clan notice, if active.
 		if (Config.ENABLE_COMMUNITY_BOARD && clan != null && clan.isNoticeEnabled())
 		{
@@ -220,12 +293,14 @@ public class EnterWorld extends L2GameClientPacket
 		}
 		
 		PetitionManager.getInstance().checkPetitionMessages(activeChar);
+		AfkTaskManager.getInstance().add(activeChar);
 		
 		// no broadcast needed since the player will already spawn dead to others
 		if (activeChar.isAlikeDead())
 			sendPacket(new Die(activeChar));
 		
 		activeChar.onPlayerEnter();
+		TvTEvent.onLogin(activeChar, activeChar);
 		
 		sendPacket(new SkillCoolTime(activeChar));
 		

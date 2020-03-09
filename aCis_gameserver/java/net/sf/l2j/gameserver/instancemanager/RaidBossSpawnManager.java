@@ -26,6 +26,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import net.sf.l2j.Config;
 import net.sf.l2j.L2DatabaseFactory;
 import net.sf.l2j.commons.random.Rnd;
 import net.sf.l2j.gameserver.ThreadPoolManager;
@@ -35,6 +36,7 @@ import net.sf.l2j.gameserver.model.L2Spawn;
 import net.sf.l2j.gameserver.model.actor.instance.L2RaidBossInstance;
 import net.sf.l2j.gameserver.model.actor.template.NpcTemplate;
 import net.sf.l2j.gameserver.templates.StatsSet;
+import net.sf.l2j.gameserver.util.Broadcast;
 
 /**
  * @author godson
@@ -45,6 +47,7 @@ public class RaidBossSpawnManager
 	
 	protected static final Map<Integer, L2RaidBossInstance> _bosses = new HashMap<>();
 	protected static final Map<Integer, L2Spawn> _spawns = new HashMap<>();
+	protected final static Map<Integer, Long> _respawns = new HashMap<>();
 	protected static final Map<Integer, StatsSet> _storedInfo = new HashMap<>();
 	protected static final Map<Integer, ScheduledFuture<?>> _schedules = new HashMap<>();
 	
@@ -141,11 +144,23 @@ public class RaidBossSpawnManager
 				
 				_log.info("RaidBoss: " + raidboss.getName() + " has spawned.");
 				
+				if (Config.ANNOUNCE_RB_SPAWN)
+				Broadcast.announceToOnlinePlayers("RaidBoss: " + raidboss.getName() + " has spawned in the world.", true);
+				
 				_bosses.put(bossId, raidboss);
+				_respawns.put(bossId, 0L);
 			}
 			
 			_schedules.remove(bossId);
 		}
+	}
+	
+	public long getRespawntime(int id)
+	{
+		if (_respawns.containsKey(id))
+			return _respawns.get(id);
+		
+		return -1;
 	}
 	
 	public void updateStatus(L2RaidBossInstance boss, boolean isBossDead)
@@ -170,7 +185,7 @@ public class RaidBossSpawnManager
 			if (!_schedules.containsKey(boss.getNpcId()))
 			{
 				_log.info("RaidBoss: " + boss.getName() + " - " + new SimpleDateFormat("dd-MM-yyyy HH:mm").format(respawnTime) + " (" + respawnDelay + "h).");
-				
+				_respawns.put(boss.getNpcId(), Calendar.getInstance().getTimeInMillis() + (respawnDelay * 3600000L));
 				_schedules.put(boss.getNpcId(), ThreadPoolManager.getInstance().scheduleGeneral(new spawnSchedule(boss.getNpcId()), respawnDelay * 3600000));
 				updateDb();
 			}
@@ -218,6 +233,8 @@ public class RaidBossSpawnManager
 				raidboss.setCurrentMp(currentMP);
 				raidboss.setRaidStatus(StatusEnum.ALIVE);
 				
+				_respawns.put(raidboss.getNpcId(), 0L);
+				
 				_bosses.put(bossId, raidboss);
 				
 				final StatsSet info = new StatsSet();
@@ -226,11 +243,13 @@ public class RaidBossSpawnManager
 				info.set("respawnTime", 0L);
 				
 				_storedInfo.put(bossId, info);
+				_respawns.put(bossId, 0L);
 			}
 		}
 		else
 		{
 			long spawnTime = respawnTime - Calendar.getInstance().getTimeInMillis();
+			_respawns.put(bossId, respawnTime);
 			_schedules.put(bossId, ThreadPoolManager.getInstance().scheduleGeneral(new spawnSchedule(bossId), spawnTime));
 		}
 		
@@ -271,6 +290,9 @@ public class RaidBossSpawnManager
 		
 		SpawnTable.getInstance().deleteSpawn(spawnDat, false);
 		_spawns.remove(bossId);
+		
+		if (_respawns.containsKey(bossId))
+			_respawns.remove(bossId);
 		
 		if (_bosses.containsKey(bossId))
 			_bosses.remove(bossId);
@@ -412,6 +434,7 @@ public class RaidBossSpawnManager
 			_schedules.clear();
 		}
 		
+		_respawns.clear();
 		_storedInfo.clear();
 		_spawns.clear();
 	}

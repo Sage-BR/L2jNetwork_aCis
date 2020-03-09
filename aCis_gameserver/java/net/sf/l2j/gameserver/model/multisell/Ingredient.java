@@ -14,10 +14,15 @@
  */
 package net.sf.l2j.gameserver.model.multisell;
 
+import net.sf.l2j.gameserver.datatables.ItemTable;
+import net.sf.l2j.gameserver.model.item.kind.Item;
+
 public class Ingredient
 {
 	private int _itemId, _itemCount, _enchantmentLevel;
 	private boolean _isTaxIngredient, _maintainIngredient;
+	
+	private Item _template = null;
 	
 	public Ingredient(int itemId, int itemCount, boolean isTaxIngredient, boolean maintainIngredient)
 	{
@@ -40,6 +45,9 @@ public class Ingredient
 		_enchantmentLevel = e.getEnchantmentLevel();
 		_isTaxIngredient = e.isTaxIngredient();
 		_maintainIngredient = e.getMaintainIngredient();
+		
+		if (_itemId > 0)
+			_template = ItemTable.getInstance().getTemplate(_itemId);
 	}
 	
 	public void setItemId(int itemId)
@@ -72,6 +80,11 @@ public class Ingredient
 		return _enchantmentLevel;
 	}
 	
+	public final Item getTemplate()
+	{
+		return _template;
+	}
+	
 	public void setIsTaxIngredient(boolean isTaxIngredient)
 	{
 		_isTaxIngredient = isTaxIngredient;
@@ -90,5 +103,10 @@ public class Ingredient
 	public boolean getMaintainIngredient()
 	{
 		return _maintainIngredient;
+	}
+
+	public final int getWeight()
+	{
+		return (_template == null) ? 0 : _template.getWeight();
 	}
 }

@@ -91,14 +91,14 @@ public class RequestBuyProcure extends L2GameClientPacket
 		
 		Castle castle = ((L2ManorManagerInstance) manager).getCastle();
 		int slots = 0;
-		int weight = 0;
+		long weight = 0;
 		
 		for (Procure i : _items)
 		{
 			i.setReward(castle);
 			
 			Item template = ItemTable.getInstance().getTemplate(i.getReward());
-			weight += i.getCount() * template.getWeight();
+			weight += (long)i.getCount() * template.getWeight();
 			
 			if (!template.isStackable())
 				slots += i.getCount();
@@ -106,15 +106,15 @@ public class RequestBuyProcure extends L2GameClientPacket
 				slots++;
 		}
 		
-		if (!player.getInventory().validateWeight(weight))
-		{
-			sendPacket(SystemMessage.getSystemMessage(SystemMessageId.WEIGHT_LIMIT_EXCEEDED));
-			return;
-		}
-		
 		if (!player.getInventory().validateCapacity(slots))
 		{
 			sendPacket(SystemMessage.getSystemMessage(SystemMessageId.SLOTS_FULL));
+			return;
+		}
+		
+		if (weight > Integer.MAX_VALUE || weight < 0 || !player.getInventory().validateWeight((int)weight))
+		{
+			sendPacket(SystemMessage.getSystemMessage(SystemMessageId.WEIGHT_LIMIT_EXCEEDED));
 			return;
 		}
 		
