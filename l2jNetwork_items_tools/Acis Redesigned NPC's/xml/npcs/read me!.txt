@@ -1,0 +1,6 @@
+open 50021.txt
+copy all the text and then
+
+open 50000-50999.xml
+
+and place the copied text on the end of that file before </list>
