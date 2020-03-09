@@ -2,6 +2,8 @@
 
 Video: https://www.youtube.com/watch?v=vywZdnt_MPU&feature=emb_logo
 
+Images : https://imgur.com/a/4fnzK
+
 Revision 2 [6/1/2017]
 
 NEWBIES HELPER NPC [sTARTING SYSTEM] --> Watch Me
